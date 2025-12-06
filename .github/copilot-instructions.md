@@ -8,17 +8,17 @@ Neon Defense 3D is a Tower Defense game built with **React 19**, **Vite**, **Typ
 
 ### Core Components
 
-- **Game State (`game/GameState.tsx`):** Centralized state management using React Context (`GameProvider`). Holds `enemies`, `towers`, `projectiles`, `effects`, and global `gameState`.
-- **Game Loop (`game/GameCanvas.tsx` -> `GameLoopBridge`):** The `GameLoopBridge` component uses `useFrame` to handle per-frame logic:
+-- **Game State (`src/game/GameState.tsx`):** Centralized state management using React Context (`GameProvider`). Holds `enemies`, `towers`, `projectiles`, `effects`, and global `gameState`.
+-- **Game Loop (`src/game/GameCanvas.tsx` -> `GameLoopBridge`):** The `GameLoopBridge` component uses `useFrame` to handle per-frame logic:
   - Enemy spawning and movement.
   - Tower targeting and firing.
   - Projectile movement and collision detection.
   - Particle effects updates.
-- **Rendering (`game/GameCanvas.tsx`):** Renders the 3D scene.
+-- **Rendering (`src/game/GameCanvas.tsx`):** Renders the 3D scene.
   - **World:** Renders the grid based on `MAP_GRID`.
   - **Entities:** Renders `Tower`, `Enemy`, `Projectile` components based on state data.
   - **Visuals:** Uses geometric primitives (Box, Sphere, Cylinder) rather than external models.
-- **UI Overlay (`components/UI.tsx`):** HTML/CSS overlay for HUD, menus, and game controls. Uses Tailwind CSS.
+-- **UI Overlay (`src/components/UI.tsx`):** HTML/CSS overlay for HUD, menus, and game controls. Uses Tailwind CSS.
 
 ### Data Flow
 
@@ -33,7 +33,7 @@ Neon Defense 3D is a Tower Defense game built with **React 19**, **Vite**, **Typ
 - **Grid:** Logic uses 2D grid coordinates `[x, z]` (0-indexed).
 - **World:** 3D world coordinates map to grid: `x_world = x_grid * TILE_SIZE`, `z_world = z_grid * TILE_SIZE`.
 - **Up Axis:** Y-axis is up. Ground is at `y=0`.
-- **Tile Size:** Defined in `constants.ts` (default `2`).
+-- **Tile Size:** Defined in `src/constants.ts` (default `2`).
 
 ### State Management
 
@@ -42,7 +42,7 @@ Neon Defense 3D is a Tower Defense game built with **React 19**, **Vite**, **Typ
 
 ### Game Logic
 
-- **Pathfinding:** Pre-calculated BFS path stored in `PATH_WAYPOINTS` (in `constants.ts`).
+-- **Pathfinding:** Pre-calculated BFS path stored in `PATH_WAYPOINTS` (in `src/constants.ts`).
 - **Towers:** Defined in `TOWER_CONFIGS`. Stats (damage, range, cooldown) are calculated dynamically based on level using `getTowerStats`.
 - **Enemies:** Defined in `ENEMY_TYPES`. Spawning logic is in `GameLoopBridge`.
 
@@ -60,15 +60,15 @@ Neon Defense 3D is a Tower Defense game built with **React 19**, **Vite**, **Typ
 
 ### Common Tasks
 
-- **Adding a Tower:**
-  1.  Add type to `TowerType` enum in `types.ts`.
-  2.  Add config to `TOWER_CONFIGS` in `constants.ts`.
+-- **Adding a Tower:**
+  1.  Add type to `TowerType` enum in `src/types.ts`.
+  2.  Add config to `TOWER_CONFIGS` in `src/constants.ts`.
   3.  Update `Tower` component in `GameCanvas.tsx` if custom visuals are needed.
-- **Adding an Enemy:**
-  1.  Add config to `ENEMY_TYPES` in `constants.ts`.
-  2.  Update spawning logic in `GameLoopBridge` (`GameCanvas.tsx`) to include the new enemy type.
+-- **Adding an Enemy:**
+  1.  Add config to `ENEMY_TYPES` in `src/constants.ts`.
+  2.  Update spawning logic in `GameLoopBridge` (`src/game/GameCanvas.tsx`) to include the new enemy type.
 - **Map Editing:**
-  1.  Modify `RAW_MAP` in `constants.ts`.
+  1.  Modify `RAW_MAP` in `src/constants.ts`.
   2.  Ensure `2` (Spawn) and `3` (Base) exist for pathfinding to work.
 
 ## Tech Stack Details
