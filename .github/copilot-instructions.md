@@ -63,7 +63,7 @@ Neon Defense 3D is a Tower Defense game built with **React 19**, **Vite**, **Typ
 -- **Adding a Tower:**
   1.  Add type to `TowerType` enum in `src/types.ts`.
   2.  Add config to `TOWER_CONFIGS` in `src/constants.ts`.
-  3.  Update `Tower` component in `GameCanvas.tsx` if custom visuals are needed.
+  3.  Update `Tower` component in `src/game/GameCanvas.tsx` if custom visuals are needed.
 -- **Adding an Enemy:**
   1.  Add config to `ENEMY_TYPES` in `src/constants.ts`.
   2.  Update spawning logic in `GameLoopBridge` (`src/game/GameCanvas.tsx`) to include the new enemy type.
