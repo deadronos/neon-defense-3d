@@ -53,7 +53,6 @@ For each phase in the plan, execute this cycle:
 ### 2B. Review Implementation
 
 1. Use #runSubagent to invoke the code-review-subagent with:
-
    - The phase objective and acceptance criteria
    - Files that were modified/created
    - Instruction to verify tests pass and code follows best practices
@@ -66,7 +65,6 @@ For each phase in the plan, execute this cycle:
 ### 2C. Return to User for Commit
 
 1. **Pause and Present Summary**:
-
    - Phase number and objective
    - What was accomplished
    - Files/functions created/changed
@@ -89,7 +87,6 @@ For each phase in the plan, execute this cycle:
 ## Phase 3: Plan Completion
 
 1. **Compile Final Report**: Create `plans/<task-name>-complete.md` following <plan_complete_style_guide> containing:
-
    - Overall summary of what was accomplished
    - All phases completed
    - All files created/modified across entire plan

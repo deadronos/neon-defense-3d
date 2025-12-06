@@ -17,7 +17,6 @@ CRITICAL: You receive context from the parent agent including:
 1. **Analyze Changes**: Review the code changes using #changes, #usages, and #problems to understand what was implemented.
 
 2. **Verify Implementation**: Check that:
-
    - The phase objective was achieved
    - Code follows best practices (correctness, efficiency, readability, maintainability, security)
    - Tests were written and pass

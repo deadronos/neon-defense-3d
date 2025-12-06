@@ -18,7 +18,6 @@ Your SOLE job is to gather comprehensive context about the requested task and re
    - Use #upstash/context7/* for framework/library context as needed, if available
 
 2. **Stop research at 90% confidence** - you have enough context when you can answer:
-
    - What files/functions are relevant?
    - How does the existing code work in this area?
    - What patterns/conventions does the codebase use?
