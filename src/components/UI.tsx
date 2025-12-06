@@ -1,8 +1,119 @@
-// Deprecated: moved to /src/components/UI.tsx
-export {};
+import React from 'react';
 
-// Deprecated: moved to /src/components/UI.tsx
-export {};
+import { TOWER_CONFIGS } from '../constants';
+import { getTowerStats } from '../game/GameCanvas'; // Import helper
+import { useGame } from '../game/GameState';
+import { TowerType } from '../types';
+
+const Tooltip = ({ text, className = '' }: { text: React.ReactNode; className?: string }) => (
+  <div
+    className={`absolute opacity-0 group-hover:opacity-100 transition-all duration-200 bg-black/95 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1.5 pointer-events-none z-50 shadow-xl backdrop-blur-sm whitespace-nowrap -translate-y-1 group-hover:translate-y-0 ${className}`}
+  >
+    {text}
+  </div>
+);
+
+export const UI = () => {
+  const {
+    gameState,
+    startGame,
+    resetGame,
+    selectedTower,
+    setSelectedTower,
+    selectedEntityId,
+    towers,
+    upgradeTower,
+    sellTower,
+    setSelectedEntityId,
+  } = useGame();
+
+  if (gameState.gameStatus === 'idle') {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-10 animate-fade-in">
+        <div className="text-center p-8 bg-gray-900 border border-purple-500 rounded-2xl shadow-2xl shadow-purple-500/20 max-w-md transform transition-all hover:scale-105 duration-500">
+          <h1 className="text-5xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-600 animate-pulse">
+            NEON DEFENSE
+          </h1>
+          <p className="text-gray-400 mb-8">Defend the core. Survive the waves.</p>
+          <button
+            onClick={startGame}
+            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full text-white font-bold 
+              hover:scale-110 active:scale-95 transition-all duration-200 shadow-lg hover:shadow-cyan-500/50"
+          >
+            START MISSION
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (gameState.gameStatus === 'gameover') {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-red-900/40 backdrop-blur-md z-10 animate-fade-in">
+        <div className="text-center p-8 bg-gray-900 border border-red-500 rounded-2xl shadow-2xl shadow-red-500/20 transform transition-all hover:scale-105 duration-500">
+          <h1 className="text-5xl font-bold mb-4 text-red-500 animate-bounce">CRITICAL FAILURE</h1>
+          <p className="text-xl mb-4">Wave Reached: {gameState.wave}</p>
+          <button
+            onClick={resetGame}
+            className="px-8 py-3 bg-red-600 rounded-full text-white font-bold 
+            hover:bg-red-500 hover:scale-110 active:scale-95 transition-all duration-200 shadow-lg hover:shadow-red-500/50"
+          >
+            RETRY
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Determine if we are inspecting a tower
+  const selectedTowerEntity = selectedEntityId
+    ? towers.find((t) => t.id === selectedEntityId)
+    : null;
+  const showBuildMenu = !selectedTowerEntity;
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-10">
+      {/* Top Bar */}
+      <div className="absolute top-0 w-full p-4 flex justify-between items-start pointer-events-auto">
+        <div className="flex gap-4">
+          <div className="group relative bg-gray-900/80 backdrop-blur border border-gray-700 px-4 py-2 rounded-lg flex flex-col items-center min-w-[100px] transition-all duration-300 hover:border-green-500/50 hover:bg-gray-800 hover:scale-105 cursor-default shadow-lg">
+            <span className="text-xs text-gray-400 uppercase">Health</span>
+            <span
+              className={`text-2xl font-bold ${
+                gameState.lives < 10 ? 'text-red-500' : 'text-green-400'
+              }`}
+            >
+              {gameState.lives}
+            </span>
+            <Tooltip
+              text="If this reaches 0, the mission fails."
+              className="top-full mt-2 left-1/2 -translate-x-1/2"
+            />
+          </div>
+          <div className="group relative bg-gray-900/80 backdrop-blur border border-gray-700 px-4 py-2 rounded-lg flex flex-col items-center min-w-[100px] transition-all duration-300 hover:border-yellow-500/50 hover:bg-gray-800 hover:scale-105 cursor-default shadow-lg">
+            <span className="text-xs text-gray-400 uppercase">Credits</span>
+            <span className="text-2xl font-bold text-yellow-400">${gameState.money}</span>
+            <Tooltip
+              text="Earn credits by destroying enemies."
+              className="top-full mt-2 left-1/2 -translate-x-1/2"
+            />
+          </div>
+          <div className="group relative bg-gray-900/80 backdrop-blur border border-gray-700 px-4 py-2 rounded-lg flex flex-col items-center min-w-[100px] transition-all duration-300 hover:border-cyan-500/50 hover:bg-gray-800 hover:scale-105 cursor-default shadow-lg">
+            <span className="text-xs text-gray-400 uppercase">Wave</span>
+            <span className="text-2xl font-bold text-cyan-400">{gameState.wave}</span>
+            <Tooltip
+              text="Enemies get stronger each wave."
+              className="top-full mt-2 left-1/2 -translate-x-1/2"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Build Menu (Bottom) */}
+      {showBuildMenu && (
+        <div className="absolute bottom-8 w-full flex justify-center pointer-events-auto">
+          <div className="bg-gray-900/90 backdrop-blur border border-gray-700 p-2 rounded-2xl flex gap-2 shadow-2xl transition-all duration-300 hover:border-gray-500 hover:shadow-purple-500/10">
+            {Object.values(TowerType).map((type) => {
               const config = TOWER_CONFIGS[type];
               const isSelected = selectedTower === type;
               const canAfford = gameState.money >= config.cost;
@@ -209,3 +320,5 @@ export {};
     </div>
   );
 };
+
+export default UI;

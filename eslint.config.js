@@ -68,7 +68,7 @@ export default [
     },
   },
   {
-    files: ['game/**/*.tsx', 'components/**/*.tsx'],
+    files: ['src/game/**/*.tsx', 'src/components/**/*.tsx'],
     rules: { 'react/no-unknown-property': 'off' },
   },
 ];
