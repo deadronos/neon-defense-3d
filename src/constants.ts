@@ -1,8 +1,11 @@
 import type { TileType, Vector2 } from './types';
 import { TowerType } from './types';
 
-// 12x8 Grid
-// 0: Grass, 1: Path, 2: Spawn, 3: Base
+/**
+ * Raw map definition as a 2D array of integers.
+ * 0: Grass, 1: Path, 2: Spawn, 3: Base
+ * Represents a 12x8 Grid.
+ */
 const RAW_MAP = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [2, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0],
@@ -14,14 +17,23 @@ const RAW_MAP = [
   [0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
 
+/** The width of the map grid. */
 export const MAP_WIDTH = RAW_MAP[0].length;
+/** The height of the map grid. */
 export const MAP_HEIGHT = RAW_MAP.length;
+/** The size of each tile in world units. */
 export const TILE_SIZE = 2; // World units per tile
 
-// Convert raw map to linear array of types and extract path
+/**
+ * The map grid converted to TileType enums.
+ */
 export const MAP_GRID: TileType[][] = RAW_MAP.map((row) => row.map((cell) => cell as TileType));
 
-// BFS Pathfinding to handle complex routes
+/**
+ * Generates a path from the spawn point to the base using Breadth-First Search (BFS).
+ *
+ * @returns An array of Vector2 coordinates representing the path. Returns an empty array if no path is found.
+ */
 const generatePath = (): Vector2[] => {
   let start: Vector2 | null = null;
   let end: Vector2 | null = null;
@@ -75,8 +87,14 @@ const generatePath = (): Vector2[] => {
   return []; // No path found
 };
 
+/**
+ * Pre-calculated path waypoints from spawn to base.
+ */
 export const PATH_WAYPOINTS = generatePath();
 
+/**
+ * Configuration definitions for different enemy types.
+ */
 export const ENEMY_TYPES = {
   BASIC: {
     name: 'Drone',
@@ -116,6 +134,10 @@ export const ENEMY_TYPES = {
   },
 };
 
+/**
+ * Configuration definitions for different tower types.
+ * Keys are TowerType enum values.
+ */
 export const TOWER_CONFIGS = {
   [TowerType.Basic]: {
     name: 'Turret',
@@ -146,6 +168,9 @@ export const TOWER_CONFIGS = {
   },
 };
 
+/**
+ * Color palette used in the game for various elements.
+ */
 export const COLORS = {
   grass: '#1a1a2e',
   path: '#16213e',

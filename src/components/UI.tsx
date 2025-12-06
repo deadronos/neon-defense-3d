@@ -5,6 +5,13 @@ import { getTowerStats } from '../game/GameCanvas'; // Import helper
 import { useGame } from '../game/GameState';
 import { TowerType } from '../types';
 
+/**
+ * A helper component to display a tooltip on hover.
+ *
+ * @param props - Component properties.
+ * @param props.text - The content of the tooltip.
+ * @param props.className - Additional CSS classes for styling.
+ */
 const Tooltip = ({ text, className = '' }: { text: React.ReactNode; className?: string }) => (
   <div
     className={`absolute opacity-0 group-hover:opacity-100 transition-all duration-200 bg-black/95 border border-gray-700 text-gray-300 text-xs rounded px-2 py-1.5 pointer-events-none z-50 shadow-xl backdrop-blur-sm whitespace-nowrap -translate-y-1 group-hover:translate-y-0 ${className}`}
@@ -13,6 +20,13 @@ const Tooltip = ({ text, className = '' }: { text: React.ReactNode; className?: 
   </div>
 );
 
+/**
+ * The main user interface overlay component.
+ * Handles the HUD (heads-up display), menus (start, game over), tower selection, and upgrade panels.
+ * Renders HTML/CSS on top of the 3D canvas.
+ *
+ * @returns The UI component.
+ */
 export const UI = () => {
   const {
     gameState,

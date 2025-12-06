@@ -1,3 +1,7 @@
+/**
+ * Global test setup configuration for Vitest and React Testing Library.
+ * Mocks browser APIs like matchMedia and ResizeObserver that are not available in the test environment.
+ */
 // Setup file for Vitest + Testing Library
 import '@testing-library/jest-dom';
 

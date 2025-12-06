@@ -12,40 +12,90 @@ import type {
 } from '../types';
 import { TileType } from '../types';
 
+/**
+ * Interface defining the properties and methods available in the GameContext.
+ */
 interface GameContextProps {
+  /** Current global game state (money, lives, wave, etc). */
   gameState: GameState;
+  /** List of currently active enemies. */
   enemies: EnemyEntity[];
+  /** List of placed towers. */
   towers: TowerEntity[];
+  /** List of active projectiles. */
   projectiles: ProjectileEntity[];
+  /** List of visual effects. */
   effects: EffectEntity[];
+  /**
+   * Places a tower on the grid.
+   * @param x - The x-coordinate of the grid.
+   * @param z - The z-coordinate of the grid.
+   * @param type - The type of tower to place.
+   */
   placeTower: (x: number, z: number, type: TowerType) => void;
+  /** Starts the game session. */
   startGame: () => void;
+  /** Resets the game to its initial state. */
   resetGame: () => void;
-  // Selected Tower Type (for building)
+  /** Currently selected tower type for building (null if none). */
   selectedTower: TowerType | null;
+  /** Sets the currently selected tower type for building. */
   setSelectedTower: (t: TowerType | null) => void;
-  // Selected Tower Entity (for upgrading)
+  /** ID of the currently selected tower entity (for upgrading/selling). */
   selectedEntityId: string | null;
+  /** Sets the ID of the selected tower entity. */
   setSelectedEntityId: (id: string | null) => void;
+  /**
+   * Upgrades a specific tower.
+   * @param id - The ID of the tower to upgrade.
+   */
   upgradeTower: (id: string) => void;
+  /**
+   * Sells a specific tower.
+   * @param id - The ID of the tower to sell.
+   */
   sellTower: (id: string) => void;
 
+  /**
+   * Checks if a tower can be placed at the given coordinates.
+   * @param x - The x-coordinate of the grid.
+   * @param z - The z-coordinate of the grid.
+   * @returns True if placement is valid, false otherwise.
+   */
   isValidPlacement: (x: number, z: number) => boolean;
+  /** State setter for enemies list. */
   setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>;
+  /** State setter for towers list. */
   setTowers: React.Dispatch<React.SetStateAction<TowerEntity[]>>;
+  /** State setter for projectiles list. */
   setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>;
+  /** State setter for effects list. */
   setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>;
+  /** State setter for global game state. */
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
 }
 
+/** Context for managing game state. */
 const GameContext = createContext<GameContextProps | undefined>(undefined);
 
+/**
+ * Hook to access the GameContext.
+ *
+ * @throws Error if used outside of a GameProvider.
+ * @returns The GameContextProps.
+ */
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) throw new Error('useGame must be used within GameProvider');
   return context;
 };
 
+/**
+ * Provider component that wraps the game and manages state.
+ *
+ * @param props - Component properties.
+ * @param props.children - Child components to render.
+ */
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [gameState, setGameState] = useState<GameState>({
     money: 150,
@@ -62,6 +112,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedTower, setSelectedTower] = useState<TowerType | null>(null);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
 
+  /**
+   * Initializes the game state for a new session.
+   */
   const startGame = useCallback(() => {
     setGameState((prev) => ({
       ...prev,
@@ -78,6 +131,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedEntityId(null);
   }, []);
 
+  /**
+   * Resets the game state to default values (idle).
+   */
   const resetGame = useCallback(() => {
     setGameState((prev) => ({
       ...prev,
@@ -94,6 +150,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedEntityId(null);
   }, []);
 
+  /**
+   * Validates if a tower can be placed at the specified grid coordinates.
+   *
+   * @param x - Grid X coordinate.
+   * @param z - Grid Z coordinate.
+   * @returns True if the tile is buildable (Grass) and empty.
+   */
   const isValidPlacement = useCallback(
     (x: number, z: number) => {
       // Check map bounds
@@ -107,6 +170,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [towers],
   );
 
+  /**
+   * Attempts to place a tower at the specified location.
+   * Deducts cost from money if successful.
+   *
+   * @param x - Grid X coordinate.
+   * @param z - Grid Z coordinate.
+   * @param type - Type of tower to place.
+   */
   const placeTower = useCallback(
     (x: number, z: number, type: TowerType) => {
       const config = TOWER_CONFIGS[type];
@@ -128,6 +199,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [gameState.money, isValidPlacement],
   );
 
+  /**
+   * Upgrades the specified tower if the player has enough money.
+   * Increases tower level and deducts cost.
+   *
+   * @param id - ID of the tower to upgrade.
+   */
   const upgradeTower = useCallback(
     (id: string) => {
       setTowers((prev) =>
@@ -148,6 +225,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     [gameState.money],
   );
 
+  /**
+   * Sells the specified tower and refunds a portion of the cost.
+   *
+   * @param id - ID of the tower to sell.
+   */
   const sellTower = useCallback(
     (id: string) => {
       const tower = towers.find((t) => t.id === id);
