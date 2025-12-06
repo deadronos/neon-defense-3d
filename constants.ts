@@ -1,4 +1,5 @@
-import { TileType, TowerType, Vector2 } from './types';
+import type { TileType, Vector2 } from './types';
+import { TowerType } from './types';
 
 // 12x8 Grid
 // 0: Grass, 1: Path, 2: Spawn, 3: Base
@@ -18,29 +19,29 @@ export const MAP_HEIGHT = RAW_MAP.length;
 export const TILE_SIZE = 2; // World units per tile
 
 // Convert raw map to linear array of types and extract path
-export const MAP_GRID: TileType[][] = RAW_MAP.map(row => row.map(cell => cell as TileType));
+export const MAP_GRID: TileType[][] = RAW_MAP.map((row) => row.map((cell) => cell as TileType));
 
 // BFS Pathfinding to handle complex routes
 const generatePath = (): Vector2[] => {
   let start: Vector2 | null = null;
   let end: Vector2 | null = null;
-  
+
   // Find start and end points
-  for(let z=0; z<MAP_HEIGHT; z++) {
-    for(let x=0; x<MAP_WIDTH; x++) {
-      if(RAW_MAP[z][x] === 2) start = [x, z];
-      if(RAW_MAP[z][x] === 3) end = [x, z];
+  for (let z = 0; z < MAP_HEIGHT; z++) {
+    for (let x = 0; x < MAP_WIDTH; x++) {
+      if (RAW_MAP[z][x] === 2) start = [x, z];
+      if (RAW_MAP[z][x] === 3) end = [x, z];
     }
   }
 
   if (!start || !end) return [];
 
   // Queue stores { position, path_so_far }
-  const queue: { pos: Vector2, path: Vector2[] }[] = [{ pos: start, path: [start] }];
+  const queue: { pos: Vector2; path: Vector2[] }[] = [{ pos: start, path: [start] }];
   const visited = new Set<string>();
   visited.add(`${start[0]},${start[1]}`);
 
-  while(queue.length > 0) {
+  while (queue.length > 0) {
     const { pos, path } = queue.shift()!;
     const [cx, cz] = pos;
 
@@ -50,15 +51,17 @@ const generatePath = (): Vector2[] => {
     }
 
     const neighbors = [
-      [cx + 1, cz], [cx - 1, cz],
-      [cx, cz + 1], [cx, cz - 1]
+      [cx + 1, cz],
+      [cx - 1, cz],
+      [cx, cz + 1],
+      [cx, cz - 1],
     ];
 
     for (const [nx, nz] of neighbors) {
       if (nx >= 0 && nx < MAP_WIDTH && nz >= 0 && nz < MAP_HEIGHT) {
         const type = RAW_MAP[nz][nx];
         const key = `${nx},${nz}`;
-        
+
         // Walkable tiles: Path (1) or Base (3)
         // (Spawn (2) is start, so we don't return to it usually, but it's handled by visited set)
         if ((type === 1 || type === 3) && !visited.has(key)) {
@@ -75,10 +78,42 @@ const generatePath = (): Vector2[] => {
 export const PATH_WAYPOINTS = generatePath();
 
 export const ENEMY_TYPES = {
-  BASIC: { name: 'Drone', speed: 2.5, hpBase: 50, reward: 10, color: '#ff0055', scale: 0.4, abilities: undefined },
-  FAST: { name: 'Scout', speed: 4.5, hpBase: 30, reward: 15, color: '#fbbf24', scale: 0.3, abilities: ['dash'] },
-  TANK: { name: 'Heavy', speed: 1.5, hpBase: 150, reward: 25, color: '#8b5cf6', scale: 0.6, abilities: undefined },
-  BOSS: { name: 'Titan', speed: 1.0, hpBase: 600, reward: 100, color: '#ef4444', scale: 0.9, abilities: undefined },
+  BASIC: {
+    name: 'Drone',
+    speed: 2.5,
+    hpBase: 50,
+    reward: 10,
+    color: '#ff0055',
+    scale: 0.4,
+    abilities: undefined,
+  },
+  FAST: {
+    name: 'Scout',
+    speed: 4.5,
+    hpBase: 30,
+    reward: 15,
+    color: '#fbbf24',
+    scale: 0.3,
+    abilities: ['dash'],
+  },
+  TANK: {
+    name: 'Heavy',
+    speed: 1.5,
+    hpBase: 150,
+    reward: 25,
+    color: '#8b5cf6',
+    scale: 0.6,
+    abilities: undefined,
+  },
+  BOSS: {
+    name: 'Titan',
+    speed: 1.0,
+    hpBase: 600,
+    reward: 100,
+    color: '#ef4444',
+    scale: 0.9,
+    abilities: undefined,
+  },
 };
 
 export const TOWER_CONFIGS = {

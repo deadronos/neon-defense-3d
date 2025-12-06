@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import type { Vector3 } from 'three';
 
 export type Vector2 = [number, number]; // x, z coordinates on grid
 

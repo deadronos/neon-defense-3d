@@ -1,7 +1,8 @@
 import React from 'react';
-import { GameProvider, useGame } from './game/GameState';
-import { GameCanvas } from './game/GameCanvas';
+
 import { UI } from './components/UI';
+import { GameCanvas } from './game/GameCanvas';
+import { GameProvider, useGame } from './game/GameState';
 
 // Wrapper to provide context to the inner components
 const AppContent = () => {

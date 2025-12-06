@@ -4,12 +4,12 @@ applyTo: '**'
 ---
 
 # Spec-Driven Workflow — Quick Loop
+
 Hint: use memory folder ( look at .github/instructions/memory-bank.instructions.md for templates)
 use /memory/designs folder to store designs
 ensure design IDs stay unique across `/memory/designs` and `/memory/designs/COMPLETED`; check both locations before assigning a new number because completed designs may be archived there.
 use /memory/tasks folder to store task files
 ensure task IDs stay unique across `/memory/tasks` and `/memory/tasks/COMPLETED`; verify both directories before reserving a new number.
-
 
 Receipt: "Follow a 6-phase spec-driven loop: Analyze → Design → Implement → Validate → Reflect → Handoff."
 
@@ -45,6 +45,7 @@ End.
 **Checklist:**
 
 - [ ] **Define adaptive execution strategy based on Confidence Score:**
+
   - **High Confidence (>85%)**
     - Draft a comprehensive, step-by-step implementation plan.
     - Skip proof-of-concept steps.
@@ -56,6 +57,7 @@ End.
     - Build and validate PoC/MVP first, then expand plan incrementally.
     - Document PoC/MVP goals, execution, and validation results.
   - **Low Confidence (<66%)**
+
     - Dedicate first phase to research and knowledge-building.
     - Use semantic search and analyze similar implementations.
     - Synthesize findings into a research document.
@@ -79,7 +81,8 @@ End.
 - [ ] **Document error handling:**
 
 > Store implementation plans and task files inside the memory bank tasks folder (`memory/tasks/`) following the Memory Bank structure required by the project. Use `memory/tasks/_index.md` as the master index and create `memory/tasks/TASKID-taskname.md` for each task.
-  - Create an error matrix with procedures and expected responses.
+
+- Create an error matrix with procedures and expected responses.
 
 - [ ] **Define unit testing strategy.**
 

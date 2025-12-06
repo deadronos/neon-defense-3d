@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+.vite
+public
+coverage
+.cache
+.eslintrc.cjs
+.prettierrc
+.prettierignore
+*.min.js
