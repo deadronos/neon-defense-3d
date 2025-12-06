@@ -18,7 +18,13 @@ import { TileType } from '../types';
 
 import { useGame } from './GameState';
 
-// Helper to calculate stats based on level
+/**
+ * Calculates the statistics for a tower based on its type and current level.
+ *
+ * @param type - The type of the tower.
+ * @param level - The current upgrade level of the tower.
+ * @returns An object containing damage, range, cooldown, and upgradeCost.
+ */
 export const getTowerStats = (type: TowerType, level: number) => {
   const base = TOWER_CONFIGS[type];
   return {
@@ -29,7 +35,13 @@ export const getTowerStats = (type: TowerType, level: number) => {
   };
 };
 
-// Re-implementing logic bridge here to access Context
+/**
+ * Component that hooks into the render loop to handle game logic updates.
+ * This includes enemy spawning, movement, tower firing, projectile movement, and collision detection.
+ * It does not render any visual elements itself.
+ *
+ * @returns null
+ */
 const GameLoopBridge = () => {
   const {
     gameState,
@@ -275,6 +287,15 @@ const GameLoopBridge = () => {
 
 // --- Components ---
 
+/**
+ * Renders a single tile on the map grid.
+ * Handles interactions like clicking to place a tower.
+ *
+ * @param props - Component properties.
+ * @param props.x - The grid X coordinate.
+ * @param props.z - The grid Z coordinate.
+ * @param props.type - The type of the tile (Grass, Path, etc.).
+ */
 const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }) => {
   const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId } = useGame();
   const [hovered, setHovered] = useState(false);
@@ -322,6 +343,13 @@ const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }
   );
 };
 
+/**
+ * Renders an enemy entity in the 3D world.
+ * Includes the enemy model and a health bar.
+ *
+ * @param props - Component properties.
+ * @param props.data - The enemy entity data.
+ */
 const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
   const scale = (data as any).config.scale || 0.4;
   const hpBarY = scale * 2 + 0.5;
@@ -365,6 +393,14 @@ const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
   );
 };
 
+/**
+ * Renders a tower entity in the 3D world.
+ * Displays the tower model, level indicators, and range/selection visuals.
+ *
+ * @param props - Component properties.
+ * @param props.data - The tower entity data.
+ * @param props.enemies - List of current enemies (used for target visualization).
+ */
 const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, enemies }) => {
   const { selectedEntityId, setSelectedEntityId, selectedTower } = useGame();
   const config = TOWER_CONFIGS[data.type as TowerType];
@@ -455,6 +491,14 @@ const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, 
   );
 };
 
+/**
+ * Renders a projectile entity in the 3D world.
+ * Includes a trail effect.
+ *
+ * @param props - Component properties.
+ * @param props.data - The projectile entity data.
+ * @param props.enemies - List of current enemies (used to look up target position).
+ */
 const Projectile: React.FC<{ data: ProjectileEntity; enemies: EnemyEntity[] }> = ({
   data,
   enemies,
@@ -488,6 +532,14 @@ const Projectile: React.FC<{ data: ProjectileEntity; enemies: EnemyEntity[] }> =
   );
 };
 
+/**
+ * Renders an explosion effect with particles.
+ * Automatically removes itself after the duration expires.
+ *
+ * @param props - Component properties.
+ * @param props.data - The effect entity data.
+ * @param props.remove - Callback to remove the effect from state.
+ */
 const Explosion: React.FC<{ data: EffectEntity; remove: (id: string) => void }> = ({
   data,
   remove,
@@ -550,6 +602,9 @@ const Explosion: React.FC<{ data: EffectEntity; remove: (id: string) => void }> 
   );
 };
 
+/**
+ * Renders the entire map grid by iterating over the MAP_GRID constant.
+ */
 const World = () => {
   return (
     <group
@@ -567,6 +622,11 @@ const World = () => {
   );
 };
 
+/**
+ * The main scene content, including lights, the game loop bridge, the world grid, and all game entities.
+ *
+ * @returns The 3D scene elements.
+ */
 const SceneContent = () => {
   const { enemies, towers, projectiles, effects, setEffects } = useGame();
 
@@ -617,6 +677,12 @@ const SceneContent = () => {
   );
 };
 
+/**
+ * The root component for the 3D game view.
+ * Sets up the React Three Fiber Canvas, camera, and shadows.
+ *
+ * @returns The GameCanvas component.
+ */
 export const GameCanvas = () => {
   return (
     <div className="w-full h-full bg-[#050510]">

@@ -1,3 +1,7 @@
+/**
+ * Test suite for verifying game constants and configuration.
+ * Ensures map dimensions, pathfinding generation, and entity configurations are valid.
+ */
 import { describe, it, expect } from 'vitest';
 
 import {

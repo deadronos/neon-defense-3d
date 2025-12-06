@@ -4,7 +4,10 @@ import { UI } from './components/UI';
 import { GameCanvas } from './game/GameCanvas';
 import { GameProvider } from './game/GameState';
 
-// Wrapper to provide context to the inner components
+/**
+ * The inner content of the application.
+ * Renders the 3D game canvas and the UI overlay within a full-screen container.
+ */
 const AppContent = () => {
   return (
     <div className="relative w-full h-screen overflow-hidden select-none">
@@ -14,6 +17,12 @@ const AppContent = () => {
   );
 };
 
+/**
+ * The root application component.
+ * Wraps the application content in the GameProvider to manage global state.
+ *
+ * @returns The main App component.
+ */
 const App = () => {
   return (
     <GameProvider>

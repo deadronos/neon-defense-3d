@@ -1,3 +1,7 @@
+/**
+ * Application entry point.
+ * Mounts the React application to the DOM.
+ */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 
