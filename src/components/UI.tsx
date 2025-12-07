@@ -31,6 +31,7 @@ export const UI = () => {
     upgradeTower,
     sellTower,
     setSelectedEntityId,
+    waveState,
   } = useGame();
 
   if (gameState.gameStatus === 'idle') {
@@ -104,8 +105,19 @@ export const UI = () => {
           
           <div className="relative bg-black/40 border-l-4 border-b border-r border-t border-t-transparent border-r-transparent border-b-transparent border-l-cyan-400 pl-4 pr-6 py-2 skew-x-[-10deg]">
              <div className="skew-x-[10deg] flex flex-col">
-                <span className="text-[10px] text-cyan-500 uppercase tracking-wider">Wave Index</span>
-                <span className="text-2xl font-bold font-mono text-cyan-300">{gameState.wave}</span>
+                <span className="text-[10px] text-cyan-500 uppercase tracking-wider">
+                  {waveState?.phase === 'preparing' ? 'NEXT WAVE' : 'WAVE INDEX'}
+                </span>
+                <div className="flex items-center gap-2">
+                   <span className="text-2xl font-bold font-mono text-cyan-300">
+                     {gameState.wave}
+                   </span>
+                   {waveState?.phase === 'preparing' && waveState.timer > 0 && (
+                     <span className="text-sm font-mono text-cyan-500 animate-pulse">
+                        {waveState.timer.toFixed(1)}s
+                     </span> 
+                   )}
+                </div>
              </div>
           </div>
         </div>
@@ -114,12 +126,10 @@ export const UI = () => {
       {/* Build Menu (Bottom) */}
       {showBuildMenu && (
         <div className="absolute bottom-10 w-full flex justify-center pointer-events-auto">
-          <div className="bg-black/80 backdrop-blur-md border border-gray-800 p-4 flex gap-4 clip-path-polygon shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-            <style jsx>{`
-                .clip-path-polygon {
-                    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
-                }
-            `}</style>
+          <div 
+            className="bg-black/80 backdrop-blur-md border border-gray-800 p-4 flex gap-4 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+            style={{ clipPath: 'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)' }}
+          >
             
             {Object.values(TowerType).map((type) => {
               const config = TOWER_CONFIGS[type];

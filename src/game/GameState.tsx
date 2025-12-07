@@ -9,8 +9,10 @@ import type {
   TowerEntity,
   TowerType,
   EffectEntity,
+  WaveState,
 } from '../types';
 import { TileType } from '../types';
+import { useWaveManager } from './useWaveManager';
 
 /**
  * Interface defining the properties and methods available in the GameContext.
@@ -26,6 +28,8 @@ interface GameContextProps {
   projectiles: ProjectileEntity[];
   /** List of visual effects. */
   effects: EffectEntity[];
+  /** Current state of the wave system. */
+  waveState?: WaveState;
   /**
    * Places a tower on the grid.
    * @param x - The x-coordinate of the grid.
@@ -73,6 +77,10 @@ interface GameContextProps {
   setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>;
   /** State setter for global game state. */
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+  /** State setter for wave state. */
+  setWaveState?: React.Dispatch<React.SetStateAction<WaveState>>;
+  /** Method to update wave logic (delta time). */
+  updateWave?: (delta: number, currentEnemies: import('../types').EnemyEntity[]) => void;
 }
 
 /** Context for managing game state. */
@@ -111,6 +119,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [effects, setEffects] = useState<EffectEntity[]>([]);
   const [selectedTower, setSelectedTower] = useState<TowerType | null>(null);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
+
+  const { waveState, updateWave } = useWaveManager(gameState.isPlaying, setEnemies, setGameState);
 
   /**
    * Initializes the game state for a new session.
@@ -270,6 +280,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setProjectiles,
         setEffects,
         setGameState,
+        waveState,
+        updateWave,
+        setWaveState: undefined, // Managed internally by hook
       }}
     >
       {children}

@@ -46,52 +46,14 @@ const GameLoopBridge = () => {
     setTowers,
     setGameState,
     setEffects,
+    updateWave,
   } = useGame();
-
-  const spawnTimerRef = useRef(0);
 
   useFrame((state, delta) => {
     if (gameState.gameStatus !== 'playing') return;
 
-    spawnTimerRef.current -= delta;
-
-    // Spawning
-    if (spawnTimerRef.current <= 0) {
-      const spawnInterval = Math.max(0.5, 2.5 - gameState.wave * 0.15);
-      spawnTimerRef.current = spawnInterval;
-
-      const startNode = PATH_WAYPOINTS[0];
-      const wave = gameState.wave;
-      let typeConfig = ENEMY_TYPES.BASIC;
-      const r = Math.random();
-
-      if (wave >= 2 && r > 0.7) typeConfig = ENEMY_TYPES.FAST;
-      if (wave >= 4 && r > 0.85) typeConfig = ENEMY_TYPES.TANK;
-      if (wave % 5 === 0 && r > 0.95) typeConfig = ENEMY_TYPES.BOSS;
-
-      const hp = typeConfig.hpBase * (1 + (wave - 1) * 0.4);
-
-      const newEnemy: EnemyEntity = {
-        id: Math.random().toString(36).substr(2, 9),
-        config: {
-          speed: typeConfig.speed,
-          hp,
-          reward: typeConfig.reward + Math.floor(wave * 2),
-          color: typeConfig.color,
-          scale: typeConfig.scale,
-          abilities: typeConfig.abilities,
-        },
-        pathIndex: 0,
-        progress: 0,
-        position: new THREE.Vector3(startNode[0] * TILE_SIZE, 1, startNode[1] * TILE_SIZE),
-        hp: hp,
-        frozen: 0,
-        abilityCooldown: 2 + Math.random() * 3,
-        abilityActiveTimer: 0,
-      } as any;
-
-      setEnemies((prev) => [...prev, newEnemy]);
-    }
+    // Delegate wave management
+    if (updateWave) updateWave(delta, enemies);
 
     // Enemy Move
     setEnemies((prev) => {
@@ -225,7 +187,25 @@ const GameLoopBridge = () => {
           for (const e of currentEnemies) {
             const damage = hits[e.id] || 0;
             if (damage > 0) {
-              const remainingHp = e.hp - damage;
+              let shieldDamage = 0;
+              let hpDamage = 0;
+              
+              const currentShield = e.shield || 0;
+
+              if (currentShield > 0) {
+                if (damage >= currentShield) {
+                   shieldDamage = currentShield;
+                   hpDamage = damage - currentShield;
+                } else {
+                   shieldDamage = damage;
+                }
+              } else {
+                hpDamage = damage;
+              }
+
+              const remainingShield = currentShield - shieldDamage;
+              const remainingHp = e.hp - hpDamage;
+
               if (remainingHp <= 0) {
                 moneyGained += e.config.reward;
                 newEffects.push({
@@ -239,7 +219,7 @@ const GameLoopBridge = () => {
                 } as any);
                 continue;
               } else {
-                nextEnemies.push({ ...e, hp: remainingHp });
+                nextEnemies.push({ ...e, hp: remainingHp, shield: remainingShield });
               }
             } else {
               nextEnemies.push(e);
@@ -366,6 +346,20 @@ const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
         distance={3} 
         decay={2}
       />
+      
+      {/* Shield Visual */}
+      {data.shield > 0 && (
+         <mesh position={[0, scale + 0.1, 0]}>
+           <sphereGeometry args={[scale * 1.5, 16, 16]} />
+           <meshBasicMaterial 
+             color="#00ffff" 
+             transparent 
+             opacity={0.3 + (data.shield / data.maxShield) * 0.4} 
+             depthWrite={false} 
+             blending={THREE.AdditiveBlending}
+           />
+         </mesh>
+      )}
     </group>
   );
 };
@@ -577,7 +571,7 @@ const SceneContent = () => {
       <SoftShadows size={10} samples={8} />
 
       {/* Post Processing */}
-      <EffectComposer disableNormalPass>
+      <EffectComposer enableNormalPass={false}>
         <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.6} />
         <Vignette eskil={false} offset={0.1} darkness={1.1} />
         <ChromaticAberration offset={new THREE.Vector2(0.002, 0.002)} radialModulation={false} modulationOffset={0} />

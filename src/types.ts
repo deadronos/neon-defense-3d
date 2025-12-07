@@ -29,6 +29,8 @@ export interface EnemyConfig {
   speed: number;
   /** Base hit points of the enemy. */
   hp: number;
+  /** Base shield points of the enemy. */
+  shield: number;
   /** Money reward for killing this enemy. */
   reward: number;
   /** Color of the enemy for rendering. */
@@ -55,6 +57,10 @@ export interface EnemyEntity {
   position: Vector3;
   /** Current hit points remaining. */
   hp: number;
+  /** Current shield points remaining. */
+  shield: number;
+  /** Maximum shield points. */
+  maxShield: number;
   /** Timer for frozen status effect (0 if not frozen). */
   frozen: number;
   /** Cooldown timer for enemy ability usage. */
@@ -147,4 +153,19 @@ export enum TileType {
   Spawn = 2,
   /** Player base (destination). */
   Base = 3,
+}
+
+/**
+ * Represents the current state of the wave system.
+ */
+export type WavePhase = 'preparing' | 'spawning' | 'active' | 'completed';
+
+export interface WaveState {
+  wave: number;
+  phase: WavePhase;
+  nextWaveTime: number; // Timestamp for when the next wave/phase starts
+  enemiesAlive: number;
+  enemiesRemainingToSpawn: number;
+  /** Seconds remaining in current phase (if applicable). */
+  timer: number;
 }
