@@ -140,31 +140,31 @@ export const ENEMY_TYPES = {
  */
 export const TOWER_CONFIGS = {
   [TowerType.Basic]: {
-    name: 'Turret',
+    name: 'Pulse Cannon',
     cost: 50,
     range: 5, // in world units
     damage: 20,
     cooldown: 0.8, // seconds
-    color: '#e94560',
-    description: 'Balanced damage and speed.',
+    color: '#ff0055',
+    description: 'Balanced kinetic energy pulses.',
   },
   [TowerType.Rapid]: {
-    name: 'Blaster',
+    name: 'Flux Emitter',
     cost: 120,
     range: 4,
     damage: 8,
-    cooldown: 0.2,
+    cooldown: 0.15,
     color: '#00f2ff',
-    description: 'High fire rate, low range.',
+    description: 'High-frequency particle stream.',
   },
   [TowerType.Sniper]: {
-    name: 'Railgun',
+    name: 'Phase Driver',
     cost: 200,
     range: 9,
     damage: 100,
     cooldown: 2.5,
     color: '#f9f871',
-    description: 'Long range, high damage.',
+    description: 'Long-range quantum destabilizer.',
   },
 };
 

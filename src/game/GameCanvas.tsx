@@ -1,5 +1,6 @@
-import { OrbitControls, useCursor, SoftShadows, Line, Ring, Trail } from '@react-three/drei';
+import { OrbitControls, useCursor, SoftShadows, Trail, Ring } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing';
 import React, { useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
 
@@ -15,32 +16,24 @@ import {
 } from '../constants';
 import type { TowerType, EnemyEntity, TowerEntity, ProjectileEntity, EffectEntity } from '../types';
 import { TileType } from '../types';
-
 import { useGame } from './GameState';
+import { StarField } from './StarField';
 
 /**
  * Calculates the statistics for a tower based on its type and current level.
- *
- * @param type - The type of the tower.
- * @param level - The current upgrade level of the tower.
- * @returns An object containing damage, range, cooldown, and upgradeCost.
  */
 export const getTowerStats = (type: TowerType, level: number) => {
   const base = TOWER_CONFIGS[type];
   return {
-    damage: base.damage * (1 + (level - 1) * 0.25), // +25% damage per level
-    range: base.range * (1 + (level - 1) * 0.1), // +10% range per level
-    cooldown: Math.max(0.1, base.cooldown * (1 - (level - 1) * 0.05)), // -5% cooldown per level
+    damage: base.damage * (1 + (level - 1) * 0.25),
+    range: base.range * (1 + (level - 1) * 0.1),
+    cooldown: Math.max(0.1, base.cooldown * (1 - (level - 1) * 0.05)),
     upgradeCost: Math.floor(base.cost * Math.pow(1.5, level)),
   };
 };
 
 /**
  * Component that hooks into the render loop to handle game logic updates.
- * This includes enemy spawning, movement, tower firing, projectile movement, and collision detection.
- * It does not render any visual elements itself.
- *
- * @returns null
  */
 const GameLoopBridge = () => {
   const {
@@ -68,18 +61,14 @@ const GameLoopBridge = () => {
       spawnTimerRef.current = spawnInterval;
 
       const startNode = PATH_WAYPOINTS[0];
-
-      // Select Enemy Type
       const wave = gameState.wave;
       let typeConfig = ENEMY_TYPES.BASIC;
       const r = Math.random();
 
-      // Simple director logic
       if (wave >= 2 && r > 0.7) typeConfig = ENEMY_TYPES.FAST;
       if (wave >= 4 && r > 0.85) typeConfig = ENEMY_TYPES.TANK;
       if (wave % 5 === 0 && r > 0.95) typeConfig = ENEMY_TYPES.BOSS;
 
-      // Scaling logic
       const hp = typeConfig.hpBase * (1 + (wave - 1) * 0.4);
 
       const newEnemy: EnemyEntity = {
@@ -97,7 +86,7 @@ const GameLoopBridge = () => {
         position: new THREE.Vector3(startNode[0] * TILE_SIZE, 1, startNode[1] * TILE_SIZE),
         hp: hp,
         frozen: 0,
-        abilityCooldown: 2 + Math.random() * 3, // Random start delay for ability
+        abilityCooldown: 2 + Math.random() * 3,
         abilityActiveTimer: 0,
       } as any;
 
@@ -109,24 +98,19 @@ const GameLoopBridge = () => {
       let hpLoss = 0;
       const next = prev
         .map((e) => {
-          // Create shallow copy to avoid mutation
           const newEnemy = { ...e } as any;
 
-          // Ability Logic
+          // Ability Logic (Dash)
           let currentSpeed = newEnemy.config.speed;
-
           if (newEnemy.config.abilities?.includes('dash')) {
             if (newEnemy.abilityActiveTimer > 0) {
-              // Active Dash
               newEnemy.abilityActiveTimer -= delta;
-              currentSpeed *= 3.0; // 3x Speed during dash
+              currentSpeed *= 3.0;
             } else {
-              // Cooldown
               newEnemy.abilityCooldown -= delta;
               if (newEnemy.abilityCooldown <= 0) {
-                // Trigger Dash
-                newEnemy.abilityActiveTimer = 0.5; // Dash for 0.5s
-                newEnemy.abilityCooldown = 4.0; // Cooldown 4s
+                newEnemy.abilityActiveTimer = 0.5;
+                newEnemy.abilityCooldown = 4.0;
               }
             }
           }
@@ -153,7 +137,6 @@ const GameLoopBridge = () => {
             }
           }
 
-          // Update pos with new Vector3 instance
           const pp1 = PATH_WAYPOINTS[newEnemy.pathIndex];
           const pp2 = PATH_WAYPOINTS[newEnemy.pathIndex + 1] || pp1;
           newEnemy.position = new THREE.Vector3(
@@ -175,7 +158,7 @@ const GameLoopBridge = () => {
       return next;
     });
 
-    // Towers & Projectiles
+    // Towers Firing
     const now = state.clock.elapsedTime;
     setTowers((prevTowers) => {
       const newProjs: ProjectileEntity[] = [];
@@ -184,7 +167,6 @@ const GameLoopBridge = () => {
 
         if (now - t.lastFired < stats.cooldown) return t;
 
-        // Find target in *current* enemies
         let target: EnemyEntity | null = null;
         let minDist = Infinity;
         const tPos = t.position;
@@ -221,13 +203,11 @@ const GameLoopBridge = () => {
       const hits: Record<string, number> = {};
       const active = prev
         .map((p) => {
-          const newP = { ...p } as any; // Copy
-
+          const newP = { ...p } as any;
           const t = enemies.find((e) => e.id === newP.targetId);
-          if (!t) return null; // Target lost
+          if (!t) return null;
 
           newP.progress += delta * 3;
-
           if (newP.progress >= 1) {
             hits[newP.targetId] = (hits[newP.targetId] || 0) + newP.damage;
             return null;
@@ -247,9 +227,7 @@ const GameLoopBridge = () => {
             if (damage > 0) {
               const remainingHp = e.hp - damage;
               if (remainingHp <= 0) {
-                // Enemy Destroyed
                 moneyGained += e.config.reward;
-                // Add Explosion Effect
                 newEffects.push({
                   id: Math.random().toString(),
                   type: 'explosion',
@@ -259,7 +237,7 @@ const GameLoopBridge = () => {
                   createdAt: state.clock.elapsedTime,
                   duration: 0.8,
                 } as any);
-                continue; // Exclude from nextEnemies
+                continue;
               } else {
                 nextEnemies.push({ ...e, hp: remainingHp });
               }
@@ -268,7 +246,6 @@ const GameLoopBridge = () => {
             }
           }
 
-          // Update side effects outside of the reducer to avoid warnings, though setters are generally safe
           if (moneyGained > 0 || newEffects.length > 0) {
             setTimeout(() => {
               if (moneyGained > 0) setGameState((g) => ({ ...g, money: g.money + moneyGained }));
@@ -287,120 +264,112 @@ const GameLoopBridge = () => {
 
 // --- Components ---
 
-/**
- * Renders a single tile on the map grid.
- * Handles interactions like clicking to place a tower.
- *
- * @param props - Component properties.
- * @param props.x - The grid X coordinate.
- * @param props.z - The grid Z coordinate.
- * @param props.type - The type of the tile (Grass, Path, etc.).
- */
 const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }) => {
   const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId } = useGame();
   const [hovered, setHovered] = useState(false);
 
-  // Color mapping
-  let color = COLORS.grass;
-  if (type === TileType.Path) color = COLORS.path;
-  if (type === TileType.Spawn) color = COLORS.spawn;
-  if (type === TileType.Base) color = COLORS.base;
-  if (hovered && selectedTower && type === TileType.Grass) {
-    color = isValidPlacement(x, z) ? '#4ade80' : '#ef4444';
+  let color = '#000000';
+  let emissive = '#000000';
+  let emissiveIntensity = 0;
+
+  if (type === TileType.Path) {
+    color = '#001133';
+    emissive = '#0088ff';
+    emissiveIntensity = 0.5;
+  } else if (type === TileType.Spawn) {
+    color = '#330000';
+    emissive = '#ff0000';
+    emissiveIntensity = 0.8;
+  } else if (type === TileType.Base) {
+    color = '#110033';
+    emissive = '#ff00ff';
+    emissiveIntensity = 0.8;
+  } else {
+    // Grass / Empty
+    color = '#050510';
   }
 
-  useCursor(hovered && !!selectedTower && gameState.gameStatus === 'playing');
+  if (hovered && selectedTower && type === TileType.Grass && gameState.gameStatus === 'playing') {
+    const valid = isValidPlacement(x, z);
+    color = valid ? '#003300' : '#330000';
+    emissive = valid ? '#00ff00' : '#ff0000';
+    emissiveIntensity = 0.5;
+  }
 
   return (
-    <mesh
-      position={[x * TILE_SIZE, 0, z * TILE_SIZE]}
-      rotation={[-Math.PI / 2, 0, 0]}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (gameState.gameStatus !== 'playing') return;
-
-        if (selectedTower) {
-          placeTower(x, z, selectedTower);
-        } else {
-          // Deselect tower if clicking ground
-          setSelectedEntityId(null);
-        }
-      }}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-      }}
-      onPointerOut={() => setHovered(false)}
-    >
-      <planeGeometry args={[TILE_SIZE * 0.95, TILE_SIZE * 0.95]} />
-      <meshStandardMaterial
-        color={color}
-        emissive={color}
-        emissiveIntensity={0.2}
-        roughness={0.1}
-      />
-    </mesh>
-  );
-};
-
-/**
- * Renders an enemy entity in the 3D world.
- * Includes the enemy model and a health bar.
- *
- * @param props - Component properties.
- * @param props.data - The enemy entity data.
- */
-const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
-  const scale = (data as any).config.scale || 0.4;
-  const hpBarY = scale * 2 + 0.5;
-  const isDashing = (data as any).abilityActiveTimer > 0;
-
-  return (
-    <group position={data.position}>
-      {isDashing && (
-        <Trail
-          width={scale * 1.5}
-          length={4}
-          color={new THREE.Color('#ffffff')}
-          attenuation={(t) => t * t}
-        >
-          <mesh visible={false} />
-        </Trail>
-      )}
-
-      {/* Body */}
-      <mesh castShadow receiveShadow position={[0, scale + 0.1, 0]}>
-        <sphereGeometry args={[scale, 16, 16]} />
+    <group position={[x * TILE_SIZE, 0, z * TILE_SIZE]}>
+      <mesh
+        rotation={[-Math.PI / 2, 0, 0]}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (gameState.gameStatus !== 'playing') return;
+          if (selectedTower) {
+            placeTower(x, z, selectedTower);
+          } else {
+            setSelectedEntityId(null);
+          }
+        }}
+        onPointerOver={(e) => {
+          e.stopPropagation();
+          setHovered(true);
+        }}
+        onPointerOut={() => setHovered(false)}
+      >
+        <planeGeometry args={[TILE_SIZE * 0.95, TILE_SIZE * 0.95]} />
         <meshStandardMaterial
-          color={isDashing ? '#ffffff' : (data as any).config.color}
-          emissive={isDashing ? '#ffffff' : (data as any).config.color}
-          emissiveIntensity={isDashing ? 2 : 0.5}
+          color={color}
+          emissive={emissive}
+          emissiveIntensity={emissiveIntensity}
+          roughness={0.2}
+          metalness={0.8}
         />
       </mesh>
-      {/* Health Bar */}
-      <mesh position={[0, hpBarY, 0]}>
-        <planeGeometry args={[1, 0.15]} />
-        <meshBasicMaterial color="black" />
-      </mesh>
-      <mesh
-        position={[-0.5 + (data.hp / 100) * 0.5, hpBarY, 0.01]}
-        scale={[Math.max(0, Math.min(1, data.hp / 100)), 1, 1]}
-      >
-        <planeGeometry args={[1, 0.1]} />
-        <meshBasicMaterial color="#00ff00" />
+      {/* Grid Border */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
+        <planeGeometry args={[TILE_SIZE, TILE_SIZE]} />
+        <meshBasicMaterial color="#1a1a40" wireframe />
       </mesh>
     </group>
   );
 };
 
-/**
- * Renders a tower entity in the 3D world.
- * Displays the tower model, level indicators, and range/selection visuals.
- *
- * @param props - Component properties.
- * @param props.data - The tower entity data.
- * @param props.enemies - List of current enemies (used for target visualization).
- */
+const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
+  const scale = (data as any).config.scale || 0.4;
+  const isDashing = (data as any).abilityActiveTimer > 0;
+  const color = isDashing ? '#ffffff' : (data as any).config.color;
+
+  return (
+    <group position={data.position}>
+      <Trail
+        width={scale * 2}
+        length={6}
+        color={new THREE.Color(color).multiplyScalar(2)}
+        attenuation={(t) => t * t}
+      >
+        <mesh position={[0, scale + 0.1, 0]}>
+          <dodecahedronGeometry args={[scale, 0]} />
+          <meshStandardMaterial
+            color="black"
+            emissive={color}
+            emissiveIntensity={2}
+            roughness={0}
+            metalness={1}
+          />
+        </mesh>
+      </Trail>
+      
+      {/* Core Glow */}
+      <pointLight 
+        position={[0, scale + 0.1, 0]} 
+        color={color} 
+        intensity={2} 
+        distance={3} 
+        decay={2}
+      />
+    </group>
+  );
+};
+
 const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, enemies }) => {
   const { selectedEntityId, setSelectedEntityId, selectedTower } = useGame();
   const config = TOWER_CONFIGS[data.type as TowerType];
@@ -408,97 +377,56 @@ const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, 
 
   const isSelected = selectedEntityId === data.id;
 
-  // Find target for visualization
-  let targetPos: THREE.Vector3 | null = null;
-  let minDist = stats.range;
-
-  for (const e of enemies) {
-    const d = data.position.distanceTo(e.position);
-    if (d <= minDist) {
-      minDist = d;
-      // Calculate local position relative to tower for the line end point
-      targetPos = e.position.clone().sub(data.position);
-    }
-  }
-
   return (
     <group
       position={data.position}
       onClick={(e) => {
         e.stopPropagation();
-        // Only select for upgrade if we aren't currently trying to build something
         if (!selectedTower) {
           setSelectedEntityId(data.id);
         }
       }}
     >
-      {/* Selection Ring */}
       {isSelected && (
-        <Ring args={[0.8, 0.9, 32]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
-          <meshBasicMaterial color="#ffffff" transparent opacity={0.5} />
-        </Ring>
-      )}
-
-      {/* Range Indicator (only when selected) */}
-      {isSelected && (
-        <Ring
-          args={[stats.range - 0.05, stats.range, 64]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, 0.1, 0]}
-        >
-          <meshBasicMaterial color={config.color} transparent opacity={0.2} />
+        <Ring args={[stats.range - 0.05, stats.range, 64]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
+          <meshBasicMaterial color={config.color} transparent opacity={0.3} toneMapped={false} />
         </Ring>
       )}
 
       {/* Base */}
-      <mesh castShadow position={[0, 0.2, 0]}>
+      <mesh position={[0, 0.2, 0]}>
         <boxGeometry args={[1.5, 0.4, 1.5]} />
-        <meshStandardMaterial color={isSelected ? '#666' : '#444'} />
+        <meshStandardMaterial color="#111" metalness={0.9} roughness={0.1} />
+        <lineSegments>
+             <edgesGeometry args={[new THREE.BoxGeometry(1.5, 0.4, 1.5)]} />
+             <lineBasicMaterial color={config.color} transparent opacity={0.5} />
+        </lineSegments>
       </mesh>
-
-      {/* Level Indicators */}
-      {[...Array(data.level)].map((_, i) => (
-        <mesh key={i} position={[0.6, 0.5 + i * 0.15, 0.6]}>
-          <boxGeometry args={[0.2, 0.1, 0.2]} />
-          <meshBasicMaterial color="#00ff00" />
-        </mesh>
-      ))}
 
       {/* Turret */}
       <mesh
-        castShadow
         position={[0, 1, 0]}
         scale={[1 + (data.level - 1) * 0.1, 1 + (data.level - 1) * 0.1, 1 + (data.level - 1) * 0.1]}
       >
-        <cylinderGeometry args={[0.4, 0.6, 1.2, 8]} />
+        <octahedronGeometry args={[0.5]} />
         <meshStandardMaterial
-          color={config.color}
+          color="black"
           emissive={config.color}
-          emissiveIntensity={0.6}
+          emissiveIntensity={2}
+          roughness={0}
         />
       </mesh>
-
-      {targetPos && (
-        <Line
-          points={[new THREE.Vector3(0, 1, 0), targetPos]}
-          color={config.color}
-          lineWidth={1}
-          opacity={0.3}
-          transparent
-        />
-      )}
+      
+      {/* Floating Rings */}
+      <group position={[0, 1, 0]}>
+         <Ring args={[0.6, 0.65, 32]} rotation={[Math.PI / 2, 0, 0]}>
+           <meshBasicMaterial color={config.color} toneMapped={false} />
+         </Ring>
+      </group>
     </group>
   );
 };
 
-/**
- * Renders a projectile entity in the 3D world.
- * Includes a trail effect.
- *
- * @param props - Component properties.
- * @param props.data - The projectile entity data.
- * @param props.enemies - List of current enemies (used to look up target position).
- */
 const Projectile: React.FC<{ data: ProjectileEntity; enemies: EnemyEntity[] }> = ({
   data,
   enemies,
@@ -506,11 +434,8 @@ const Projectile: React.FC<{ data: ProjectileEntity; enemies: EnemyEntity[] }> =
   const target = enemies.find((e) => e.id === data.targetId);
   if (!target) return null;
 
-  // Interpolate visual position
   const start = (data as any).startPos;
   const end = target.position;
-
-  // Simple lerp based on progress
   const x = start.x + (end.x - start.x) * data.progress;
   const y = start.y + (end.y - start.y) * data.progress;
   const z = start.z + (end.z - start.z) * data.progress;
@@ -518,13 +443,13 @@ const Projectile: React.FC<{ data: ProjectileEntity; enemies: EnemyEntity[] }> =
   return (
     <group position={[x, y, z]}>
       <Trail
-        width={0.4} // Width of the trail
-        length={3} // Length of the trail
-        color={new THREE.Color((data as any).color).offsetHSL(0, 0, 0.2)} // Slightly lighter trail
-        attenuation={(t) => t * t} // Quadratic attenuation for a sharper tail fade
+        width={0.2}
+        length={4}
+        color={new THREE.Color((data as any).color).multiplyScalar(10)}
+        attenuation={(t) => t * t}
       >
         <mesh>
-          <sphereGeometry args={[0.15, 8, 8]} />
+          <sphereGeometry args={[0.1, 8, 8]} />
           <meshBasicMaterial color={(data as any).color} toneMapped={false} />
         </mesh>
       </Trail>
@@ -532,22 +457,13 @@ const Projectile: React.FC<{ data: ProjectileEntity; enemies: EnemyEntity[] }> =
   );
 };
 
-/**
- * Renders an explosion effect with particles.
- * Automatically removes itself after the duration expires.
- *
- * @param props - Component properties.
- * @param props.data - The effect entity data.
- * @param props.remove - Callback to remove the effect from state.
- */
 const Explosion: React.FC<{ data: EffectEntity; remove: (id: string) => void }> = ({
   data,
   remove,
 }) => {
   const particlesRef = useRef<THREE.Group>(null);
-  const particleCount = 12;
+  const particleCount = 20;
 
-  // Memoize random directions for particles
   const particles = useMemo(() => {
     return new Array(particleCount).fill(0).map(() => ({
       dir: new THREE.Vector3(
@@ -555,27 +471,22 @@ const Explosion: React.FC<{ data: EffectEntity; remove: (id: string) => void }> 
         Math.random() - 0.5,
         Math.random() - 0.5,
       ).normalize(),
-      speed: Math.random() * 5 + 2,
+      speed: Math.random() * 10 + 5,
     }));
   }, []);
 
   useFrame((state, delta) => {
     const elapsed = state.clock.elapsedTime - (data as any).createdAt;
-
-    // Check if finished
     if (elapsed > (data as any).duration) {
       remove(data.id);
       return;
     }
-
     if (particlesRef.current) {
-      // Animate particles
       particlesRef.current.children.forEach((child, i) => {
         const p = particles[i];
         if (p && child instanceof THREE.Mesh) {
           child.position.add(p.dir.clone().multiplyScalar(p.speed * delta));
-          // Shrink
-          const scale = Math.max(0, 0.2 * (1 - elapsed / (data as any).duration));
+          const scale = Math.max(0, 0.3 * (1 - elapsed / (data as any).duration));
           child.scale.set(scale, scale, scale);
         }
       });
@@ -584,16 +495,15 @@ const Explosion: React.FC<{ data: EffectEntity; remove: (id: string) => void }> 
 
   return (
     <group position={data.position}>
-      {/* Central Flash */}
+      <pointLight color={(data as any).color} intensity={5} distance={5} decay={2} />
       <mesh>
         <sphereGeometry args={[0.5, 8, 8]} />
-        <meshBasicMaterial color="white" transparent opacity={0.8} />
+        <meshBasicMaterial color={(data as any).color} toneMapped={false} transparent opacity={0.5} />
       </mesh>
-      {/* Particles */}
       <group ref={particlesRef}>
         {particles.map((_, i) => (
           <mesh key={i} position={[0, 0, 0]}>
-            <boxGeometry args={[1, 1, 1]} />
+            <boxGeometry args={[0.5, 0.5, 0.5]} />
             <meshBasicMaterial color={(data as any).color} toneMapped={false} />
           </mesh>
         ))}
@@ -602,9 +512,6 @@ const Explosion: React.FC<{ data: EffectEntity; remove: (id: string) => void }> 
   );
 };
 
-/**
- * Renders the entire map grid by iterating over the MAP_GRID constant.
- */
 const World = () => {
   return (
     <group
@@ -614,7 +521,6 @@ const World = () => {
         (-MAP_HEIGHT * TILE_SIZE) / 2 + TILE_SIZE / 2,
       ]}
     >
-      {/* Ground Grid */}
       {MAP_GRID.map((row, z) =>
         row.map((type, x) => <Tile key={`${x}-${z}`} x={x} z={z} type={type} />),
       )}
@@ -622,15 +528,9 @@ const World = () => {
   );
 };
 
-/**
- * The main scene content, including lights, the game loop bridge, the world grid, and all game entities.
- *
- * @returns The 3D scene elements.
- */
 const SceneContent = () => {
   const { enemies, towers, projectiles, effects, setEffects } = useGame();
 
-  // Offset logic to center the map
   const offsetX = (-MAP_WIDTH * TILE_SIZE) / 2 + TILE_SIZE / 2;
   const offsetZ = (-MAP_HEIGHT * TILE_SIZE) / 2 + TILE_SIZE / 2;
 
@@ -640,9 +540,12 @@ const SceneContent = () => {
 
   return (
     <>
-      <ambientLight intensity={0.4} />
-      <pointLight position={[10, 20, 10]} intensity={1} castShadow />
-      <directionalLight position={[-10, 20, -10]} intensity={0.5} />
+      <StarField count={3000} />
+      
+      {/* Dark Ambient & Rim Lighting */}
+      <ambientLight intensity={0.1} />
+      <directionalLight position={[-10, 20, -10]} intensity={0.5} color="#4444ff" />
+      <directionalLight position={[10, 5, 10]} intensity={0.5} color="#ff00ff" />
 
       <GameLoopBridge />
 
@@ -668,25 +571,25 @@ const SceneContent = () => {
         minPolarAngle={0}
         maxPolarAngle={Math.PI / 2.5}
         minDistance={10}
-        maxDistance={40}
+        maxDistance={50}
       />
 
-      {/* Effects */}
       <SoftShadows size={10} samples={8} />
+
+      {/* Post Processing */}
+      <EffectComposer disableNormalPass>
+        <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.6} />
+        <Vignette eskil={false} offset={0.1} darkness={1.1} />
+        <ChromaticAberration offset={new THREE.Vector2(0.002, 0.002)} radialModulation={false} modulationOffset={0} />
+      </EffectComposer>
     </>
   );
 };
 
-/**
- * The root component for the 3D game view.
- * Sets up the React Three Fiber Canvas, camera, and shadows.
- *
- * @returns The GameCanvas component.
- */
 export const GameCanvas = () => {
   return (
-    <div className="w-full h-full bg-[#050510]">
-      <Canvas shadows camera={{ position: [0, 25, 20], fov: 45 }}>
+    <div className="w-full h-full bg-[#03030b]">
+      <Canvas shadows camera={{ position: [0, 25, 20], fov: 45 }} gl={{ toneMapping: THREE.ReinhardToneMapping, toneMappingExposure: 1.5 }}>
         <SceneContent />
       </Canvas>
     </div>
