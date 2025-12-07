@@ -314,23 +314,31 @@ const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }
 };
 
 const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
+  // Scale can be cached if static, but it's cheap to access
   const scale = (data as any).config.scale || 0.4;
   const isDashing = (data as any).abilityActiveTimer > 0;
-  const color = isDashing ? '#ffffff' : (data as any).config.color;
+  
+  // Memoize color creation to avoid churn
+  const trailColor = useMemo(() => {
+    const c = isDashing ? '#ffffff' : (data as any).config.color;
+    return new THREE.Color(c).multiplyScalar(2);
+  }, [isDashing, (data as any).config.color]);
+
+  const emissiveColor = isDashing ? '#ffffff' : (data as any).config.color;
 
   return (
     <group position={data.position}>
       <Trail
         width={scale * 2}
         length={6}
-        color={new THREE.Color(color).multiplyScalar(2)}
+        color={trailColor}
         attenuation={(t) => t * t}
       >
         <mesh position={[0, scale + 0.1, 0]}>
           <dodecahedronGeometry args={[scale, 0]} />
           <meshStandardMaterial
             color="black"
-            emissive={color}
+            emissive={emissiveColor}
             emissiveIntensity={2}
             roughness={0}
             metalness={1}
@@ -341,7 +349,7 @@ const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
       {/* Core Glow */}
       <pointLight
         position={[0, scale + 0.1, 0]}
-        color={color}
+        color={emissiveColor}
         intensity={2}
         distance={3}
         decay={2}
@@ -425,93 +433,244 @@ const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, 
   );
 };
 
-const Projectile: React.FC<{ data: ProjectileEntity; enemies: EnemyEntity[] }> = ({
-  data,
-  enemies,
-}) => {
-  const target = enemies.find((e) => e.id === data.targetId);
-  if (!target) return null;
+const InstancedProjectiles: React.FC<{
+  projectiles: ProjectileEntity[];
+  enemies: EnemyEntity[];
+}> = ({ projectiles, enemies }) => {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const count = 1000;
+  const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  const start = (data as any).startPos;
-  const end = target.position;
-  const x = start.x + (end.x - start.x) * data.progress;
-  const y = start.y + (end.y - start.y) * data.progress;
-  const z = start.z + (end.z - start.z) * data.progress;
-
-  return (
-    <group position={[x, y, z]}>
-      <Trail
-        width={0.2}
-        length={4}
-        color={new THREE.Color((data as any).color).multiplyScalar(10)}
-        attenuation={(t) => t * t}
-      >
-        <mesh>
-          <sphereGeometry args={[0.1, 8, 8]} />
-          <meshBasicMaterial color={(data as any).color} toneMapped={false} />
-        </mesh>
-      </Trail>
-    </group>
-  );
-};
-
-const Explosion: React.FC<{ data: EffectEntity; remove: (id: string) => void }> = ({
-  data,
-  remove,
-}) => {
-  const particlesRef = useRef<THREE.Group>(null);
-  const particleCount = 20;
-
-  const particles = useMemo(() => {
-    return new Array(particleCount).fill(0).map(() => ({
-      dir: new THREE.Vector3(
-        Math.random() - 0.5,
-        Math.random() - 0.5,
-        Math.random() - 0.5,
-      ).normalize(),
-      speed: Math.random() * 10 + 5,
-    }));
+  // Precomute geometry alignment: Cylinder is Y-up, we want Z-forward for lookAt
+  const geometry = useMemo(() => {
+    const geo = new THREE.CylinderGeometry(0.05, 0.05, 1, 6);
+    geo.rotateX(Math.PI / 2); // Align with Z axis
+    geo.translate(0, 0, 0.5); // Pivot at the back (start)? Or center? 
+    // If we lerp position, position is current point.
+    // If it's a bolt, center is fine.
+    // Let's reset translation and just keep rotation.
+    // Actually, lookAt rotates the object around its center.
+    return geo;
   }, []);
 
-  useFrame((state, delta) => {
-    const elapsed = state.clock.elapsedTime - (data as any).createdAt;
-    if (elapsed > (data as any).duration) {
-      remove(data.id);
-      return;
+  useFrame(() => {
+    if (!meshRef.current) return;
+
+    // Optimization: Create a map for fast enemy lookup
+    // Since enemies array is new every frame, this is O(N) which is fine
+    const enemyMap = new Map<string, EnemyEntity>();
+    for (const e of enemies) {
+      enemyMap.set(e.id, e);
     }
-    if (particlesRef.current) {
-      particlesRef.current.children.forEach((child, i) => {
-        const p = particles[i];
-        if (p && child instanceof THREE.Mesh) {
-          child.position.add(p.dir.clone().multiplyScalar(p.speed * delta));
-          const scale = Math.max(0, 0.3 * (1 - elapsed / (data as any).duration));
-          child.scale.set(scale, scale, scale);
-        }
-      });
+
+    // Color cache for projectiles
+    const colorCache = new Map<string, THREE.Color>();
+
+    projectiles.forEach((p, i) => {
+      if (i >= count) return;
+      
+      const pColor = (p as any).color; // Assuming color string
+      let cached = colorCache.get(pColor);
+      if (!cached) {
+         cached = new THREE.Color(pColor).multiplyScalar(2);
+         colorCache.set(pColor, cached);
+      }
+      
+      const target = enemyMap.get(p.targetId || '');
+      // ... rest of logic
+
+      // If target exists, interpolate
+      // If target dead, projectile usually removed by GameLoop, 
+      // but if frame lingers, we might point to last known?
+      // For now, if no target, hide or just point to last known?
+      // Note: Data doesn't persist targets position if dead.
+      // We'll skip rendering if target missing (or it will glitch)
+      if (target) {
+        const start = (p as any).startPos;
+        const end = target.position;
+        
+        // Lerp position
+        const x = start.x + (end.x - start.x) * p.progress;
+        const y = start.y + (end.y - start.y) * p.progress;
+        const z = start.z + (end.z - start.z) * p.progress;
+
+        dummy.position.set(x, y, z);
+        dummy.lookAt(end);
+        
+        // Scale length based on speed or just fixed "long" bolt
+        // p.speed is around 20.
+        // Let's make it a nice long beam.
+        const length = 1.5; 
+        dummy.scale.set(1, 1, length);
+        
+        dummy.updateMatrix();
+        meshRef.current?.setMatrixAt(i, dummy.matrix);
+        meshRef.current?.setColorAt(i, cached); // Boost emissive look
+        
+        activeCount++;
+      } else {
+        // Hide
+         meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+      }
+    });
+
+    // Hide remaining unused instances
+    for (let i = projectiles.length; i < count; i++) {
+      meshRef.current.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
     }
+
+    meshRef.current.instanceMatrix.needsUpdate = true;
+    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
   });
 
   return (
-    <group position={data.position}>
-      <pointLight color={(data as any).color} intensity={5} distance={5} decay={2} />
-      <mesh>
-        <sphereGeometry args={[0.5, 8, 8]} />
-        <meshBasicMaterial
-          color={(data as any).color}
-          toneMapped={false}
-          transparent
-          opacity={0.5}
-        />
-      </mesh>
-      <group ref={particlesRef}>
-        {particles.map((_, i) => (
-          <mesh key={i} position={[0, 0, 0]}>
-            <boxGeometry args={[0.5, 0.5, 0.5]} />
-            <meshBasicMaterial color={(data as any).color} toneMapped={false} />
-          </mesh>
-        ))}
-      </group>
-    </group>
+    <instancedMesh ref={meshRef} args={[geometry, undefined, count]}>
+      <meshBasicMaterial toneMapped={false} />
+    </instancedMesh>
+  );
+};
+
+const InstancedExplosions: React.FC<{ effects: EffectEntity[]; remove: (id: string) => void }> = ({
+  effects,
+  remove,
+}) => {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const count = 2000; // Max particles
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  
+  // Track processed effects to avoid re-spawning
+  const processedRef = useRef<Set<string>>(new Set());
+  
+  // Particle system state
+  // We need a flat array/pool for all particles
+  const particlesRef = useRef({
+    curIndex: 0,
+    active: new Uint8Array(count),
+    life: new Float32Array(count), // Remaining life
+    maxLife: new Float32Array(count), // Total duration
+    position: new Float32Array(count * 3),
+    velocity: new Float32Array(count * 3),
+    scale: new Float32Array(count),
+    color: new Float32Array(count * 3), // RGB
+    associatedEffectId: new Array(count).fill(null), // To track when to remove effect
+  });
+
+  useFrame((state, delta) => {
+    if (!meshRef.current) return;
+
+    const sys = particlesRef.current;
+    
+    // 1. Spawn new particles from new effects
+    const now = state.clock.elapsedTime;
+    
+    effects.forEach(effect => {
+      if (!processedRef.current.has(effect.id)) {
+        processedRef.current.add(effect.id);
+        
+        // Spawn 20 particles
+        const pCount = 20;
+        const color = new THREE.Color((effect as any).color || '#ff0000');
+        
+        for (let i = 0; i < pCount; i++) {
+            const idx = (sys.curIndex + i) % count;
+            sys.active[idx] = 1;
+            sys.life[idx] = (effect.duration || 0.8);
+            sys.maxLife[idx] = (effect.duration || 0.8);
+            
+            // Position
+            sys.position[idx * 3] = effect.position.x;
+            sys.position[idx * 3 + 1] = effect.position.y;
+            sys.position[idx * 3 + 2] = effect.position.z;
+            
+            // Velocity (Random sphere)
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.acos(2 * Math.random() - 1);
+            const speed = (Math.random() * 5 + 5); // Speed match original
+            const vx = Math.sin(phi) * Math.cos(theta) * speed;
+            const vy = Math.sin(phi) * Math.sin(theta) * speed;
+            const vz = Math.cos(phi) * speed;
+            
+            sys.velocity[idx * 3] = vx;
+            sys.velocity[idx * 3 + 1] = vy;
+            sys.velocity[idx * 3 + 2] = vz;
+            
+            sys.scale[idx] = (effect.scale || 0.4);
+            sys.color[idx * 3] = color.r;
+            sys.color[idx * 3 + 1] = color.g;
+            sys.color[idx * 3 + 2] = color.b;
+            sys.associatedEffectId[idx] = effect.id;
+        }
+        sys.curIndex = (sys.curIndex + pCount) % count;
+      }
+    });
+
+    // 2. Update and Render active particles
+    let activeCount = 0;
+    
+    // Also track which effects have at least one active particle
+    const activeEffectIds = new Set<string>();
+
+    for (let i = 0; i < count; i++) {
+        if (sys.active[i]) {
+            sys.life[i] -= delta;
+            
+            if (sys.life[i] <= 0) {
+                sys.active[i] = 0;
+                // Cleanup processed set if totally done? 
+                // We handle cleanup via `activeEffectIds` check below.
+            } else {
+                // Physics
+                sys.position[i * 3] += sys.velocity[i * 3] * delta;
+                sys.position[i * 3 + 1] += sys.velocity[i * 3 + 1] * delta;
+                sys.position[i * 3 + 2] += sys.velocity[i * 3 + 2] * delta;
+                
+                // Update Instance
+                dummy.position.set(
+                    sys.position[i * 3],
+                    sys.position[i * 3 + 1],
+                    sys.position[i * 3 + 2]
+                );
+                
+                // Scale down logic: max(0, 0.3 * (1 - elapsed / total)) 
+                // In original: scale = 0.3 * (1 - elapsed/duration)
+                // elapsed = maxLife - life
+                // factor = (life / maxLife)
+                const s = Math.max(0, sys.scale[i] * (sys.life[i] / sys.maxLife[i]));
+                dummy.scale.set(s, s, s);
+                dummy.updateMatrix();
+                
+                meshRef.current.setMatrixAt(i, dummy.matrix);
+                meshRef.current.setColorAt(i, new THREE.Color(sys.color[i * 3], sys.color[i * 3 + 1], sys.color[i * 3 + 2]));
+                
+                activeEffectIds.add(sys.associatedEffectId[i]);
+            }
+        } else {
+             // Hide inactive
+             meshRef.current.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+        }
+    }
+    
+    meshRef.current.instanceMatrix.needsUpdate = true;
+    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
+    
+    // 3. Cleanup Effect States
+    // If an effect ID is in `effects` but NOT in `activeEffectIds`, AND we have processed it, it means it's done.
+    effects.forEach(e => {
+        if (processedRef.current.has(e.id) && !activeEffectIds.has(e.id)) {
+            // Delay removal slightly or just remove custom logic?
+            // Original logic: remove(data.id) when time > duration.
+            // Here: remove when ALL particles are dead. This is safer/better visually.
+            remove(e.id);
+            processedRef.current.delete(e.id);
+        }
+    });
+  });
+
+  return (
+    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+      <boxGeometry args={[0.5, 0.5, 0.5]} />
+      <meshBasicMaterial toneMapped={false} />
+    </instancedMesh>
   );
 };
 
@@ -561,12 +720,10 @@ const SceneContent = () => {
         {enemies.map((e) => (
           <Enemy key={e.id} data={e} />
         ))}
-        {projectiles.map((p) => (
-          <Projectile key={p.id} data={p} enemies={enemies} />
-        ))}
-        {effects.map((e) => (
-          <Explosion key={e.id} data={e} remove={removeEffect} />
-        ))}
+        <InstancedProjectiles projectiles={projectiles} enemies={enemies} />
+        {effects.length > 0 && (
+           <InstancedExplosions effects={effects} remove={removeEffect} />
+        )}
       </group>
 
       <OrbitControls
