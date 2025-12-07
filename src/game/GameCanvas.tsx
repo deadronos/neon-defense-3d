@@ -189,15 +189,15 @@ const GameLoopBridge = () => {
             if (damage > 0) {
               let shieldDamage = 0;
               let hpDamage = 0;
-              
+
               const currentShield = e.shield || 0;
 
               if (currentShield > 0) {
                 if (damage >= currentShield) {
-                   shieldDamage = currentShield;
-                   hpDamage = damage - currentShield;
+                  shieldDamage = currentShield;
+                  hpDamage = damage - currentShield;
                 } else {
-                   shieldDamage = damage;
+                  shieldDamage = damage;
                 }
               } else {
                 hpDamage = damage;
@@ -337,28 +337,28 @@ const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
           />
         </mesh>
       </Trail>
-      
+
       {/* Core Glow */}
-      <pointLight 
-        position={[0, scale + 0.1, 0]} 
-        color={color} 
-        intensity={2} 
-        distance={3} 
+      <pointLight
+        position={[0, scale + 0.1, 0]}
+        color={color}
+        intensity={2}
+        distance={3}
         decay={2}
       />
-      
+
       {/* Shield Visual */}
       {data.shield > 0 && (
-         <mesh position={[0, scale + 0.1, 0]}>
-           <sphereGeometry args={[scale * 1.5, 16, 16]} />
-           <meshBasicMaterial 
-             color="#00ffff" 
-             transparent 
-             opacity={0.3 + (data.shield / data.maxShield) * 0.4} 
-             depthWrite={false} 
-             blending={THREE.AdditiveBlending}
-           />
-         </mesh>
+        <mesh position={[0, scale + 0.1, 0]}>
+          <sphereGeometry args={[scale * 1.5, 16, 16]} />
+          <meshBasicMaterial
+            color="#00ffff"
+            transparent
+            opacity={0.3 + (data.shield / data.maxShield) * 0.4}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
       )}
     </group>
   );
@@ -382,7 +382,11 @@ const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, 
       }}
     >
       {isSelected && (
-        <Ring args={[stats.range - 0.05, stats.range, 64]} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.1, 0]}>
+        <Ring
+          args={[stats.range - 0.05, stats.range, 64]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.1, 0]}
+        >
           <meshBasicMaterial color={config.color} transparent opacity={0.3} toneMapped={false} />
         </Ring>
       )}
@@ -392,8 +396,8 @@ const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, 
         <boxGeometry args={[1.5, 0.4, 1.5]} />
         <meshStandardMaterial color="#111" metalness={0.9} roughness={0.1} />
         <lineSegments>
-             <edgesGeometry args={[new THREE.BoxGeometry(1.5, 0.4, 1.5)]} />
-             <lineBasicMaterial color={config.color} transparent opacity={0.5} />
+          <edgesGeometry args={[new THREE.BoxGeometry(1.5, 0.4, 1.5)]} />
+          <lineBasicMaterial color={config.color} transparent opacity={0.5} />
         </lineSegments>
       </mesh>
 
@@ -410,12 +414,12 @@ const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, 
           roughness={0}
         />
       </mesh>
-      
+
       {/* Floating Rings */}
       <group position={[0, 1, 0]}>
-         <Ring args={[0.6, 0.65, 32]} rotation={[Math.PI / 2, 0, 0]}>
-           <meshBasicMaterial color={config.color} toneMapped={false} />
-         </Ring>
+        <Ring args={[0.6, 0.65, 32]} rotation={[Math.PI / 2, 0, 0]}>
+          <meshBasicMaterial color={config.color} toneMapped={false} />
+        </Ring>
       </group>
     </group>
   );
@@ -492,7 +496,12 @@ const Explosion: React.FC<{ data: EffectEntity; remove: (id: string) => void }> 
       <pointLight color={(data as any).color} intensity={5} distance={5} decay={2} />
       <mesh>
         <sphereGeometry args={[0.5, 8, 8]} />
-        <meshBasicMaterial color={(data as any).color} toneMapped={false} transparent opacity={0.5} />
+        <meshBasicMaterial
+          color={(data as any).color}
+          toneMapped={false}
+          transparent
+          opacity={0.5}
+        />
       </mesh>
       <group ref={particlesRef}>
         {particles.map((_, i) => (
@@ -535,7 +544,7 @@ const SceneContent = () => {
   return (
     <>
       <StarField count={3000} />
-      
+
       {/* Dark Ambient & Rim Lighting */}
       <ambientLight intensity={0.1} />
       <directionalLight position={[-10, 20, -10]} intensity={0.5} color="#4444ff" />
@@ -574,7 +583,11 @@ const SceneContent = () => {
       <EffectComposer enableNormalPass={false}>
         <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.6} />
         <Vignette eskil={false} offset={0.1} darkness={1.1} />
-        <ChromaticAberration offset={new THREE.Vector2(0.002, 0.002)} radialModulation={false} modulationOffset={0} />
+        <ChromaticAberration
+          offset={new THREE.Vector2(0.002, 0.002)}
+          radialModulation={false}
+          modulationOffset={0}
+        />
       </EffectComposer>
     </>
   );
@@ -583,7 +596,11 @@ const SceneContent = () => {
 export const GameCanvas = () => {
   return (
     <div className="w-full h-full bg-[#03030b]">
-      <Canvas shadows camera={{ position: [0, 25, 20], fov: 45 }} gl={{ toneMapping: THREE.ReinhardToneMapping, toneMappingExposure: 1.5 }}>
+      <Canvas
+        shadows
+        camera={{ position: [0, 25, 20], fov: 45 }}
+        gl={{ toneMapping: THREE.ReinhardToneMapping, toneMappingExposure: 1.5 }}
+      >
         <SceneContent />
       </Canvas>
     </div>

@@ -22,6 +22,7 @@ Neon Defense 3D is an immersive Tower Defense game built using **React 19**, **T
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone <repository-url>
    cd neon-defense-3d
@@ -56,16 +57,16 @@ The output will be in the `dist` directory.
 
 1.  **Start the Game**: Click "Start Mission" on the main menu.
 2.  **Place Towers**:
-    *   Select a tower from the bottom menu.
-    *   Click on a valid grid tile (green highlight) to place it.
-    *   Each tower costs credits.
+    - Select a tower from the bottom menu.
+    - Click on a valid grid tile (green highlight) to place it.
+    - Each tower costs credits.
 3.  **Upgrade & Sell**:
-    *   Click on an existing tower to select it.
-    *   Use the panel on the right to **Upgrade** stats or **Sell** for a partial refund.
+    - Click on an existing tower to select it.
+    - Use the panel on the right to **Upgrade** stats or **Sell** for a partial refund.
 4.  **Camera Controls**:
-    *   **Left Click + Drag**: Rotate camera.
-    *   **Right Click + Drag**: Pan camera.
-    *   **Scroll**: Zoom in/out.
+    - **Left Click + Drag**: Rotate camera.
+    - **Right Click + Drag**: Pan camera.
+    - **Scroll**: Zoom in/out.
 5.  **Objective**: Survive as many waves as possible. The game ends if your lives reach zero.
 
 ## 📂 Project Structure

@@ -8,7 +8,7 @@ import { EnemyEntity, WaveState, WavePhase } from '../types';
 export const useWaveManager = (
   isPlaying: boolean,
   setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>,
-  setGameState: React.Dispatch<React.SetStateAction<any>> // Using any for partial updates easier
+  setGameState: React.Dispatch<React.SetStateAction<any>>, // Using any for partial updates easier
 ) => {
   const [waveState, setWaveState] = useState<WaveState>({
     wave: 1,
@@ -36,7 +36,7 @@ export const useWaveManager = (
     // Basic progression logic
     const count = 5 + Math.floor(nextWave * 1.5);
     const interval = Math.max(0.3, 2.0 - nextWave * 0.1);
-    
+
     // Determine enemy types for this wave
     const types = [ENEMY_TYPES.BASIC];
     if (nextWave >= 2) types.push(ENEMY_TYPES.FAST);
@@ -44,18 +44,18 @@ export const useWaveManager = (
     if (nextWave % 5 === 0) types.push(ENEMY_TYPES.BOSS);
 
     waveConfigRef.current = { count, interval, types };
-    
-    setWaveState(prev => ({
+
+    setWaveState((prev) => ({
       ...prev,
       wave: nextWave,
       phase: 'spawning',
       enemiesRemainingToSpawn: count,
       enemiesAlive: count, // We consider them "alive" as soon as they are effectively queued to spawn for tracking purposes? No, let's track separately.
     }));
-    
+
     // Wait, enemiesAlive should track actual entities.
     // Let's refine:
-    setWaveState(prev => ({
+    setWaveState((prev) => ({
       ...prev,
       wave: nextWave,
       phase: 'spawning',
@@ -67,59 +67,60 @@ export const useWaveManager = (
     setGameState((g: any) => ({ ...g, wave: nextWave }));
   }, [setGameState]);
 
-  const updateWave = useCallback((delta: number, currentEnemies: EnemyEntity[]) => {
-    if (!isPlaying) return;
+  const updateWave = useCallback(
+    (delta: number, currentEnemies: EnemyEntity[]) => {
+      if (!isPlaying) return;
 
-    const currentState = stateRef.current;
-    
-    // Update enemies alive count based on actual array
-    if (currentState.enemiesAlive !== currentEnemies.length) {
-       setWaveState(prev => ({ ...prev, enemiesAlive: currentEnemies.length }));
-    }
+      const currentState = stateRef.current;
 
-    // State Machine & Timer Sync
-    // We only update state timer occasionally to avoid excessive re-renders, 
-    // or we just trust the component to read it? React state needs explicit update.
-    // Let's update it every frame if it changes significantly or just ensure it's roughly correct.
-    if (currentState.phase === 'preparing') {
+      // Update enemies alive count based on actual array
+      if (currentState.enemiesAlive !== currentEnemies.length) {
+        setWaveState((prev) => ({ ...prev, enemiesAlive: currentEnemies.length }));
+      }
+
+      // State Machine & Timer Sync
+      // We only update state timer occasionally to avoid excessive re-renders,
+      // or we just trust the component to read it? React state needs explicit update.
+      // Let's update it every frame if it changes significantly or just ensure it's roughly correct.
+      if (currentState.phase === 'preparing') {
         spawnTimerRef.current -= delta;
         // Sync to state for UI (cast to 1 decimal for display)
         if (Math.abs(currentState.timer - spawnTimerRef.current) > 0.1) {
-            setWaveState(prev => ({ ...prev, timer: spawnTimerRef.current }));
+          setWaveState((prev) => ({ ...prev, timer: spawnTimerRef.current }));
         }
 
         if (spawnTimerRef.current <= 0) {
-        // Start Wave 1 immediately or next wave
-        if (currentState.wave === 1 && currentState.enemiesRemainingToSpawn === 0) {
-             // Initial start
-             spawnTimerRef.current = 0;
-             // Setup wave 1
-             waveConfigRef.current = { count: 5, interval: 2.0, types: [ENEMY_TYPES.BASIC] };
-             setWaveState(prev => ({
-               ...prev,
-               phase: 'spawning',
-               enemiesRemainingToSpawn: 5,
-               enemiesAlive: 0
-             }));
-        } else {
-             startNextWave();
+          // Start Wave 1 immediately or next wave
+          if (currentState.wave === 1 && currentState.enemiesRemainingToSpawn === 0) {
+            // Initial start
+            spawnTimerRef.current = 0;
+            // Setup wave 1
+            waveConfigRef.current = { count: 5, interval: 2.0, types: [ENEMY_TYPES.BASIC] };
+            setWaveState((prev) => ({
+              ...prev,
+              phase: 'spawning',
+              enemiesRemainingToSpawn: 5,
+              enemiesAlive: 0,
+            }));
+          } else {
+            startNextWave();
+          }
         }
-      }
-    } else if (currentState.phase === 'spawning') {
-      spawnTimerRef.current -= delta;
-      if (spawnTimerRef.current <= 0 && currentState.enemiesRemainingToSpawn > 0) {
-        spawnTimerRef.current = waveConfigRef.current.interval;
-        
-        // SPAWN LOGIC
-        const config = waveConfigRef.current;
-        const typeConfig = config.types[Math.floor(Math.random() * config.types.length)];
-        const waveMult = currentState.wave;
-        
-        const hp = typeConfig.hpBase * (1 + (waveMult - 1) * 0.4);
-        const shield = (typeConfig.shield || 0) * (1 + (waveMult - 1) * 0.5);
+      } else if (currentState.phase === 'spawning') {
+        spawnTimerRef.current -= delta;
+        if (spawnTimerRef.current <= 0 && currentState.enemiesRemainingToSpawn > 0) {
+          spawnTimerRef.current = waveConfigRef.current.interval;
 
-        const startNode = PATH_WAYPOINTS[0];
-        const newEnemy: EnemyEntity = {
+          // SPAWN LOGIC
+          const config = waveConfigRef.current;
+          const typeConfig = config.types[Math.floor(Math.random() * config.types.length)];
+          const waveMult = currentState.wave;
+
+          const hp = typeConfig.hpBase * (1 + (waveMult - 1) * 0.4);
+          const shield = (typeConfig.shield || 0) * (1 + (waveMult - 1) * 0.5);
+
+          const startNode = PATH_WAYPOINTS[0];
+          const newEnemy: EnemyEntity = {
             id: Math.random().toString(36).substr(2, 9),
             config: {
               ...typeConfig,
@@ -138,33 +139,35 @@ export const useWaveManager = (
             abilityActiveTimer: 0,
           } as any;
 
-        setEnemies(prev => [...prev, newEnemy]);
-        
-        setWaveState(prev => {
+          setEnemies((prev) => [...prev, newEnemy]);
+
+          setWaveState((prev) => {
             const remaining = prev.enemiesRemainingToSpawn - 1;
             return {
-                ...prev,
-                enemiesRemainingToSpawn: remaining,
-                phase: remaining === 0 ? 'active' : 'spawning'
+              ...prev,
+              enemiesRemainingToSpawn: remaining,
+              phase: remaining === 0 ? 'active' : 'spawning',
             };
-        });
-      }
-    } else if (currentState.phase === 'active') {
-       // Check for completion
-       if (currentEnemies.length === 0 && currentState.enemiesRemainingToSpawn === 0) {
-         setWaveState(prev => ({
-             ...prev,
-             phase: 'completed',
-             nextWaveTime: Date.now() + PREP_TIME * 1000 // Just visual target?
-         }));
-         spawnTimerRef.current = PREP_TIME; // Reuse timer for intermission
-       }
-    } else if (currentState.phase === 'completed') {
+          });
+        }
+      } else if (currentState.phase === 'active') {
+        // Check for completion
+        if (currentEnemies.length === 0 && currentState.enemiesRemainingToSpawn === 0) {
+          setWaveState((prev) => ({
+            ...prev,
+            phase: 'completed',
+            nextWaveTime: Date.now() + PREP_TIME * 1000, // Just visual target?
+          }));
+          spawnTimerRef.current = PREP_TIME; // Reuse timer for intermission
+        }
+      } else if (currentState.phase === 'completed') {
         // Transition back to preparing/start next automatically?
         // Let's just go directly to prep for next wave
-        setWaveState(prev => ({ ...prev, phase: 'preparing' }));
-    }
-  }, [isPlaying, setEnemies, startNextWave]);
+        setWaveState((prev) => ({ ...prev, phase: 'preparing' }));
+      }
+    },
+    [isPlaying, setEnemies, startNextWave],
+  );
 
   return { waveState, updateWave };
 };
