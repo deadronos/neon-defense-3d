@@ -79,8 +79,10 @@ interface GameContextProps {
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   /** State setter for wave state. */
   setWaveState?: React.Dispatch<React.SetStateAction<WaveState>>;
+  /** Reset wave state manually. */
+  resetWave?: () => void;
   /** Method to update wave logic (delta time). */
-  updateWave?: (delta: number, currentEnemies: import('../types').EnemyEntity[]) => void;
+  updateWave?: (delta: number, currentEnemies: EnemyEntity[]) => void;
 }
 
 /** Context for managing game state. */
@@ -120,7 +122,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [selectedTower, setSelectedTower] = useState<TowerType | null>(null);
   const [selectedEntityId, setSelectedEntityId] = useState<string | null>(null);
 
-  const { waveState, updateWave } = useWaveManager(gameState.isPlaying, setEnemies, setGameState);
+  const { waveState, updateWave, resetWave } = useWaveManager(gameState.isPlaying, setEnemies, setGameState);
 
   /**
    * Initializes the game state for a new session.
@@ -134,12 +136,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       money: 150,
       wave: 1,
     }));
+    resetWave();
     setEnemies([]);
     setTowers([]);
     setProjectiles([]);
     setEffects([]);
     setSelectedEntityId(null);
-  }, []);
+  }, [resetWave]);
 
   /**
    * Resets the game state to default values (idle).
@@ -153,12 +156,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       money: 150,
       wave: 1,
     }));
+    resetWave(); // Ensure wave state is reset to 0
     setEnemies([]);
     setTowers([]);
     setProjectiles([]);
     setEffects([]);
     setSelectedEntityId(null);
-  }, []);
+  }, [resetWave]);
 
   /**
    * Validates if a tower can be placed at the specified grid coordinates.
@@ -282,6 +286,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setGameState,
         waveState,
         updateWave,
+        resetWave,
         setWaveState: undefined, // Managed internally by hook
       }}
     >

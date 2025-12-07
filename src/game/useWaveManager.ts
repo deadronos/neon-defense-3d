@@ -11,7 +11,7 @@ export const useWaveManager = (
   setGameState: React.Dispatch<React.SetStateAction<any>>, // Using any for partial updates easier
 ) => {
   const [waveState, setWaveState] = useState<WaveState>({
-    wave: 1,
+    wave: 0,
     phase: 'preparing',
     nextWaveTime: 0,
     enemiesAlive: 0,
@@ -67,6 +67,24 @@ export const useWaveManager = (
     setGameState((g: any) => ({ ...g, wave: nextWave }));
   }, [setGameState]);
 
+  const resetWave = useCallback(() => {
+    stateRef.current = {
+      wave: 0,
+      phase: 'preparing',
+      nextWaveTime: 0,
+      enemiesAlive: 0,
+      enemiesRemainingToSpawn: 0,
+      timer: 5,
+    };
+    setWaveState(stateRef.current);
+    spawnTimerRef.current = 0;
+    // We set timer to 5 in state, but spawnTimerRef handles the delta decrement. 
+    // Actually, let's keep spawnTimerRef at 5 to match state?
+    // In logic below: if (currentState.phase === 'preparing') spawnTimerRef.current -= delta.
+    // So we should set it to 5.
+    spawnTimerRef.current = 5;
+  }, []);
+
   const updateWave = useCallback(
     (delta: number, currentEnemies: EnemyEntity[]) => {
       if (!isPlaying) return;
@@ -90,21 +108,8 @@ export const useWaveManager = (
         }
 
         if (spawnTimerRef.current <= 0) {
-          // Start Wave 1 immediately or next wave
-          if (currentState.wave === 1 && currentState.enemiesRemainingToSpawn === 0) {
-            // Initial start
-            spawnTimerRef.current = 0;
-            // Setup wave 1
-            waveConfigRef.current = { count: 5, interval: 2.0, types: [ENEMY_TYPES.BASIC] };
-            setWaveState((prev) => ({
-              ...prev,
-              phase: 'spawning',
-              enemiesRemainingToSpawn: 5,
-              enemiesAlive: 0,
-            }));
-          } else {
-            startNextWave();
-          }
+          // Always start logic from here
+          startNextWave();
         }
       } else if (currentState.phase === 'spawning') {
         spawnTimerRef.current -= delta;
@@ -169,5 +174,5 @@ export const useWaveManager = (
     [isPlaying, setEnemies, startNextWave],
   );
 
-  return { waveState, updateWave };
+  return { waveState, updateWave, resetWave };
 };
