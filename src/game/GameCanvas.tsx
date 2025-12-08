@@ -521,8 +521,6 @@ const InstancedProjectiles: React.FC<{
         dummy.updateMatrix();
         meshRef.current?.setMatrixAt(i, dummy.matrix);
         meshRef.current?.setColorAt(i, cached); // Boost emissive look
-        
-        activeCount++;
       } else {
         // Hide
          meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
@@ -620,7 +618,6 @@ const InstancedExplosions: React.FC<{ effects: EffectEntity[]; remove: (id: stri
     });
 
     // 2. Update and Render active particles
-    let activeCount = 0;
     
     // Also track which effects have at least one active particle
     const activeEffectIds = new Set<string>();
