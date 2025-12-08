@@ -2,21 +2,21 @@
 
 ## Current focus
 
-- Task Complete: Thoroughly document the entire repository.
+- Optimization: Improve performance and fix OOM crashes.
 
 ## Recent changes
 
-- Added JSDoc to `src/types.ts`, `src/constants.ts`.
-- Added JSDoc to `src/game/GameState.tsx`, `src/game/GameCanvas.tsx`.
-- Added JSDoc to `src/components/UI.tsx`.
-- Added JSDoc to `src/App.tsx`, `src/index.tsx`.
-- Updated `README.md` with comprehensive guide.
-- Verified build and tests pass.
+- **Performance Refactor:** Replaced individual `Enemy` components with `InstancedEnemies` using `THREE.InstancedMesh`.
+- **Optimization:** Removed `Trail` and `PointLight` from enemies to reduce geometry overhead and GPU load.
+- **Cleanup:** Verified disposal paths. `InstancedMesh` naturally handles cleanup when the component unmounts (React ref cleanup).
+- **Build:** Verified `npm run build` passes.
 
 ## Next steps
 
-- Await further user instructions.
+- Monitor performance.
+- Consider optimizing `GameLoopBridge` vector allocations if GC pressure remains high.
+- Re-introduce visual effects (Trails) using shaders or instanced lines if needed.
 
 ## Open decisions
 
-- None.
+- **Visuals:** Enemy visuals are now simplified (Dodecahedron + simple color). We might want to improve this later with custom shaders or textures.
