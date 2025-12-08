@@ -1,4 +1,4 @@
-import { OrbitControls, useCursor, SoftShadows, Trail, Ring } from '@react-three/drei';
+import { OrbitControls, useCursor, SoftShadows, Ring } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing';
 import React, { useRef, useState, useMemo } from 'react';
@@ -313,61 +313,76 @@ const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }
   );
 };
 
-const Enemy: React.FC<{ data: EnemyEntity }> = ({ data }) => {
-  // Scale can be cached if static, but it's cheap to access
-  const scale = (data as any).config.scale || 0.4;
-  const isDashing = (data as any).abilityActiveTimer > 0;
-  
-  // Memoize color creation to avoid churn
-  const trailColor = useMemo(() => {
-    const c = isDashing ? '#ffffff' : (data as any).config.color;
-    return new THREE.Color(c).multiplyScalar(2);
-  }, [isDashing, (data as any).config.color]);
+const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies }) => {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const shieldRef = useRef<THREE.InstancedMesh>(null);
+  const count = 1000;
+  const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  const emissiveColor = isDashing ? '#ffffff' : (data as any).config.color;
+  useFrame(() => {
+    if (!meshRef.current || !shieldRef.current) return;
+
+    enemies.forEach((enemy, i) => {
+      if (i >= count) return;
+
+      const scale = enemy.config.scale || 0.4;
+
+      // Update Body
+      dummy.position.copy(enemy.position);
+      dummy.position.y += scale + 0.1;
+      dummy.rotation.set(0, 0, 0);
+      dummy.scale.set(scale, scale, scale);
+      dummy.updateMatrix();
+      meshRef.current?.setMatrixAt(i, dummy.matrix);
+
+      // Color logic
+      const isDashing = enemy.abilityActiveTimer > 0;
+      const baseColor = isDashing ? '#ffffff' : enemy.config.color;
+      // High intensity color for neon look
+      const color = new THREE.Color(baseColor).multiplyScalar(2);
+      meshRef.current?.setColorAt(i, color);
+
+      // Update Shield
+      if (enemy.shield > 0) {
+         dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
+         dummy.updateMatrix();
+         shieldRef.current?.setMatrixAt(i, dummy.matrix);
+         shieldRef.current?.setColorAt(i, new THREE.Color('#00ffff'));
+      } else {
+         shieldRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+      }
+    });
+
+    // Hide unused
+    for (let i = enemies.length; i < count; i++) {
+       meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+       shieldRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+    }
+
+    meshRef.current.instanceMatrix.needsUpdate = true;
+    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
+
+    shieldRef.current.instanceMatrix.needsUpdate = true;
+    if (shieldRef.current.instanceColor) shieldRef.current.instanceColor.needsUpdate = true;
+  });
 
   return (
-    <group position={data.position}>
-      <Trail
-        width={scale * 2}
-        length={6}
-        color={trailColor}
-        attenuation={(t) => t * t}
-      >
-        <mesh position={[0, scale + 0.1, 0]}>
-          <dodecahedronGeometry args={[scale, 0]} />
-          <meshStandardMaterial
-            color="black"
-            emissive={emissiveColor}
-            emissiveIntensity={2}
-            roughness={0}
-            metalness={1}
-          />
-        </mesh>
-      </Trail>
+    <group>
+      <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+        <dodecahedronGeometry args={[1, 0]} />
+        <meshBasicMaterial toneMapped={false} />
+      </instancedMesh>
 
-      {/* Core Glow */}
-      <pointLight
-        position={[0, scale + 0.1, 0]}
-        color={emissiveColor}
-        intensity={2}
-        distance={3}
-        decay={2}
-      />
-
-      {/* Shield Visual */}
-      {data.shield > 0 && (
-        <mesh position={[0, scale + 0.1, 0]}>
-          <sphereGeometry args={[scale * 1.5, 16, 16]} />
-          <meshBasicMaterial
-            color="#00ffff"
+      <instancedMesh ref={shieldRef} args={[undefined, undefined, count]}>
+         <sphereGeometry args={[1, 16, 16]} />
+         <meshBasicMaterial
+            color="white"
             transparent
-            opacity={0.3 + (data.shield / data.maxShield) * 0.4}
+            opacity={0.3}
             depthWrite={false}
             blending={THREE.AdditiveBlending}
-          />
-        </mesh>
-      )}
+         />
+      </instancedMesh>
     </group>
   );
 };
@@ -506,8 +521,6 @@ const InstancedProjectiles: React.FC<{
         dummy.updateMatrix();
         meshRef.current?.setMatrixAt(i, dummy.matrix);
         meshRef.current?.setColorAt(i, cached); // Boost emissive look
-        
-        activeCount++;
       } else {
         // Hide
          meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
@@ -605,7 +618,6 @@ const InstancedExplosions: React.FC<{ effects: EffectEntity[]; remove: (id: stri
     });
 
     // 2. Update and Render active particles
-    let activeCount = 0;
     
     // Also track which effects have at least one active particle
     const activeEffectIds = new Set<string>();
@@ -717,9 +729,7 @@ const SceneContent = () => {
         {towers.map((t) => (
           <Tower key={t.id} data={t} enemies={enemies} />
         ))}
-        {enemies.map((e) => (
-          <Enemy key={e.id} data={e} />
-        ))}
+        <InstancedEnemies enemies={enemies} />
         <InstancedProjectiles projectiles={projectiles} enemies={enemies} />
         {effects.length > 0 && (
            <InstancedExplosions effects={effects} remove={removeEffect} />
