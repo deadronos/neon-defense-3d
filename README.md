@@ -87,4 +87,8 @@ This project uses **Vite** for fast development and building.
 - **Formatting**: `npm run format`
 - **Testing**: `npm run test`
 
+### Styling
+
+- Tailwind CSS is integrated with Vite via the `@tailwindcss/vite` plugin (Tailwind v4). The project no longer uses the CDN script — styles are compiled from `index.css` and include an `@import "tailwindcss"` entry.
+
 Detailed documentation for all functions and components can be found in the source code via JSDoc comments.
