@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { TOWER_CONFIGS } from '../constants';
-import { getTowerStats } from '../game/GameCanvas';
 import { useGame } from '../game/GameState';
+import { getTowerStats } from '../game/utils';
 import { TowerType } from '../types';
 
 /**
