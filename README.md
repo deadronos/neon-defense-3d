@@ -91,4 +91,19 @@ This project uses **Vite** for fast development and building.
 
 - Tailwind CSS is integrated with Vite via the `@tailwindcss/vite` plugin (Tailwind v4). The project no longer uses the CDN script — styles are compiled from `index.css` and include an `@import "tailwindcss"` entry.
 
+#### CSS-first theme tokens (Tailwind v4)
+
+- This project uses Tailwind v4's CSS-first workflow. Theme and design tokens are defined directly in `index.css` using the `@theme` directive, for example:
+
+```css
+@import "tailwindcss";
+
+@theme {
+  --font-display: 'Orbitron', ui-sans-serif, system-ui;
+  --color-neon-cyan-500: #06b6d4;
+}
+```
+
+- Defining tokens like `--color-yourname-500` creates utilities like `bg-yourname-500`, `text-yourname-500`, `border-yourname-500` automatically. This replaces (or extends) the previous JS-based `tailwind.config` approach and unlocks v4 features like automatic content detection, CSS theme variables, and more performant builds.
+
 Detailed documentation for all functions and components can be found in the source code via JSDoc comments.

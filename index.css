@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@theme {
+  --font-display: 'Orbitron', ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Color Emoji";
+
+  /* Custom neon palette additions (will create utilities like bg-neon-cyan-500) */
+  --color-neon-cyan-300: #7dd3fc;
+  --color-neon-cyan-400: #34d6ee;
+  --color-neon-cyan-500: #06b6d4;
+  --color-neon-purple-300: #c4b5fd;
+  --color-neon-purple-500: #a78bfa;
+
+  /* Extras used by the game's visuals */
+  --shadow-neon: 0 0 18px rgba(6, 182, 212, 0.35);
+  --ease-fluid: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
 @layer base {
   html,
   body,
@@ -11,6 +27,6 @@
     overflow: hidden;
     background-color: #050510;
     color: white;
-    font-family: 'Orbitron', sans-serif;
+    font-family: var(--font-display, 'Orbitron'), sans-serif;
   }
 }
