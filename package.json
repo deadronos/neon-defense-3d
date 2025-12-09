@@ -47,6 +47,11 @@
     "prettier": "^3.7.4",
     "typescript": "^5.9.3",
     "vite": "^7.2.6",
-    "vitest": "^4.0.15"
+    "vitest": "^4.0.15",
+    "tailwindcss": "^4.1.17",
+    "@tailwindcss/vite": "^4.1.17",
+    "@tailwindcss/postcss": "^4.1.17",
+    "postcss": "^8.5.6",
+    "autoprefixer": "^10.4.22"
   }
 }
