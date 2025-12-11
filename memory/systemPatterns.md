@@ -6,10 +6,10 @@ This file documents the recurring architectural patterns and conventions used ac
 
 - Central `GameState` (React Context / `GameProvider` in `src/game/GameState.tsx`) holds the canonical arrays of entities (`enemies`, `towers`, `projectiles`, `effects`) and global values (`money`, `lives`, `wave`, `gameStatus`).
 - `GameLoopBridge` (`src/game/components/GameLoop.tsx`) uses `useFrame` from `@react-three/fiber` as the single per-frame driver for game logic:
-	- Delegates wave updates to `useWaveManager`.
-	- Updates enemies via `useEnemyBehavior`.
-	- Updates towers via `useTowerBehavior` (which may spawn projectiles).
-	- Updates projectiles via `useProjectileBehavior` (collision, damage, rewards).
+  - Delegates wave updates to `useWaveManager`.
+  - Updates enemies via `useEnemyBehavior`.
+  - Updates towers via `useTowerBehavior` (which may spawn projectiles).
+  - Updates projectiles via `useProjectileBehavior` (collision, damage, rewards).
 - Rendering is a pure view layer that consumes `GameState` arrays. For performance, enemies and projectiles are rendered with `InstancedMesh` implementations (`InstancedEnemies`, `InstancedProjectiles`).
 
 ## Data & state conventions
