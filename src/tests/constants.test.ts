@@ -8,7 +8,7 @@ import {
   MAP_WIDTH,
   MAP_HEIGHT,
   TILE_SIZE,
-  PATH_WAYPOINTS,
+  INITIAL_PATH,
   ENEMY_TYPES,
   TOWER_CONFIGS,
 } from '@/constants';
@@ -20,9 +20,9 @@ describe('constants', () => {
     expect(TILE_SIZE).toBe(2);
   });
 
-  it('generates PATH_WAYPOINTS', () => {
-    expect(Array.isArray(PATH_WAYPOINTS)).toBe(true);
-    expect(PATH_WAYPOINTS.length).toBeGreaterThan(0);
+  it('generates INITIAL_PATH', () => {
+    expect(Array.isArray(INITIAL_PATH)).toBe(true);
+    expect(INITIAL_PATH.length).toBeGreaterThan(0);
   });
 
   it('defines ENEMY_TYPES', () => {
