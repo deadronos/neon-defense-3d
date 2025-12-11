@@ -1,5 +1,6 @@
 import React from 'react';
-import { WaveState } from '../../types';
+
+import type { WaveState } from '../../types';
 
 interface TopBarProps {
   lives: number;
@@ -14,9 +15,7 @@ export const TopBar: React.FC<TopBarProps> = ({ lives, money, wave, waveState })
       <div className="flex gap-6">
         <div className="relative bg-black/40 border-l-4 border-b border-r border-t border-t-transparent border-r-transparent border-b-transparent border-l-red-500 pl-4 pr-6 py-2 skew-x-[-10deg]">
           <div className="skew-x-[10deg] flex flex-col">
-            <span className="text-[10px] text-red-400 uppercase tracking-wider">
-              Sys.Integrity
-            </span>
+            <span className="text-[10px] text-red-400 uppercase tracking-wider">Sys.Integrity</span>
             <span
               className={`text-2xl font-bold font-mono ${lives < 10 ? 'text-red-500 animate-pulse' : 'text-white'}`}
             >
@@ -27,12 +26,8 @@ export const TopBar: React.FC<TopBarProps> = ({ lives, money, wave, waveState })
 
         <div className="relative bg-black/40 border-l-4 border-b border-r border-t border-t-transparent border-r-transparent border-b-transparent border-l-yellow-400 pl-4 pr-6 py-2 skew-x-[-10deg]">
           <div className="skew-x-[10deg] flex flex-col">
-            <span className="text-[10px] text-yellow-500 uppercase tracking-wider">
-              Resources
-            </span>
-            <span className="text-2xl font-bold font-mono text-yellow-300">
-              ${money}
-            </span>
+            <span className="text-[10px] text-yellow-500 uppercase tracking-wider">Resources</span>
+            <span className="text-2xl font-bold font-mono text-yellow-300">${money}</span>
           </div>
         </div>
 

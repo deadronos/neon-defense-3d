@@ -1,7 +1,9 @@
 import React from 'react';
+
 import { TOWER_CONFIGS } from '../../constants';
 import { getTowerStats } from '../../game/utils';
-import { TowerType, UpgradeType } from '../../types';
+import { TowerType } from '../../types';
+import type { UpgradeType } from '../../types';
 
 interface BuildMenuProps {
   selectedTower: TowerType | null;
@@ -14,7 +16,7 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
   selectedTower,
   onSelectTower,
   money,
-  upgrades
+  upgrades,
 }) => {
   return (
     <div className="absolute bottom-10 w-full flex justify-center pointer-events-auto">

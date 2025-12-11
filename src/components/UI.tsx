@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { useGame } from '../game/GameState';
 
 import { TechTreeModal } from './TechTreeModal';
-import { VictoryPopup } from './VictoryPopup';
-import { IdleScreen } from './ui/IdleScreen';
-import { GameOverScreen } from './ui/GameOverScreen';
-import { TopBar } from './ui/TopBar';
 import { BuildMenu } from './ui/BuildMenu';
+import { GameOverScreen } from './ui/GameOverScreen';
+import { IdleScreen } from './ui/IdleScreen';
+import { TopBar } from './ui/TopBar';
 import { UpgradeInspector } from './ui/UpgradeInspector';
+import { VictoryPopup } from './VictoryPopup';
 
 /**
  * The main user interface overlay component.

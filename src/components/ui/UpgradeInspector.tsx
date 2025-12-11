@@ -1,7 +1,8 @@
 import React from 'react';
+
 import { TOWER_CONFIGS } from '../../constants';
 import { getTowerStats } from '../../game/utils';
-import { TowerEntity, UpgradeType } from '../../types';
+import type { TowerEntity, UpgradeType } from '../../types';
 
 interface UpgradeInspectorProps {
   selectedTowerEntity: TowerEntity;
@@ -18,7 +19,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
   money,
   onClose,
   onUpgrade,
-  onSell
+  onSell,
 }) => {
   return (
     <div className="absolute bottom-10 w-full flex justify-center pointer-events-auto">
@@ -57,9 +58,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
               return (
                 <>
                   <div>
-                    <div className="text-gray-500 uppercase tracking-widest text-[9px]">
-                      Damage
-                    </div>
+                    <div className="text-gray-500 uppercase tracking-widest text-[9px]">Damage</div>
                     <div className="font-mono text-white text-lg">
                       {current.damage.toFixed(0)}{' '}
                       <span className="text-green-500 text-xs">
@@ -68,9 +67,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-500 uppercase tracking-widest text-[9px]">
-                      Range
-                    </div>
+                    <div className="text-gray-500 uppercase tracking-widest text-[9px]">Range</div>
                     <div className="font-mono text-white text-lg">
                       {current.range.toFixed(1)}{' '}
                       <span className="text-green-500 text-xs">
@@ -79,9 +76,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
                     </div>
                   </div>
                   <div>
-                    <div className="text-gray-500 uppercase tracking-widest text-[9px]">
-                      Rate
-                    </div>
+                    <div className="text-gray-500 uppercase tracking-widest text-[9px]">Rate</div>
                     <div className="font-mono text-white text-lg">
                       {(1 / current.cooldown).toFixed(1)}{' '}
                       <span className="text-green-500 text-xs text-[10px]">UP</span>
