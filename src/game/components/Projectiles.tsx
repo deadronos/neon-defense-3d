@@ -39,8 +39,7 @@ export const InstancedProjectiles: React.FC<{
 
     projectiles.forEach((p, i) => {
       if (i >= count) return;
-
-      const pColor = (p as any).color; // Assuming color string
+      const pColor = p.color; // color string
       let cached = colorCache.get(pColor);
       if (!cached) {
         cached = new THREE.Color(pColor).multiplyScalar(2);
@@ -57,7 +56,7 @@ export const InstancedProjectiles: React.FC<{
       // Note: Data doesn't persist targets position if dead.
       // We'll skip rendering if target missing (or it will glitch)
       if (target) {
-        const start = (p as any).startPos;
+        const start = p.startPos;
         const end = target.position;
 
         // Lerp position

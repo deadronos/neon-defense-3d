@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { useWaveManager } from '../../game/useWaveManager';
-import type { Vector2 } from '../../types';
+import type { Vector2, GameState } from '../../types';
 
 // Mocks
 const mockSetEnemies = vi.fn();
@@ -12,13 +12,18 @@ const mockPathWaypoints: Vector2[] = [
   [0, 1],
   [1, 1],
 ];
-const mockGameState = {
+const mockGameState: GameState = {
+  money: 0,
+  lives: 100,
+  wave: 0,
   isPlaying: true,
+  gameStatus: 'playing',
+  currentMapIndex: 0,
+  researchPoints: 0,
   totalDamageDealt: 0,
   totalCurrencyEarned: 0,
-  wave: 0,
-  researchPoints: 0,
-} as any;
+  upgrades: {},
+};
 
 describe('useWaveManager', () => {
   beforeEach(() => {

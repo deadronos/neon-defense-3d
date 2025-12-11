@@ -35,7 +35,7 @@ export const useProjectileBehavior = () => {
 
       const activeProjectiles = projectiles
         .map((p) => {
-          const newP = { ...p } as any;
+          const newP: ProjectileEntity = { ...p };
           const t = enemies.find((e) => e.id === newP.targetId);
           if (!t) return null;
 
@@ -79,7 +79,7 @@ export const useProjectileBehavior = () => {
 
               if (remainingHp <= 0) {
                 moneyGained += Math.floor(e.config.reward * greedMultiplier);
-                newEffects.push({
+                const fx: EffectEntity = {
                   id: Math.random().toString(),
                   type: 'explosion',
                   position: e.position.clone(),
@@ -87,7 +87,8 @@ export const useProjectileBehavior = () => {
                   scale: e.config.scale || 0.4,
                   createdAt: currentTime,
                   duration: 0.8,
-                } as any);
+                };
+                newEffects.push(fx);
                 continue;
               } else {
                 nextEnemies.push({ ...e, hp: remainingHp, shield: remainingShield });

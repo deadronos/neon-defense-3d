@@ -29,7 +29,7 @@ export const useEnemyBehavior = () => {
       let hpLoss = 0;
       const nextEnemies = enemies
         .map((e) => {
-          const newEnemy = { ...e } as any;
+          const newEnemy = { ...e } as EnemyEntity;
 
           // Ability Logic (Dash)
           let currentSpeed = newEnemy.config.speed;

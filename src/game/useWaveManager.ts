@@ -1,10 +1,10 @@
-import { useFrame } from '@react-three/fiber';
 import { useState, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 
 import { ENEMY_TYPES, TILE_SIZE } from '../constants';
 import type { EnemyEntity, WaveState, GameState, Vector2 } from '../types';
-import { WavePhase } from '../types';
+
+type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
 
 export const useWaveManager = (
   gameState: GameState,
@@ -25,7 +25,7 @@ export const useWaveManager = (
   stateRef.current = waveState;
 
   const spawnTimerRef = useRef(0);
-  const waveConfigRef = useRef<{ count: number; interval: number; types: any[] }>({
+  const waveConfigRef = useRef<{ count: number; interval: number; types: EnemyTypeConfig[] }>({
     count: 0,
     interval: 1,
     types: [],
@@ -56,7 +56,7 @@ export const useWaveManager = (
     }));
 
     // Update global game state for UI if needed
-    setGameState((g: any) => ({ ...g, wave: nextWave }));
+    setGameState((g) => ({ ...g, wave: nextWave }));
   }, [setGameState]);
 
   const resetWave = useCallback(() => {
@@ -127,7 +127,7 @@ export const useWaveManager = (
             frozen: 0,
             abilityCooldown: 2 + Math.random() * 3,
             abilityActiveTimer: 0,
-          } as any;
+          };
 
           setEnemies((prev) => [...prev, newEnemy]);
 

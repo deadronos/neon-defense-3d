@@ -9,17 +9,6 @@ import { TechTreeModal } from './TechTreeModal';
 import { VictoryPopup } from './VictoryPopup';
 
 /**
- * A helper component to display a helper tooltip on hover.
- */
-const Tooltip = ({ text, className = '' }: { text: React.ReactNode; className?: string }) => (
-  <div
-    className={`absolute opacity-0 group-hover:opacity-100 transition-all duration-200 bg-[#000000] border border-cyan-500/50 text-cyan-100 text-xs px-2 py-1.5 pointer-events-none z-50 shadow-[0_0_15px_rgba(6,182,212,0.3)] backdrop-blur-md whitespace-nowrap -translate-y-1 group-hover:translate-y-0 ${className}`}
-  >
-    {text}
-  </div>
-);
-
-/**
  * The main user interface overlay component.
  */
 export const UI = () => {

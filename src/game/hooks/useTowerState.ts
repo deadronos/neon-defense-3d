@@ -64,7 +64,7 @@ export const useTowerState = (
           lastFired: 0,
           targetId: null,
           level: 1,
-        } as any;
+        };
         setTowers((prev) => [...prev, newTower]);
         setSelectedTower(null); // Deselect build tool after placement
       }
@@ -89,7 +89,7 @@ export const useTowerState = (
 
           if (gameState.money >= upgradeCost) {
             setGameState((g) => ({ ...g, money: g.money - upgradeCost }));
-            return { ...t, level: t.level + 1 } as any;
+            return { ...t, level: t.level + 1 };
           }
           return t;
         }),
