@@ -8,7 +8,7 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Manual baseline screenshots', () => {
   test('capture welcome and first map screenshots', async ({ page, baseURL }) => {
-    const base = baseURL ?? 'http://localhost:5174';
+    const base = baseURL ?? 'http://localhost:3000';
 
     // Ensure baseline dir exists
     const outDir = path.resolve(process.cwd(), 'docs', 'baseline');

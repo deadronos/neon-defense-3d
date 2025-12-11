@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
 // Keep a skipped placeholder here to avoid accidental automatic runs
 test.describe.skip('Visual baseline screenshots (moved to tests/manual)', () => {
   test('take welcome and first map screenshots', async ({ page, baseURL }) => {
-    const base = baseURL ?? 'http://localhost:5174';
+    const base = baseURL ?? 'http://localhost:3000';
 
     // Ensure baseline dir exists
     const outDir = path.resolve(process.cwd(), 'docs', 'baseline');
