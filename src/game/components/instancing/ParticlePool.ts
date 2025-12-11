@@ -58,7 +58,7 @@ export class ParticlePool {
     b: number,
     scale: number,
     life: number,
-    effectId: string
+    effectId: string,
   ) {
     const idx = this.curIndex;
     this.active[idx] = 1;

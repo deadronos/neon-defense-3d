@@ -3,6 +3,7 @@ import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
 import type { EnemyEntity } from '../../types';
+
 import { hideUnusedInstances } from './instancing/instancedUtils';
 
 export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies }) => {

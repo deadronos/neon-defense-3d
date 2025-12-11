@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { ParticlePool } from '../instancing/ParticlePool';
+
+import type { ParticlePool } from '../instancing/ParticlePool';
 
 /**
  * Spawns an explosion effect into the particle pool.
@@ -18,7 +19,7 @@ export function spawnExplosion(
   effectId: string,
   duration: number = 0.8,
   baseScale: number = 0.4,
-  particleCount: number = 20
+  particleCount: number = 20,
 ) {
   const color = new THREE.Color(colorHex);
 
@@ -43,7 +44,7 @@ export function spawnExplosion(
       color.b,
       baseScale,
       duration,
-      effectId
+      effectId,
     );
   }
 }

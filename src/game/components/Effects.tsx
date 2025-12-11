@@ -3,8 +3,9 @@ import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
 import type { EffectEntity } from '../../types';
-import { ParticlePool } from './instancing/ParticlePool';
+
 import { spawnExplosion } from './effects/spawners';
+import { ParticlePool } from './instancing/ParticlePool';
 
 export const InstancedExplosions: React.FC<{
   effects: EffectEntity[];
@@ -33,7 +34,7 @@ export const InstancedExplosions: React.FC<{
           effect.color ?? '#ff0000',
           effect.id,
           effect.duration,
-          effect.scale
+          effect.scale,
         );
       }
     });
@@ -57,7 +58,7 @@ export const InstancedExplosions: React.FC<{
           dummy.position.set(
             pool.position[i * 3],
             pool.position[i * 3 + 1],
-            pool.position[i * 3 + 2]
+            pool.position[i * 3 + 2],
           );
 
           // Scale down logic
@@ -68,11 +69,7 @@ export const InstancedExplosions: React.FC<{
           meshRef.current.setMatrixAt(i, dummy.matrix);
           meshRef.current.setColorAt(
             i,
-            new THREE.Color(
-              pool.color[i * 3],
-              pool.color[i * 3 + 1],
-              pool.color[i * 3 + 2]
-            )
+            new THREE.Color(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]),
           );
 
           const effectId = pool.associatedEffectId[i];
