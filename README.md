@@ -87,6 +87,18 @@ This project uses **Vite** for fast development and building.
 - **Formatting**: `npm run format`
 - **Testing**: `npm run test`
 
+### E2E Baseline Screenshot
+
+- This repository includes a manual baseline screenshot test used to capture the UI welcome and first map images.
+- The baseline test does not run automatically. Run manually with:
+
+```bash
+npx playwright install --with-deps
+npm run e2e:baseline
+```
+
+The script runs the baseline Playwright test that saves `docs/baseline/welcome.png` and `docs/baseline/firstmap.png`.
+
 ### Styling
 
 - Tailwind CSS is integrated with Vite via the `@tailwindcss/vite` plugin (Tailwind v4). The project no longer uses the CDN script — styles are compiled from `index.css` and include an `@import "tailwindcss"` entry.
