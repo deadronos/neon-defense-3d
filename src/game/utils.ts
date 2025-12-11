@@ -1,6 +1,5 @@
 import { TOWER_CONFIGS } from '../constants';
-import { TowerType } from '../types';
-
+import type { TowerType } from '../types';
 import { UpgradeType } from '../types';
 
 /**

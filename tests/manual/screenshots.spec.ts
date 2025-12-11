@@ -3,6 +3,7 @@
 // Windows: `set "CAPTURE_BASELINE=1" && npm run e2e:baseline`
 import fs from 'fs';
 import path from 'path';
+
 import { test, expect } from '@playwright/test';
 
 test.describe('Manual baseline screenshots', () => {

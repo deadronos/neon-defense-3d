@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
+
+import { MAP_LAYOUTS, getMapGrid, generatePath } from '../constants';
 import type {
   EnemyEntity,
   GameState,
@@ -7,13 +9,15 @@ import type {
   TowerType,
   EffectEntity,
   WaveState,
+  TileType,
+  Vector2,
 } from '../types';
-import { useWaveManager } from './useWaveManager';
+import { UpgradeType } from '../types';
+
+import { useEntityState } from './hooks/useEntityState';
 import { useGameStats } from './hooks/useGameStats';
 import { useTowerState } from './hooks/useTowerState';
-import { useEntityState } from './hooks/useEntityState';
-import { MAP_LAYOUTS, getMapGrid, generatePath } from '../constants';
-import { TileType, Vector2, UpgradeType } from '../types';
+import { useWaveManager } from './useWaveManager';
 
 /**
  * Interface defining the properties and methods available in the GameContext.

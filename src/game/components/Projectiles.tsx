@@ -1,7 +1,8 @@
-import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
+import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
-import { ProjectileEntity, EnemyEntity } from '../../types';
+
+import type { ProjectileEntity, EnemyEntity } from '../../types';
 
 export const InstancedProjectiles: React.FC<{
   projectiles: ProjectileEntity[];

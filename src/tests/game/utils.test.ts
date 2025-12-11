@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
+
+import { TOWER_CONFIGS } from '../../constants';
 import { getTowerStats } from '../../game/utils';
 import { TowerType, UpgradeType } from '../../types';
-import { TOWER_CONFIGS } from '../../constants';
 
 describe('getTowerStats', () => {
   it('calculates base stats for level 1 tower without upgrades', () => {

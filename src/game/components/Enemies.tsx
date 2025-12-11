@@ -1,7 +1,8 @@
-import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
+import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
-import { EnemyEntity } from '../../types';
+
+import type { EnemyEntity } from '../../types';
 
 export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);

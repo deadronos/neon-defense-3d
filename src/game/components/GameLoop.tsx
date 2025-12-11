@@ -1,8 +1,9 @@
 import { useFrame } from '@react-three/fiber';
+
 import { useGame } from '../GameState';
 import { useEnemyBehavior } from '../hooks/useEnemyBehavior';
-import { useTowerBehavior } from '../hooks/useTowerBehavior';
 import { useProjectileBehavior } from '../hooks/useProjectileBehavior';
+import { useTowerBehavior } from '../hooks/useTowerBehavior';
 
 /**
  * Component that hooks into the render loop to handle game logic updates.

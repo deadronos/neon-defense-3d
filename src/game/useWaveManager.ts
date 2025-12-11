@@ -1,9 +1,10 @@
-import { useState, useRef, useCallback } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { useState, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 
 import { ENEMY_TYPES, TILE_SIZE } from '../constants';
-import { EnemyEntity, WaveState, WavePhase, GameState, Vector2 } from '../types';
+import type { EnemyEntity, WaveState, GameState, Vector2 } from '../types';
+import { WavePhase } from '../types';
 
 export const useWaveManager = (
   gameState: GameState,

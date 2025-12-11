@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useGame } from '../GameState';
-import { TileType } from '../../types';
+
 import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
+import { TileType } from '../../types';
+import { useGame } from '../GameState';
 
 export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }) => {
   const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId } = useGame();

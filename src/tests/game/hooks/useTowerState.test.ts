@@ -1,8 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+import { TOWER_CONFIGS } from '../../../constants';
 import { useTowerState } from '../../../game/hooks/useTowerState';
 import { TileType, TowerType } from '../../../types';
-import { TOWER_CONFIGS } from '../../../constants';
 
 // Mock GameState
 const mockSetGameState = vi.fn();

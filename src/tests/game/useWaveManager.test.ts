@@ -1,7 +1,8 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { useWaveManager } from '../../game/useWaveManager';
-import { Vector2 } from '../../types';
+import type { Vector2 } from '../../types';
 
 // Mocks
 const mockSetEnemies = vi.fn();

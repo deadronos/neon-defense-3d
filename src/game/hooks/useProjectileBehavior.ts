@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+
 import type { ProjectileEntity, EnemyEntity, EffectEntity, GameState } from '../../types';
 
 /**

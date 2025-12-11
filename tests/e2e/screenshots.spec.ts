@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+
 import { test, expect } from '@playwright/test';
 
 // NOTE: This test has been moved to tests/manual/screenshots.spec.ts

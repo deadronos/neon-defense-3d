@@ -4,8 +4,9 @@ import { TOWER_CONFIGS } from '../constants';
 import { useGame } from '../game/GameState';
 import { getTowerStats } from '../game/utils';
 import { TowerType } from '../types';
-import { VictoryPopup } from './VictoryPopup';
+
 import { TechTreeModal } from './TechTreeModal';
+import { VictoryPopup } from './VictoryPopup';
 
 /**
  * A helper component to display a helper tooltip on hover.

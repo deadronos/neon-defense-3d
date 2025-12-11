@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
 import { Vector3 } from 'three';
+
 import { TOWER_CONFIGS, TILE_SIZE } from '../../constants';
-import { getTowerStats } from '../utils';
 import { TileType } from '../../types';
 import type { TowerEntity, TowerType, GameState } from '../../types';
+import { getTowerStats } from '../utils';
 
 /**
  * Hook to manage tower entities, selection, and placement logic.

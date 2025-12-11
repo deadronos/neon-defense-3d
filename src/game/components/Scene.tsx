@@ -1,18 +1,18 @@
-import React from 'react';
-import * as THREE from 'three';
 import { OrbitControls, SoftShadows } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing';
+import React from 'react';
+import * as THREE from 'three';
 
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
 import { useGame } from '../GameState';
 import { StarField } from '../StarField';
 
-import { GameLoopBridge } from './GameLoop';
-import { World } from './World';
-import { Tower } from './Tower';
-import { InstancedEnemies } from './Enemies';
-import { InstancedProjectiles } from './Projectiles';
 import { InstancedExplosions } from './Effects';
+import { InstancedEnemies } from './Enemies';
+import { GameLoopBridge } from './GameLoop';
+import { InstancedProjectiles } from './Projectiles';
+import { Tower } from './Tower';
+import { World } from './World';
 
 export const SceneContent = () => {
   const { enemies, towers, projectiles, effects, setEffects } = useGame();

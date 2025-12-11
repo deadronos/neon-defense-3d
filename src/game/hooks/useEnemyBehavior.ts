@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import * as THREE from 'three';
+
 import { TILE_SIZE } from '../../constants';
 import type { EnemyEntity, GameState, Vector2 } from '../../types';
 
