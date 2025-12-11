@@ -144,7 +144,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     upgradeTower,
     sellTower,
     isValidPlacement,
-  } = useTowerState(gameState, setGameState);
+  } = useTowerState(gameState, setGameState, mapGrid);
 
   const { waveState, updateWave, resetWave } = useWaveManager(gameState, setEnemies, setGameState, pathWaypoints);
 

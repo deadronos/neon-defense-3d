@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useGame } from '../GameState';
 import { TileType } from '../../types';
-import { TILE_SIZE, MAP_GRID, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
+import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 
 export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }) => {
   const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId } = useGame();
@@ -73,6 +73,7 @@ export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z,
 };
 
 export const World = () => {
+  const { mapGrid } = useGame();
   return (
     <group
       position={[
@@ -81,7 +82,7 @@ export const World = () => {
         (-MAP_HEIGHT * TILE_SIZE) / 2 + TILE_SIZE / 2,
       ]}
     >
-      {MAP_GRID.map((row, z) =>
+      {mapGrid.map((row, z) =>
         row.map((type, x) => <Tile key={`${x}-${z}`} x={x} z={z} type={type} />),
       )}
     </group>

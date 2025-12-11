@@ -19,6 +19,7 @@ export const GameLoopBridge = () => {
     setGameState,
     setEffects,
     updateWave,
+    pathWaypoints,
   } = useGame();
 
   const { updateEnemies } = useEnemyBehavior();
@@ -32,7 +33,7 @@ export const GameLoopBridge = () => {
     if (updateWave) updateWave(delta, enemies);
 
     // Enemy Move
-    setEnemies((prevEnemies) => updateEnemies(prevEnemies, delta, setGameState));
+    setEnemies((prevEnemies) => updateEnemies(prevEnemies, delta, setGameState, pathWaypoints));
 
     // Towers Firing
     const now = state.clock.elapsedTime;

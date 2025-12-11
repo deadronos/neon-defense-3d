@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Vector3 } from 'three';
-import { MAP_GRID, TOWER_CONFIGS, TILE_SIZE } from '../../constants';
+import { TOWER_CONFIGS, TILE_SIZE } from '../../constants';
 import { getTowerStats } from '../utils';
 import { TileType } from '../../types';
 import type { TowerEntity, TowerType, GameState } from '../../types';
@@ -10,11 +10,13 @@ import type { TowerEntity, TowerType, GameState } from '../../types';
  *
  * @param gameState - The current game state (needed for money check).
  * @param setGameState - Function to update game state (needed for deducting money).
+ * @param mapGrid - The current map grid layout.
  * @returns An object containing tower state and management methods.
  */
 export const useTowerState = (
   gameState: GameState,
-  setGameState: React.Dispatch<React.SetStateAction<GameState>>
+  setGameState: React.Dispatch<React.SetStateAction<GameState>>,
+  mapGrid: TileType[][]
 ) => {
   const [towers, setTowers] = useState<TowerEntity[]>([]);
   const [selectedTower, setSelectedTower] = useState<TowerType | null>(null);
@@ -30,14 +32,14 @@ export const useTowerState = (
   const isValidPlacement = useCallback(
     (x: number, z: number) => {
       // Check map bounds
-      if (x < 0 || x >= MAP_GRID[0].length || z < 0 || z >= MAP_GRID.length) return false;
+      if (x < 0 || x >= mapGrid[0].length || z < 0 || z >= mapGrid.length) return false;
       // Check tile type (Must be 0: Grass)
-      if (MAP_GRID[z][x] !== TileType.Grass) return false;
+      if (mapGrid[z][x] !== TileType.Grass) return false;
       // Check existing towers
       if (towers.some((t) => t.gridPos[0] === x && t.gridPos[1] === z)) return false;
       return true;
     },
-    [towers]
+    [towers, mapGrid]
   );
 
   /**
