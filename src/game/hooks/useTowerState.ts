@@ -16,7 +16,7 @@ import type { TowerEntity, TowerType, GameState } from '../../types';
 export const useTowerState = (
   gameState: GameState,
   setGameState: React.Dispatch<React.SetStateAction<GameState>>,
-  mapGrid: TileType[][]
+  mapGrid: TileType[][],
 ) => {
   const [towers, setTowers] = useState<TowerEntity[]>([]);
   const [selectedTower, setSelectedTower] = useState<TowerType | null>(null);
@@ -39,7 +39,7 @@ export const useTowerState = (
       if (towers.some((t) => t.gridPos[0] === x && t.gridPos[1] === z)) return false;
       return true;
     },
-    [towers, mapGrid]
+    [towers, mapGrid],
   );
 
   /**
@@ -68,7 +68,7 @@ export const useTowerState = (
         setSelectedTower(null); // Deselect build tool after placement
       }
     },
-    [gameState.money, isValidPlacement, setGameState]
+    [gameState.money, isValidPlacement, setGameState],
   );
 
   /**
@@ -91,10 +91,10 @@ export const useTowerState = (
             return { ...t, level: t.level + 1 } as any;
           }
           return t;
-        })
+        }),
       );
     },
-    [gameState.money, gameState.upgrades, setGameState]
+    [gameState.money, gameState.upgrades, setGameState],
   );
 
   /**
@@ -116,7 +116,7 @@ export const useTowerState = (
       setTowers((prev) => prev.filter((t) => t.id !== id));
       setSelectedEntityId(null);
     },
-    [towers, setGameState]
+    [towers, setGameState],
   );
 
   return {

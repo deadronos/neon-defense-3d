@@ -43,9 +43,7 @@ export const SceneContent = () => {
         ))}
         <InstancedEnemies enemies={enemies} />
         <InstancedProjectiles projectiles={projectiles} enemies={enemies} />
-        {effects.length > 0 && (
-           <InstancedExplosions effects={effects} remove={removeEffect} />
-        )}
+        {effects.length > 0 && <InstancedExplosions effects={effects} remove={removeEffect} />}
       </group>
 
       <OrbitControls

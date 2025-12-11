@@ -16,7 +16,9 @@ test.describe('Manual baseline screenshots', () => {
     // Log console messages from the page to the Node console
     page.on('console', (msg) => console.log(`[PAGE ${msg.type().toUpperCase()}] ${msg.text()}`));
     page.on('pageerror', (err) => console.error('[PAGE ERROR]', err));
-    page.on('requestfailed', (req) => console.warn('[REQUEST FAILED]', req.url(), req.failure()?.errorText));
+    page.on('requestfailed', (req) =>
+      console.warn('[REQUEST FAILED]', req.url(), req.failure()?.errorText),
+    );
 
     // Navigate to the app and wait for initial resources to be loaded
     await page.goto(base, { waitUntil: 'networkidle' });

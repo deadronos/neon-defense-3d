@@ -7,7 +7,10 @@ import { TowerEntity, TowerType, EnemyEntity } from '../../types';
 import { useGame } from '../GameState';
 import { getTowerStats } from '../utils';
 
-export const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({ data, enemies }) => {
+export const Tower: React.FC<{ data: TowerEntity; enemies: EnemyEntity[] }> = ({
+  data,
+  enemies,
+}) => {
   const { selectedEntityId, setSelectedEntityId, selectedTower } = useGame();
   const config = TOWER_CONFIGS[data.type as TowerType];
   const stats = getTowerStats(data.type, data.level);

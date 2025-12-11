@@ -1,8 +1,9 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
-  --font-display: 'Orbitron', ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, "Noto Color Emoji";
+  --font-display:
+    'Orbitron', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, 'Noto Color Emoji';
 
   /* Custom neon palette additions (will create utilities like bg-neon-cyan-500) */
   --color-neon-cyan-300: #7dd3fc;

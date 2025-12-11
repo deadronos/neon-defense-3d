@@ -53,8 +53,8 @@ export const GameLoopBridge = () => {
         setEnemies,
         setGameState,
         setEffects,
-        greedMultiplier
-      )
+        greedMultiplier,
+      ),
     );
   });
 

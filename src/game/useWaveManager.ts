@@ -145,35 +145,45 @@ export const useWaveManager = (
           // Check for Sector Completion (every 10 waves)
           // Ensure we don't trigger this if already victorious (though isPlaying should handle that)
           if (currentState.wave > 0 && currentState.wave % 10 === 0) {
-              const earnedRP = Math.floor(gameState.totalDamageDealt / 200 + gameState.totalCurrencyEarned / 100);
-              
-              setGameState((prev: GameState) => ({
-                ...prev,
-                gameStatus: 'victory',
-                isPlaying: false, // Pause game
-                researchPoints: prev.researchPoints + earnedRP
-              }));
-              
-              setWaveState((prev) => ({
-                ...prev,
-                phase: 'completed',
-              }));
-              return;
+            const earnedRP = Math.floor(
+              gameState.totalDamageDealt / 200 + gameState.totalCurrencyEarned / 100,
+            );
+
+            setGameState((prev: GameState) => ({
+              ...prev,
+              gameStatus: 'victory',
+              isPlaying: false, // Pause game
+              researchPoints: prev.researchPoints + earnedRP,
+            }));
+
+            setWaveState((prev) => ({
+              ...prev,
+              phase: 'completed',
+            }));
+            return;
           }
 
           setWaveState((prev) => ({
             ...prev,
             phase: 'completed',
-            nextWaveTime: Date.now() + PREP_TIME * 1000, 
+            nextWaveTime: Date.now() + PREP_TIME * 1000,
           }));
-          spawnTimerRef.current = PREP_TIME; 
+          spawnTimerRef.current = PREP_TIME;
         }
       } else if (currentState.phase === 'completed') {
         // If we are here, game is playing (not victory/paused), so we proceed to next wave
         setWaveState((prev) => ({ ...prev, phase: 'preparing' }));
       }
     },
-    [gameState.isPlaying, gameState.totalDamageDealt, gameState.totalCurrencyEarned, setEnemies, startNextWave, pathWaypoints, setGameState],
+    [
+      gameState.isPlaying,
+      gameState.totalDamageDealt,
+      gameState.totalCurrencyEarned,
+      setEnemies,
+      startNextWave,
+      pathWaypoints,
+      setGameState,
+    ],
   );
 
   return { waveState, updateWave, resetWave };

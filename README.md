@@ -108,7 +108,7 @@ The script runs the baseline Playwright test that saves `docs/baseline/welcome.p
 - This project uses Tailwind v4's CSS-first workflow. Theme and design tokens are defined directly in `index.css` using the `@theme` directive, for example:
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --font-display: 'Orbitron', ui-sans-serif, system-ui;

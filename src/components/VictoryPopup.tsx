@@ -15,9 +15,7 @@ export const VictoryPopup: React.FC<VictoryPopupProps> = ({ onOpenTechTree }) =>
           Sector Cleared!
         </h1>
         <div className="mb-6 space-y-2">
-          <p className="text-gray-300 text-lg">
-            Hostiles neutralized. Proceed to upgrade station.
-          </p>
+          <p className="text-gray-300 text-lg">Hostiles neutralized. Proceed to upgrade station.</p>
           <p className="text-[#00f2ff] text-xl font-bold">
             Research Points: {Math.floor(gameState.researchPoints)}
           </p>

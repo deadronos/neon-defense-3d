@@ -23,7 +23,7 @@ export const useEnemyBehavior = () => {
       enemies: EnemyEntity[],
       delta: number,
       setGameState: React.Dispatch<React.SetStateAction<GameState>>,
-      pathWaypoints: Vector2[]
+      pathWaypoints: Vector2[],
     ): EnemyEntity[] => {
       let hpLoss = 0;
       const nextEnemies = enemies
@@ -72,7 +72,7 @@ export const useEnemyBehavior = () => {
           newEnemy.position = new THREE.Vector3(
             (pp1[0] + (pp2[0] - pp1[0]) * newEnemy.progress) * TILE_SIZE,
             1,
-            (pp1[1] + (pp2[1] - pp1[1]) * newEnemy.progress) * TILE_SIZE
+            (pp1[1] + (pp2[1] - pp1[1]) * newEnemy.progress) * TILE_SIZE,
           );
           return newEnemy;
         })
@@ -88,9 +88,8 @@ export const useEnemyBehavior = () => {
 
       return nextEnemies;
     },
-    []
+    [],
   );
 
   return { updateEnemies };
 };
-

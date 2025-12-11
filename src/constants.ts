@@ -115,7 +115,7 @@ export const generatePath = (mapLayout: number[][]): Vector2[] => {
 /**
  * Helper to convert raw map to TileType grid.
  */
-export const getMapGrid = (mapLayout: number[][]): TileType[][] => 
+export const getMapGrid = (mapLayout: number[][]): TileType[][] =>
   mapLayout.map((row) => row.map((cell) => cell as TileType));
 
 /**

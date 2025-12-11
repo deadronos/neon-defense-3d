@@ -9,10 +9,10 @@ import { UpgradeType } from '../types';
 export const getTowerStats = (
   type: TowerType,
   level: number,
-  upgrades: { [key in UpgradeType]?: number } = {}
+  upgrades: { [key in UpgradeType]?: number } = {},
 ) => {
   const base = TOWER_CONFIGS[type];
-  
+
   const dmgMult = 1 + (upgrades[UpgradeType.GLOBAL_DAMAGE] || 0) * 0.05;
   const rangeMult = 1 + (upgrades[UpgradeType.GLOBAL_RANGE] || 0) * 0.05;
 

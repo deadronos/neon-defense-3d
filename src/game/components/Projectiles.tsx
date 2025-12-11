@@ -42,8 +42,8 @@ export const InstancedProjectiles: React.FC<{
       const pColor = (p as any).color; // Assuming color string
       let cached = colorCache.get(pColor);
       if (!cached) {
-         cached = new THREE.Color(pColor).multiplyScalar(2);
-         colorCache.set(pColor, cached);
+        cached = new THREE.Color(pColor).multiplyScalar(2);
+        colorCache.set(pColor, cached);
       }
 
       const target = enemyMap.get(p.targetId || '');
@@ -78,7 +78,7 @@ export const InstancedProjectiles: React.FC<{
         meshRef.current?.setColorAt(i, cached); // Boost emissive look
       } else {
         // Hide
-         meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+        meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
       }
     });
 

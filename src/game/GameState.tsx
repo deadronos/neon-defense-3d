@@ -116,16 +116,15 @@ export const useGame = () => {
  * @param props.children - Child components to render.
  */
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { gameState, setGameState, startGame: startGameStats, resetGame: resetGameStats } = useGameStats();
-
   const {
-    enemies,
-    setEnemies,
-    projectiles,
-    setProjectiles,
-    effects,
-    setEffects,
-  } = useEntityState();
+    gameState,
+    setGameState,
+    startGame: startGameStats,
+    resetGame: resetGameStats,
+  } = useGameStats();
+
+  const { enemies, setEnemies, projectiles, setProjectiles, effects, setEffects } =
+    useEntityState();
 
   // Derive Map Data
   const currentMapLayout = MAP_LAYOUTS[gameState.currentMapIndex % MAP_LAYOUTS.length];
@@ -146,7 +145,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isValidPlacement,
   } = useTowerState(gameState, setGameState, mapGrid);
 
-  const { waveState, updateWave, resetWave } = useWaveManager(gameState, setEnemies, setGameState, pathWaypoints);
+  const { waveState, updateWave, resetWave } = useWaveManager(
+    gameState,
+    setEnemies,
+    setGameState,
+    pathWaypoints,
+  );
 
   /**
    * Initializes the game state for a new session.
@@ -159,7 +163,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProjectiles([]);
     setEffects([]);
     setSelectedEntityId(null);
-  }, [startGameStats, resetWave, setEnemies, setTowers, setProjectiles, setEffects, setSelectedEntityId]);
+  }, [
+    startGameStats,
+    resetWave,
+    setEnemies,
+    setTowers,
+    setProjectiles,
+    setEffects,
+    setSelectedEntityId,
+  ]);
 
   /**
    * Resets the game state to default values (idle).
@@ -172,7 +184,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProjectiles([]);
     setEffects([]);
     setSelectedEntityId(null);
-  }, [resetGameStats, resetWave, setEnemies, setTowers, setProjectiles, setEffects, setSelectedEntityId]);
+  }, [
+    resetGameStats,
+    resetWave,
+    setEnemies,
+    setTowers,
+    setProjectiles,
+    setEffects,
+    setSelectedEntityId,
+  ]);
 
   const startNextSector = useCallback(() => {
     // 1. Calculate new starting money based on Greed
@@ -187,7 +207,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedEntityId(null);
 
     // 3. Update Game State (Map + Money + Status)
-    setGameState(prev => ({
+    setGameState((prev) => ({
       ...prev,
       currentMapIndex: prev.currentMapIndex + 1,
       money: startMoney,
@@ -196,7 +216,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       totalDamageDealt: 0,
       totalCurrencyEarned: 0,
     }));
-    
+
     // 4. Reset Wave Manager state to preparing for next wave
     // We don't want to reset wave number to 0, just phase.
     // This requires exposing a way to set phase or just calling resetWave?
@@ -205,22 +225,33 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Actually, useWaveManager needs to be told "we are ready for next wave".
     // If we are in 'victory', we need to transition.
     // We'll fix useWaveManager logic next.
-  }, [gameState.upgrades, setEnemies, setTowers, setProjectiles, setEffects, setSelectedEntityId, setGameState]);
+  }, [
+    gameState.upgrades,
+    setEnemies,
+    setTowers,
+    setProjectiles,
+    setEffects,
+    setSelectedEntityId,
+    setGameState,
+  ]);
 
-  const purchaseUpgrade = useCallback((type: UpgradeType, cost: number) => {
-    setGameState(prev => {
-      if (prev.researchPoints < cost) return prev;
-      const currentLevel = prev.upgrades[type] || 0;
-      return {
-        ...prev,
-        researchPoints: prev.researchPoints - cost,
-        upgrades: {
-          ...prev.upgrades,
-          [type]: currentLevel + 1
-        }
-      };
-    });
-  }, [setGameState]);
+  const purchaseUpgrade = useCallback(
+    (type: UpgradeType, cost: number) => {
+      setGameState((prev) => {
+        if (prev.researchPoints < cost) return prev;
+        const currentLevel = prev.upgrades[type] || 0;
+        return {
+          ...prev,
+          researchPoints: prev.researchPoints - cost,
+          upgrades: {
+            ...prev.upgrades,
+            [type]: currentLevel + 1,
+          },
+        };
+      });
+    },
+    [setGameState],
+  );
 
   return (
     <GameContext.Provider

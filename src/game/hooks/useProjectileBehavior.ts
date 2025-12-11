@@ -1,10 +1,5 @@
 import { useCallback } from 'react';
-import type {
-  ProjectileEntity,
-  EnemyEntity,
-  EffectEntity,
-  GameState,
-} from '../../types';
+import type { ProjectileEntity, EnemyEntity, EffectEntity, GameState } from '../../types';
 
 /**
  * Hook to manage projectile movement and collision logic.
@@ -32,7 +27,7 @@ export const useProjectileBehavior = () => {
       setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>,
       setGameState: React.Dispatch<React.SetStateAction<GameState>>,
       setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>,
-      greedMultiplier: number = 1
+      greedMultiplier: number = 1,
     ): ProjectileEntity[] => {
       const hits: Record<string, number> = {};
       let frameTotalDamage = 0;
@@ -105,13 +100,12 @@ export const useProjectileBehavior = () => {
             setTimeout(() => {
               if (moneyGained > 0 || frameTotalDamage > 0)
                 setGameState((g) => ({
-                   ...g,
-                   money: g.money + moneyGained,
-                   totalCurrencyEarned: (g.totalCurrencyEarned || 0) + moneyGained,
-                   totalDamageDealt: (g.totalDamageDealt || 0) + frameTotalDamage
+                  ...g,
+                  money: g.money + moneyGained,
+                  totalCurrencyEarned: (g.totalCurrencyEarned || 0) + moneyGained,
+                  totalDamageDealt: (g.totalDamageDealt || 0) + frameTotalDamage,
                 }));
-              if (newEffects.length > 0)
-                setEffects((prev) => [...prev, ...newEffects]);
+              if (newEffects.length > 0) setEffects((prev) => [...prev, ...newEffects]);
             }, 0);
           }
           return nextEnemies;
@@ -120,7 +114,7 @@ export const useProjectileBehavior = () => {
 
       return activeProjectiles;
     },
-    []
+    [],
   );
 
   return { updateProjectiles };

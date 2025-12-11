@@ -19,10 +19,10 @@ export interface GameState {
   isPlaying: boolean;
   /** Current status of the game session. */
   gameStatus: 'idle' | 'playing' | 'gameover' | 'victory'; // Added 'victory'
-  
+
   /** Index of the current map in the campaign. */
   currentMapIndex: number;
-  
+
   // Campaign & Tech Tree
   researchPoints: number;
   totalDamageDealt: number;

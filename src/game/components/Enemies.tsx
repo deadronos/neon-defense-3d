@@ -34,19 +34,19 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
 
       // Update Shield
       if (enemy.shield > 0) {
-         dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
-         dummy.updateMatrix();
-         shieldRef.current?.setMatrixAt(i, dummy.matrix);
-         shieldRef.current?.setColorAt(i, new THREE.Color('#00ffff'));
+        dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
+        dummy.updateMatrix();
+        shieldRef.current?.setMatrixAt(i, dummy.matrix);
+        shieldRef.current?.setColorAt(i, new THREE.Color('#00ffff'));
       } else {
-         shieldRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+        shieldRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
       }
     });
 
     // Hide unused
     for (let i = enemies.length; i < count; i++) {
-       meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
-       shieldRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+      meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+      shieldRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true;
@@ -64,14 +64,14 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
       </instancedMesh>
 
       <instancedMesh ref={shieldRef} args={[undefined, undefined, count]}>
-         <sphereGeometry args={[1, 16, 16]} />
-         <meshBasicMaterial
-            color="white"
-            transparent
-            opacity={0.3}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-         />
+        <sphereGeometry args={[1, 16, 16]} />
+        <meshBasicMaterial
+          color="white"
+          transparent
+          opacity={0.3}
+          depthWrite={false}
+          blending={THREE.AdditiveBlending}
+        />
       </instancedMesh>
     </group>
   );

@@ -23,7 +23,7 @@ export const useTowerBehavior = () => {
       towers: TowerEntity[],
       enemies: EnemyEntity[],
       now: number,
-      setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>
+      setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>,
     ): TowerEntity[] => {
       const newProjs: ProjectileEntity[] = [];
       const updatedTowers = towers.map((t) => {
@@ -63,7 +63,7 @@ export const useTowerBehavior = () => {
       }
       return updatedTowers;
     },
-    []
+    [],
   );
 
   return { updateTowers };

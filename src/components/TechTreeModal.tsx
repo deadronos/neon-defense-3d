@@ -47,7 +47,9 @@ export const TechTreeModal: React.FC = () => {
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-400">Available RP</div>
-            <div className="text-3xl font-bold text-[#f9f871]">{Math.floor(gameState.researchPoints)}</div>
+            <div className="text-3xl font-bold text-[#f9f871]">
+              {Math.floor(gameState.researchPoints)}
+            </div>
           </div>
         </div>
 
@@ -63,13 +65,15 @@ export const TechTreeModal: React.FC = () => {
                 key={u.type}
                 className="bg-[#0f3460]/50 border border-[#0f3460] hover:border-[#00f2ff] p-6 rounded transition-all group flex flex-col items-center text-center relative overflow-hidden"
               >
-                <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform">{u.icon}</div>
+                <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform">
+                  {u.icon}
+                </div>
                 <h3 className="text-xl font-bold text-white mb-1">{u.name}</h3>
                 <p className="text-gray-400 text-sm mb-4 h-10">{u.desc}</p>
                 <div className="text-xs text-[#00f2ff] mb-4 font-mono px-2 py-1 bg-[#16213e] rounded">
                   Lvl {level} Effect: +{Math.round(level * 5)}%
                 </div>
-                
+
                 <button
                   onClick={() => purchaseUpgrade(u.type, cost)}
                   disabled={!canAfford}
@@ -94,8 +98,17 @@ export const TechTreeModal: React.FC = () => {
           >
             <span className="relative z-10 flex items-center gap-2">
               WARP TO NEXT SECTOR
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 transform group-hover:translate-x-1 transition-transform"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
               </svg>
             </span>
           </button>

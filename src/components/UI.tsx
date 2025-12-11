@@ -230,8 +230,7 @@ export const UI = () => {
                         DMG: <span className="text-white">{stats.damage.toFixed(0)}</span>
                       </span>
                       <span>
-                        SPD:{' '}
-                        <span className="text-white">{(1 / stats.cooldown).toFixed(1)}/s</span>
+                        SPD: <span className="text-white">{(1 / stats.cooldown).toFixed(1)}/s</span>
                       </span>
                       <span className="col-span-2">
                         RNG: <span className="text-white">{stats.range.toFixed(1)}M</span>
@@ -273,12 +272,12 @@ export const UI = () => {
                   const current = getTowerStats(
                     selectedTowerEntity.type,
                     selectedTowerEntity.level,
-                    gameState.upgrades
+                    gameState.upgrades,
                   );
                   const next = getTowerStats(
                     selectedTowerEntity.type,
                     selectedTowerEntity.level + 1,
-                    gameState.upgrades
+                    gameState.upgrades,
                   );
                   return (
                     <>
@@ -332,7 +331,7 @@ export const UI = () => {
                 const nextStats = getTowerStats(
                   selectedTowerEntity.type,
                   selectedTowerEntity.level + 1,
-                  gameState.upgrades
+                  gameState.upgrades,
                 );
                 const canAfford = gameState.money >= nextStats.upgradeCost;
                 return (

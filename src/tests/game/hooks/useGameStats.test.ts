@@ -30,7 +30,7 @@ describe('useGameStats', () => {
 
     // First modify state
     act(() => {
-      result.current.setGameState(prev => ({ ...prev, money: 500, lives: 5 }));
+      result.current.setGameState((prev) => ({ ...prev, money: 500, lives: 5 }));
     });
 
     expect(result.current.gameState.money).toBe(500);
@@ -38,7 +38,7 @@ describe('useGameStats', () => {
 
     // Then reset
     act(() => {
-        result.current.resetGame();
+      result.current.resetGame();
     });
 
     expect(result.current.gameState.money).toBe(150);
