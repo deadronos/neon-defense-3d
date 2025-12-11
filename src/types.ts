@@ -17,6 +17,8 @@ export interface GameState {
   wave: number;
   /** Boolean indicating if the game loop is currently running (enemies moving, etc). */
   isPlaying: boolean;
+  /** Whether the game has reached a terminal game over state. */
+  isGameOver?: boolean;
   /** Current status of the game session. */
   gameStatus: 'idle' | 'playing' | 'gameover' | 'victory'; // Added 'victory'
 
@@ -36,6 +38,8 @@ export enum UpgradeType {
   GLOBAL_DAMAGE = 'GLOBAL_DAMAGE',
   GLOBAL_RANGE = 'GLOBAL_RANGE',
   GLOBAL_GREED = 'GLOBAL_GREED',
+  // Per-tower or specific upgrades
+  TOWER_DAMAGE = 'TOWER_DAMAGE',
   // Can add specific tower upgrades later if needed, generic for now
 }
 
