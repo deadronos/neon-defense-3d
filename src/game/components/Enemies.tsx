@@ -4,6 +4,8 @@ import * as THREE from 'three';
 
 import type { EnemyEntity } from '../../types';
 
+import { hideUnusedInstances } from './instancing/instancedUtils';
+
 export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const shieldRef = useRef<THREE.InstancedMesh>(null);
@@ -45,10 +47,8 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
     });
 
     // Hide unused
-    for (let i = enemies.length; i < count; i++) {
-      meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
-      shieldRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
-    }
+    if (meshRef.current) hideUnusedInstances(meshRef.current, enemies.length, count);
+    if (shieldRef.current) hideUnusedInstances(shieldRef.current, enemies.length, count);
 
     meshRef.current.instanceMatrix.needsUpdate = true;
     if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;

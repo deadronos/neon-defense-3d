@@ -4,6 +4,8 @@ import * as THREE from 'three';
 
 import type { ProjectileEntity, EnemyEntity } from '../../types';
 
+import { hideUnusedInstances } from './instancing/instancedUtils';
+
 export const InstancedProjectiles: React.FC<{
   projectiles: ProjectileEntity[];
   enemies: EnemyEntity[];
@@ -83,9 +85,7 @@ export const InstancedProjectiles: React.FC<{
     });
 
     // Hide remaining unused instances
-    for (let i = projectiles.length; i < count; i++) {
-      meshRef.current.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
-    }
+    if (meshRef.current) hideUnusedInstances(meshRef.current, projectiles.length, count);
 
     meshRef.current.instanceMatrix.needsUpdate = true;
     if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
