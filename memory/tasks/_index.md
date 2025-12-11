@@ -1,4 +1,3 @@
-
 # Tasks Index
 
 ## In Progress
