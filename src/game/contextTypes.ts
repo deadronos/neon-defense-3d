@@ -1,4 +1,5 @@
-import React from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+
 import type {
   EnemyEntity,
   GameState,
@@ -66,17 +67,17 @@ export interface GameContextProps {
    */
   isValidPlacement: (x: number, z: number) => boolean;
   /** State setter for enemies list. */
-  setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>;
+  setEnemies: Dispatch<SetStateAction<EnemyEntity[]>>;
   /** State setter for towers list. */
-  setTowers: React.Dispatch<React.SetStateAction<TowerEntity[]>>;
+  setTowers: Dispatch<SetStateAction<TowerEntity[]>>;
   /** State setter for projectiles list. */
-  setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>;
+  setProjectiles: Dispatch<SetStateAction<ProjectileEntity[]>>;
   /** State setter for effects list. */
-  setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>;
+  setEffects: Dispatch<SetStateAction<EffectEntity[]>>;
   /** State setter for global game state. */
-  setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+  setGameState: Dispatch<SetStateAction<GameState>>;
   /** State setter for wave state. */
-  setWaveState?: React.Dispatch<React.SetStateAction<WaveState>>;
+  setWaveState?: Dispatch<SetStateAction<WaveState>>;
   /** Reset wave state manually. */
   resetWave?: () => void;
   /** Method to update wave logic (delta time). */

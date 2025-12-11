@@ -1,7 +1,9 @@
 import { renderHook, act } from '@testing-library/react';
-import { useGameOrchestrator } from '../../game/orchestrator';
 import { describe, it, expect, vi } from 'vitest';
-import { GameState, UpgradeType } from '../../types';
+
+import { useGameOrchestrator } from '../../game/orchestrator';
+import type { GameState } from '../../types';
+import { UpgradeType } from '../../types';
 
 describe('useGameOrchestrator', () => {
   const mockGameState: GameState = {
@@ -44,8 +46,8 @@ describe('useGameOrchestrator', () => {
         mockSetSelectedEntityId,
         mockStartGameStats,
         mockResetGameStats,
-        mockResetWave
-      )
+        mockResetWave,
+      ),
     );
 
     act(() => {
@@ -73,8 +75,8 @@ describe('useGameOrchestrator', () => {
         mockSetSelectedEntityId,
         mockStartGameStats,
         mockResetGameStats,
-        mockResetWave
-      )
+        mockResetWave,
+      ),
     );
 
     act(() => {
@@ -102,8 +104,8 @@ describe('useGameOrchestrator', () => {
         mockSetSelectedEntityId,
         mockStartGameStats,
         mockResetGameStats,
-        mockResetWave
-      )
+        mockResetWave,
+      ),
     );
 
     act(() => {
@@ -136,8 +138,8 @@ describe('useGameOrchestrator', () => {
         mockSetSelectedEntityId,
         mockStartGameStats,
         mockResetGameStats,
-        mockResetWave
-      )
+        mockResetWave,
+      ),
     );
 
     act(() => {
@@ -163,8 +165,8 @@ describe('useGameOrchestrator', () => {
         mockSetSelectedEntityId,
         mockStartGameStats,
         mockResetGameStats,
-        mockResetWave
-      )
+        mockResetWave,
+      ),
     );
 
     act(() => {

@@ -1,12 +1,8 @@
-import React, { useCallback } from 'react';
-import {
-  EnemyEntity,
-  GameState,
-  TowerEntity,
-  ProjectileEntity,
-  EffectEntity,
-  UpgradeType,
-} from '../types';
+import { useCallback } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
+
+import type { EnemyEntity, GameState, TowerEntity, ProjectileEntity, EffectEntity } from '../types';
+import { UpgradeType } from '../types';
 
 /**
  * Hook to manage game orchestration logic (start, reset, next sector, upgrades).
@@ -26,17 +22,16 @@ import {
  */
 export const useGameOrchestrator = (
   gameState: GameState,
-  setGameState: React.Dispatch<React.SetStateAction<GameState>>,
-  setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>,
-  setTowers: React.Dispatch<React.SetStateAction<TowerEntity[]>>,
-  setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>,
-  setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>,
+  setGameState: Dispatch<SetStateAction<GameState>>,
+  setEnemies: Dispatch<SetStateAction<EnemyEntity[]>>,
+  setTowers: Dispatch<SetStateAction<TowerEntity[]>>,
+  setProjectiles: Dispatch<SetStateAction<ProjectileEntity[]>>,
+  setEffects: Dispatch<SetStateAction<EffectEntity[]>>,
   setSelectedEntityId: (id: string | null) => void,
   startGameStats: () => void,
   resetGameStats: () => void,
   resetWave: () => void,
 ) => {
-
   /**
    * Initializes the game state for a new session.
    */

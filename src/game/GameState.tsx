@@ -1,13 +1,14 @@
-import React, { createContext, useContext } from 'react';
+import { createContext, useContext } from 'react';
+import type { ReactNode } from 'react';
 
 import { MAP_LAYOUTS, getMapGrid, generatePath } from '../constants';
 
+import type { GameContextProps } from './contextTypes';
 import { useEntityState } from './hooks/useEntityState';
 import { useGameStats } from './hooks/useGameStats';
 import { useTowerState } from './hooks/useTowerState';
-import { useWaveManager } from './useWaveManager';
 import { useGameOrchestrator } from './orchestrator';
-import { GameContextProps } from './contextTypes';
+import { useWaveManager } from './useWaveManager';
 
 /** Context for managing game state. */
 const GameContext = createContext<GameContextProps | undefined>(undefined);
@@ -30,7 +31,7 @@ export const useGame = () => {
  * @param props - Component properties.
  * @param props.children - Child components to render.
  */
-export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const GameProvider = ({ children }: { children: ReactNode }) => {
   const {
     gameState,
     setGameState,
@@ -67,12 +68,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pathWaypoints,
   );
 
-  const {
-    startGame,
-    resetGame,
-    startNextSector,
-    purchaseUpgrade,
-  } = useGameOrchestrator(
+  const { startGame, resetGame, startNextSector, purchaseUpgrade } = useGameOrchestrator(
     gameState,
     setGameState,
     setEnemies,
@@ -82,7 +78,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setSelectedEntityId,
     startGameStats,
     resetGameStats,
-    resetWave
+    resetWave,
   );
 
   return (
