@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext, useCallback } from 'react';
 
 import { MAP_LAYOUTS, getMapGrid, generatePath } from '../constants';
 import type {

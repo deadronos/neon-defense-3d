@@ -35,7 +35,6 @@ export const InstancedExplosions: React.FC<{
     const sys = particlesRef.current;
 
     // 1. Spawn new particles from new effects
-    const now = state.clock.elapsedTime;
 
     effects.forEach((effect) => {
       if (!processedRef.current.has(effect.id)) {
@@ -43,7 +42,7 @@ export const InstancedExplosions: React.FC<{
 
         // Spawn 20 particles
         const pCount = 20;
-        const color = new THREE.Color((effect as any).color || '#ff0000');
+        const color = new THREE.Color(effect.color ?? '#ff0000');
 
         for (let i = 0; i < pCount; i++) {
           const idx = (sys.curIndex + i) % count;

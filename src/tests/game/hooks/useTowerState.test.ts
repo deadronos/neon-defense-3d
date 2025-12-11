@@ -1,16 +1,24 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { TOWER_CONFIGS } from '../../../constants';
 import { useTowerState } from '../../../game/hooks/useTowerState';
 import { TileType, TowerType } from '../../../types';
+import type { GameState } from '../../../types';
 
 // Mock GameState
 const mockSetGameState = vi.fn();
-const defaultGameState = {
+const defaultGameState: GameState = {
   money: 500,
+  lives: 100,
+  wave: 0,
+  isPlaying: false,
+  gameStatus: 'idle',
+  currentMapIndex: 0,
+  researchPoints: 0,
+  totalDamageDealt: 0,
+  totalCurrencyEarned: 0,
   upgrades: {},
-} as any;
+};
 
 // Mock MapGrid (3x3 grid)
 // 0: Grass, 1: Path
@@ -43,8 +51,6 @@ describe('useTowerState', () => {
     const { result } = renderHook(() =>
       useTowerState(defaultGameState, mockSetGameState, mockMapGrid),
     );
-
-    const config = TOWER_CONFIGS[TowerType.Basic];
 
     act(() => {
       result.current.placeTower(0, 0, TowerType.Basic);
@@ -109,7 +115,7 @@ describe('useTowerState', () => {
   });
 
   it('does not upgrade tower if insufficient money', () => {
-    let gameState = { money: 100, upgrades: {} } as any;
+    let gameState: GameState = { ...defaultGameState, money: 100 };
 
     const { result, rerender } = renderHook(
       ({ gs }) => useTowerState(gs, mockSetGameState, mockMapGrid),
@@ -121,7 +127,7 @@ describe('useTowerState', () => {
     });
 
     // Simulate money spent (50 remaining). Upgrade cost is ~75.
-    gameState = { money: 50, upgrades: {} } as any;
+    gameState = { ...gameState, money: 50 };
     rerender({ gs: gameState });
 
     const towerId = result.current.towers[0].id;

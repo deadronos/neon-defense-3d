@@ -36,7 +36,7 @@ test.describe.skip('Visual baseline screenshots (moved to tests/manual)', () => 
       await expect(initiateButton).toBeVisible({ timeout: 5000 });
       await initiateButton.click();
       clickedInitiate = true;
-    } catch (err) {
+    } catch {
       console.warn('INITIATE button not detected; skipping click.');
     }
 
@@ -44,7 +44,7 @@ test.describe.skip('Visual baseline screenshots (moved to tests/manual)', () => 
     if (clickedInitiate) {
       try {
         await page.waitForSelector('text=Sys.Integrity', { state: 'visible', timeout: 30000 });
-      } catch (err) {
+      } catch {
         console.warn('Sys.Integrity not visible after clicking INITIATE; continuing.');
       }
     }

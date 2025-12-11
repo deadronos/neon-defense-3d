@@ -12,8 +12,6 @@ export const GameLoopBridge = () => {
   const {
     gameState,
     enemies,
-    towers,
-    projectiles,
     setEnemies,
     setProjectiles,
     setTowers,
