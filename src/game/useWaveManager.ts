@@ -1,14 +1,16 @@
 import { useState, useRef, useCallback } from 'react';
-import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-import { ENEMY_TYPES, PATH_WAYPOINTS, TILE_SIZE } from '../constants';
-import { EnemyEntity, WaveState, WavePhase } from '../types';
+import { ENEMY_TYPES, TILE_SIZE } from '../constants';
+import type { EnemyEntity, WaveState, GameState, Vector2 } from '../types';
+
+type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
 
 export const useWaveManager = (
-  isPlaying: boolean,
+  gameState: GameState,
   setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>,
-  setGameState: React.Dispatch<React.SetStateAction<any>>, // Using any for partial updates easier
+  setGameState: React.Dispatch<React.SetStateAction<GameState>>,
+  pathWaypoints: Vector2[],
 ) => {
   const [waveState, setWaveState] = useState<WaveState>({
     wave: 0,
@@ -23,7 +25,7 @@ export const useWaveManager = (
   stateRef.current = waveState;
 
   const spawnTimerRef = useRef(0);
-  const waveConfigRef = useRef<{ count: number; interval: number; types: any[] }>({
+  const waveConfigRef = useRef<{ count: number; interval: number; types: EnemyTypeConfig[] }>({
     count: 0,
     interval: 1,
     types: [],
@@ -50,26 +52,16 @@ export const useWaveManager = (
       wave: nextWave,
       phase: 'spawning',
       enemiesRemainingToSpawn: count,
-      enemiesAlive: count, // We consider them "alive" as soon as they are effectively queued to spawn for tracking purposes? No, let's track separately.
-    }));
-
-    // Wait, enemiesAlive should track actual entities.
-    // Let's refine:
-    setWaveState((prev) => ({
-      ...prev,
-      wave: nextWave,
-      phase: 'spawning',
-      enemiesRemainingToSpawn: count,
       enemiesAlive: 0, // Will increment as they spawn
     }));
 
     // Update global game state for UI if needed
-    setGameState((g: any) => ({ ...g, wave: nextWave }));
+    setGameState((g) => ({ ...g, wave: nextWave }));
   }, [setGameState]);
 
   const resetWave = useCallback(() => {
     stateRef.current = {
-      wave: 0,
+      wave: 0, // Resetting to 0 might be problematic for continuous levels if called wrongly
       phase: 'preparing',
       nextWaveTime: 0,
       enemiesAlive: 0,
@@ -77,17 +69,12 @@ export const useWaveManager = (
       timer: 5,
     };
     setWaveState(stateRef.current);
-    spawnTimerRef.current = 0;
-    // We set timer to 5 in state, but spawnTimerRef handles the delta decrement. 
-    // Actually, let's keep spawnTimerRef at 5 to match state?
-    // In logic below: if (currentState.phase === 'preparing') spawnTimerRef.current -= delta.
-    // So we should set it to 5.
     spawnTimerRef.current = 5;
   }, []);
 
   const updateWave = useCallback(
     (delta: number, currentEnemies: EnemyEntity[]) => {
-      if (!isPlaying) return;
+      if (!gameState.isPlaying) return;
 
       const currentState = stateRef.current;
 
@@ -97,9 +84,6 @@ export const useWaveManager = (
       }
 
       // State Machine & Timer Sync
-      // We only update state timer occasionally to avoid excessive re-renders,
-      // or we just trust the component to read it? React state needs explicit update.
-      // Let's update it every frame if it changes significantly or just ensure it's roughly correct.
       if (currentState.phase === 'preparing') {
         spawnTimerRef.current -= delta;
         // Sync to state for UI (cast to 1 decimal for display)
@@ -108,7 +92,6 @@ export const useWaveManager = (
         }
 
         if (spawnTimerRef.current <= 0) {
-          // Always start logic from here
           startNextWave();
         }
       } else if (currentState.phase === 'spawning') {
@@ -124,7 +107,9 @@ export const useWaveManager = (
           const hp = typeConfig.hpBase * (1 + (waveMult - 1) * 0.4);
           const shield = (typeConfig.shield || 0) * (1 + (waveMult - 1) * 0.5);
 
-          const startNode = PATH_WAYPOINTS[0];
+          const startNode = pathWaypoints[0];
+          if (!startNode) return; // Should not happen if path exists
+
           const newEnemy: EnemyEntity = {
             id: Math.random().toString(36).substr(2, 9),
             config: {
@@ -142,7 +127,7 @@ export const useWaveManager = (
             frozen: 0,
             abilityCooldown: 2 + Math.random() * 3,
             abilityActiveTimer: 0,
-          } as any;
+          };
 
           setEnemies((prev) => [...prev, newEnemy]);
 
@@ -158,20 +143,48 @@ export const useWaveManager = (
       } else if (currentState.phase === 'active') {
         // Check for completion
         if (currentEnemies.length === 0 && currentState.enemiesRemainingToSpawn === 0) {
+          // Check for Sector Completion (every 10 waves)
+          // Ensure we don't trigger this if already victorious (though isPlaying should handle that)
+          if (currentState.wave > 0 && currentState.wave % 10 === 0) {
+            const earnedRP = Math.floor(
+              gameState.totalDamageDealt / 200 + gameState.totalCurrencyEarned / 100,
+            );
+
+            setGameState((prev: GameState) => ({
+              ...prev,
+              gameStatus: 'victory',
+              isPlaying: false, // Pause game
+              researchPoints: prev.researchPoints + earnedRP,
+            }));
+
+            setWaveState((prev) => ({
+              ...prev,
+              phase: 'completed',
+            }));
+            return;
+          }
+
           setWaveState((prev) => ({
             ...prev,
             phase: 'completed',
-            nextWaveTime: Date.now() + PREP_TIME * 1000, // Just visual target?
+            nextWaveTime: Date.now() + PREP_TIME * 1000,
           }));
-          spawnTimerRef.current = PREP_TIME; // Reuse timer for intermission
+          spawnTimerRef.current = PREP_TIME;
         }
       } else if (currentState.phase === 'completed') {
-        // Transition back to preparing/start next automatically?
-        // Let's just go directly to prep for next wave
+        // If we are here, game is playing (not victory/paused), so we proceed to next wave
         setWaveState((prev) => ({ ...prev, phase: 'preparing' }));
       }
     },
-    [isPlaying, setEnemies, startNextWave],
+    [
+      gameState.isPlaying,
+      gameState.totalDamageDealt,
+      gameState.totalCurrencyEarned,
+      setEnemies,
+      startNextWave,
+      pathWaypoints,
+      setGameState,
+    ],
   );
 
   return { waveState, updateWave, resetWave };

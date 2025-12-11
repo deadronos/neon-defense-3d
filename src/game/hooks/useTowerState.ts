@@ -1,19 +1,23 @@
 import { useState, useCallback } from 'react';
 import { Vector3 } from 'three';
-import { MAP_GRID, TOWER_CONFIGS, TILE_SIZE } from '../../constants';
+
+import { TOWER_CONFIGS, TILE_SIZE } from '../../constants';
 import { TileType } from '../../types';
 import type { TowerEntity, TowerType, GameState } from '../../types';
+import { getTowerStats } from '../utils';
 
 /**
  * Hook to manage tower entities, selection, and placement logic.
  *
  * @param gameState - The current game state (needed for money check).
  * @param setGameState - Function to update game state (needed for deducting money).
+ * @param mapGrid - The current map grid layout.
  * @returns An object containing tower state and management methods.
  */
 export const useTowerState = (
   gameState: GameState,
-  setGameState: React.Dispatch<React.SetStateAction<GameState>>
+  setGameState: React.Dispatch<React.SetStateAction<GameState>>,
+  mapGrid: TileType[][],
 ) => {
   const [towers, setTowers] = useState<TowerEntity[]>([]);
   const [selectedTower, setSelectedTower] = useState<TowerType | null>(null);
@@ -29,14 +33,14 @@ export const useTowerState = (
   const isValidPlacement = useCallback(
     (x: number, z: number) => {
       // Check map bounds
-      if (x < 0 || x >= MAP_GRID[0].length || z < 0 || z >= MAP_GRID.length) return false;
+      if (x < 0 || x >= mapGrid[0].length || z < 0 || z >= mapGrid.length) return false;
       // Check tile type (Must be 0: Grass)
-      if (MAP_GRID[z][x] !== TileType.Grass) return false;
+      if (mapGrid[z][x] !== TileType.Grass) return false;
       // Check existing towers
       if (towers.some((t) => t.gridPos[0] === x && t.gridPos[1] === z)) return false;
       return true;
     },
-    [towers]
+    [towers, mapGrid],
   );
 
   /**
@@ -60,12 +64,12 @@ export const useTowerState = (
           lastFired: 0,
           targetId: null,
           level: 1,
-        } as any;
+        };
         setTowers((prev) => [...prev, newTower]);
         setSelectedTower(null); // Deselect build tool after placement
       }
     },
-    [gameState.money, isValidPlacement, setGameState]
+    [gameState.money, isValidPlacement, setGameState],
   );
 
   /**
@@ -80,18 +84,18 @@ export const useTowerState = (
         prev.map((t) => {
           if (t.id !== id) return t;
 
-          const config = TOWER_CONFIGS[t.type];
-          const upgradeCost = Math.floor(config.cost * Math.pow(1.5, t.level));
+          const stats = getTowerStats(t.type, t.level, gameState.upgrades);
+          const upgradeCost = stats.upgradeCost;
 
           if (gameState.money >= upgradeCost) {
             setGameState((g) => ({ ...g, money: g.money - upgradeCost }));
-            return { ...t, level: t.level + 1 } as any;
+            return { ...t, level: t.level + 1 };
           }
           return t;
-        })
+        }),
       );
     },
-    [gameState.money, setGameState]
+    [gameState.money, gameState.upgrades, setGameState],
   );
 
   /**
@@ -113,7 +117,7 @@ export const useTowerState = (
       setTowers((prev) => prev.filter((t) => t.id !== id));
       setSelectedEntityId(null);
     },
-    [towers, setGameState]
+    [towers, setGameState],
   );
 
   return {

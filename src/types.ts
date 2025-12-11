@@ -18,7 +18,25 @@ export interface GameState {
   /** Boolean indicating if the game loop is currently running (enemies moving, etc). */
   isPlaying: boolean;
   /** Current status of the game session. */
-  gameStatus: 'idle' | 'playing' | 'gameover';
+  gameStatus: 'idle' | 'playing' | 'gameover' | 'victory'; // Added 'victory'
+
+  /** Index of the current map in the campaign. */
+  currentMapIndex: number;
+
+  // Campaign & Tech Tree
+  researchPoints: number;
+  totalDamageDealt: number;
+  totalCurrencyEarned: number;
+  upgrades: {
+    [key in UpgradeType]?: number; // Level of each upgrade
+  };
+}
+
+export enum UpgradeType {
+  GLOBAL_DAMAGE = 'GLOBAL_DAMAGE',
+  GLOBAL_RANGE = 'GLOBAL_RANGE',
+  GLOBAL_GREED = 'GLOBAL_GREED',
+  // Can add specific tower upgrades later if needed, generic for now
 }
 
 /**

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import type { EnemyEntity, ProjectileEntity, EffectEntity } from '../../types';
 
 /**

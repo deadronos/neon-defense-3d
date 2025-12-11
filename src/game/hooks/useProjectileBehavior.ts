@@ -1,10 +1,6 @@
 import { useCallback } from 'react';
-import type {
-  ProjectileEntity,
-  EnemyEntity,
-  EffectEntity,
-  GameState,
-} from '../../types';
+
+import type { ProjectileEntity, EnemyEntity, EffectEntity, GameState } from '../../types';
 
 /**
  * Hook to manage projectile movement and collision logic.
@@ -31,18 +27,22 @@ export const useProjectileBehavior = () => {
       currentTime: number,
       setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>,
       setGameState: React.Dispatch<React.SetStateAction<GameState>>,
-      setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>
+      setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>,
+      greedMultiplier: number = 1,
     ): ProjectileEntity[] => {
       const hits: Record<string, number> = {};
+      let frameTotalDamage = 0;
+
       const activeProjectiles = projectiles
         .map((p) => {
-          const newP = { ...p } as any;
+          const newP: ProjectileEntity = { ...p };
           const t = enemies.find((e) => e.id === newP.targetId);
           if (!t) return null;
 
           newP.progress += delta * 3;
           if (newP.progress >= 1) {
             hits[newP.targetId] = (hits[newP.targetId] || 0) + newP.damage;
+            frameTotalDamage += newP.damage;
             return null;
           }
           return newP;
@@ -78,8 +78,8 @@ export const useProjectileBehavior = () => {
               const remainingHp = e.hp - hpDamage;
 
               if (remainingHp <= 0) {
-                moneyGained += e.config.reward;
-                newEffects.push({
+                moneyGained += Math.floor(e.config.reward * greedMultiplier);
+                const fx: EffectEntity = {
                   id: Math.random().toString(),
                   type: 'explosion',
                   position: e.position.clone(),
@@ -87,7 +87,8 @@ export const useProjectileBehavior = () => {
                   scale: e.config.scale || 0.4,
                   createdAt: currentTime,
                   duration: 0.8,
-                } as any);
+                };
+                newEffects.push(fx);
                 continue;
               } else {
                 nextEnemies.push({ ...e, hp: remainingHp, shield: remainingShield });
@@ -97,16 +98,16 @@ export const useProjectileBehavior = () => {
             }
           }
 
-          if (moneyGained > 0 || newEffects.length > 0) {
-            // Use setTimeout to break out of the render cycle for state updates if necessary,
-            // but in this context (inside setEnemies callback), it's safe to call other setters?
-            // Actually, calling setGameState inside setEnemies might trigger a warning if not careful.
-            // Using setTimeout ensures it happens after the current render pass.
+          if (moneyGained > 0 || newEffects.length > 0 || frameTotalDamage > 0) {
             setTimeout(() => {
-              if (moneyGained > 0)
-                setGameState((g) => ({ ...g, money: g.money + moneyGained }));
-              if (newEffects.length > 0)
-                setEffects((prev) => [...prev, ...newEffects]);
+              if (moneyGained > 0 || frameTotalDamage > 0)
+                setGameState((g) => ({
+                  ...g,
+                  money: g.money + moneyGained,
+                  totalCurrencyEarned: (g.totalCurrencyEarned || 0) + moneyGained,
+                  totalDamageDealt: (g.totalDamageDealt || 0) + frameTotalDamage,
+                }));
+              if (newEffects.length > 0) setEffects((prev) => [...prev, ...newEffects]);
             }, 0);
           }
           return nextEnemies;
@@ -115,7 +116,7 @@ export const useProjectileBehavior = () => {
 
       return activeProjectiles;
     },
-    []
+    [],
   );
 
   return { updateProjectiles };

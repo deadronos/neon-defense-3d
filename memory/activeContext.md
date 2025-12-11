@@ -2,21 +2,22 @@
 
 ## Current focus
 
-- Optimization: Improve performance and fix OOM crashes.
+- Sync `/memory` documentation to match the current source tree (this update). The primary goals are accurate discovery and clear next-step tracking for contributors.
 
-## Recent changes
+## Recent changes (code highlights)
 
-- **Performance Refactor:** Replaced individual `Enemy` components with `InstancedEnemies` using `THREE.InstancedMesh`.
-- **Optimization:** Removed `Trail` and `PointLight` from enemies to reduce geometry overhead and GPU load.
-- **Cleanup:** Verified disposal paths. `InstancedMesh` naturally handles cleanup when the component unmounts (React ref cleanup).
-- **Build:** Verified `npm run build` passes.
+- `InstancedEnemies` and `InstancedProjectiles` use `THREE.InstancedMesh` for large counts (see `src/game/components/Enemies.tsx` and `src/game/components/Projectiles.tsx`).
+- `GameLoopBridge` (`src/game/components/GameLoop.tsx`) centralizes per-frame logic via `useFrame`: enemy movement, tower firing, projectile updates, and wave management.
+- Wave system moved to `useWaveManager` with phases and spawn logic; path generation uses BFS in `src/constants.ts` (`generatePath`).
+- UI overlay (`src/components/UI.tsx`) handles game states (`idle`, `playing`, `gameover`, `victory`) and build/upgrade flows. Victory transitions grant research points.
 
 ## Next steps
 
-- Monitor performance.
-- Consider optimizing `GameLoopBridge` vector allocations if GC pressure remains high.
-- Re-introduce visual effects (Trails) using shaders or instanced lines if needed.
+- Add small unit tests around `useWaveManager`, `useEnemyBehavior`, and `useProjectileBehavior` to lock expected behavior.
+- Create design docs for major features (e.g., Tech Tree/sector progression) under `memory/designs/`.
+- Monitor runtime performance and reduce allocations in hot loops if GC pressure appears.
 
 ## Open decisions
 
-- **Visuals:** Enemy visuals are now simplified (Dodecahedron + simple color). We might want to improve this later with custom shaders or textures.
+- Visual fidelity vs. performance: whether to reintroduce expensive effects (trails, per-entity lights) via instancing or shaders.
+- Sector/progression balancing: decide wave lengths and reward curves for persistent campaign progression.

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+
 import type { GameState } from '../../types';
 
 /**
@@ -11,7 +12,12 @@ export const useGameStats = () => {
     lives: 20,
     wave: 1,
     isPlaying: false,
-    gameStatus: 'idle', // 'idle' | 'playing' | 'gameover'
+    gameStatus: 'idle', // 'idle' | 'playing' | 'gameover' | 'victory'
+    currentMapIndex: 0,
+    researchPoints: 0,
+    totalDamageDealt: 0,
+    totalCurrencyEarned: 0,
+    upgrades: {},
   });
 
   /**
@@ -25,6 +31,11 @@ export const useGameStats = () => {
       lives: 20,
       money: 150,
       wave: 1,
+      currentMapIndex: 0,
+      researchPoints: 0,
+      totalDamageDealt: 0,
+      totalCurrencyEarned: 0,
+      upgrades: {},
     }));
   }, []);
 
@@ -39,6 +50,11 @@ export const useGameStats = () => {
       lives: 20,
       money: 150,
       wave: 1,
+      currentMapIndex: 0,
+      researchPoints: 0,
+      totalDamageDealt: 0,
+      totalCurrencyEarned: 0,
+      upgrades: {},
     }));
   }, []);
 

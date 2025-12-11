@@ -2,6 +2,8 @@
 
 Neon Defense 3D is an immersive Tower Defense game built using **React 19**, **TypeScript**, and **Three.js** (via `@react-three/fiber`). Defend your base against waves of enemies by strategically placing and upgrading towers in a vibrant 3D world.
 
+![Game Screenshot](docs/baseline/firstmap.png)
+
 ## 🌟 Features
 
 - **3D Gameplay**: Fully 3D environment with dynamic lighting, shadows, and particle effects.
@@ -87,6 +89,18 @@ This project uses **Vite** for fast development and building.
 - **Formatting**: `npm run format`
 - **Testing**: `npm run test`
 
+### E2E Baseline Screenshot
+
+- This repository includes a manual baseline screenshot test used to capture the UI welcome and first map images.
+- The baseline test does not run automatically. Run manually with:
+
+```bash
+npx playwright install --with-deps
+npm run e2e:baseline
+```
+
+The script runs the baseline Playwright test that saves `docs/baseline/welcome.png` and `docs/baseline/firstmap.png`.
+
 ### Styling
 
 - Tailwind CSS is integrated with Vite via the `@tailwindcss/vite` plugin (Tailwind v4). The project no longer uses the CDN script — styles are compiled from `index.css` and include an `@import "tailwindcss"` entry.
@@ -96,7 +110,7 @@ This project uses **Vite** for fast development and building.
 - This project uses Tailwind v4's CSS-first workflow. Theme and design tokens are defined directly in `index.css` using the `@theme` directive, for example:
 
 ```css
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --font-display: 'Orbitron', ui-sans-serif, system-ui;

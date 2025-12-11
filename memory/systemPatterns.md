@@ -1,24 +1,38 @@
 # System Patterns
 
-This section records the common architecture and design patterns used in Neon Defense 3D so contributors and agents remain consistent.
+This file documents the recurring architectural patterns and conventions used across the codebase so contributors and automated agents can remain consistent.
 
 ## High-level architecture
 
-- Single source-of-truth `GameState` (React Context) for all runtime entities.
-- `GameLoopBridge` (inside `src/game/GameCanvas.tsx`) drives the frame-by-frame updates using `useFrame` from `@react-three/fiber`.
-- Rendering components (`Enemy`, `Tower`, `Projectile`) are pure views derived from `GameState` arrays; the loop mutates state via safe functional updates.
+- Central `GameState` (React Context / `GameProvider` in `src/game/GameState.tsx`) holds the canonical arrays of entities (`enemies`, `towers`, `projectiles`, `effects`) and global values (`money`, `lives`, `wave`, `gameStatus`).
+- `GameLoopBridge` (`src/game/components/GameLoop.tsx`) uses `useFrame` from `@react-three/fiber` as the single per-frame driver for game logic:
+	- Delegates wave updates to `useWaveManager`.
+	- Updates enemies via `useEnemyBehavior`.
+	- Updates towers via `useTowerBehavior` (which may spawn projectiles).
+	- Updates projectiles via `useProjectileBehavior` (collision, damage, rewards).
+- Rendering is a pure view layer that consumes `GameState` arrays. For performance, enemies and projectiles are rendered with `InstancedMesh` implementations (`InstancedEnemies`, `InstancedProjectiles`).
 
-## Concurrency & state
+## Data & state conventions
 
-- Use functional updates for arrays (`setEnemies(prev => ...)`) to avoid race conditions inside the loop.
-- Treat state objects immutably when exposing them to render code; make shallow copies when altering values.
+- Always use functional state updates for arrays inside the loop (e.g., `setEnemies(prev => ...)`) to avoid lost updates or closure issues.
+- Treat state objects as effectively immutable to render code; create shallow copies when mutating values inside behavior hooks before returning updated arrays.
 
-## Extension points
+## Hot path & performance patterns
 
-- `TOWER_CONFIGS` and `ENEMY_TYPES` in `src/constants.ts` are the primary extension surfaces for gameplay balancing.
-- Add new tower visuals in `src/game/GameCanvas.tsx` only when needed; otherwise prefer config-driven behavior.
+- Prefer `InstancedMesh` for high-count entities to minimize draw calls and per-object overhead.
+- Compute world coordinates from grid coordinates centrally via `TILE_SIZE` (defined in `src/constants.ts`).
+- Keep per-frame allocations low — reuse objects where practical inside hooks or move expensive calculations out of the hot loop.
+
+## Core extension points
+
+- `TOWER_CONFIGS`, `ENEMY_TYPES`, and `MAP_LAYOUTS` in `src/constants.ts` are primary config surfaces for adding gameplay content.
+- `getTowerStats` in `src/game/utils.ts` computes tower stats given level and global upgrades.
+- Hooks like `useWaveManager`, `useTowerState`, `useEntityState` provide clear locations for changing behavior or adding tests.
+
+## Pathfinding
+
+- Paths are generated at startup (or map change) using a BFS implementation in `generatePath` (`src/constants.ts`). Waypoints are used by enemies to progress along the path.
 
 ## Testing & validation
 
-- Unit tests live under `tests/` and run with Vitest (see `vitest.config.ts`).
-- Prefer small, deterministic tests for core logic (range checks, damage calculations, pathfinding). GUI and 3D rendering get manual or integration tests.
+- Unit tests live under `tests/` and run with Vitest. Focus tests on deterministic logic: wave progression (`useWaveManager`), tower targeting, projectile collision, and path generation.
