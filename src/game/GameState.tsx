@@ -1,102 +1,13 @@
-import React, { createContext, useContext, useCallback } from 'react';
+import React, { createContext, useContext } from 'react';
 
 import { MAP_LAYOUTS, getMapGrid, generatePath } from '../constants';
-import type {
-  EnemyEntity,
-  GameState,
-  ProjectileEntity,
-  TowerEntity,
-  TowerType,
-  EffectEntity,
-  WaveState,
-  TileType,
-  Vector2,
-} from '../types';
-import { UpgradeType } from '../types';
 
 import { useEntityState } from './hooks/useEntityState';
 import { useGameStats } from './hooks/useGameStats';
 import { useTowerState } from './hooks/useTowerState';
 import { useWaveManager } from './useWaveManager';
-
-/**
- * Interface defining the properties and methods available in the GameContext.
- */
-interface GameContextProps {
-  /** Current global game state (money, lives, wave, etc). */
-  gameState: GameState;
-  /** List of currently active enemies. */
-  enemies: EnemyEntity[];
-  /** List of placed towers. */
-  towers: TowerEntity[];
-  /** List of active projectiles. */
-  projectiles: ProjectileEntity[];
-  /** List of visual effects. */
-  effects: EffectEntity[];
-  /** Current state of the wave system. */
-  waveState?: WaveState;
-  /**
-   * Places a tower on the grid.
-   * @param x - The x-coordinate of the grid.
-   * @param z - The z-coordinate of the grid.
-   * @param type - The type of tower to place.
-   */
-  placeTower: (x: number, z: number, type: TowerType) => void;
-  /** Starts the game session. */
-  startGame: () => void;
-  /** Resets the game to its initial state. */
-  resetGame: () => void;
-  /** Currently selected tower type for building (null if none). */
-  selectedTower: TowerType | null;
-  /** Sets the currently selected tower type for building. */
-  setSelectedTower: (t: TowerType | null) => void;
-  /** ID of the currently selected tower entity (for upgrading/selling). */
-  selectedEntityId: string | null;
-  /** Sets the ID of the selected tower entity. */
-  setSelectedEntityId: (id: string | null) => void;
-  /**
-   * Upgrades a specific tower.
-   * @param id - The ID of the tower to upgrade.
-   */
-  upgradeTower: (id: string) => void;
-  /**
-   * Sells a specific tower.
-   * @param id - The ID of the tower to sell.
-   */
-  sellTower: (id: string) => void;
-
-  /**
-   * Checks if a tower can be placed at the given coordinates.
-   * @param x - The x-coordinate of the grid.
-   * @param z - The z-coordinate of the grid.
-   * @returns True if placement is valid, false otherwise.
-   */
-  isValidPlacement: (x: number, z: number) => boolean;
-  /** State setter for enemies list. */
-  setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>;
-  /** State setter for towers list. */
-  setTowers: React.Dispatch<React.SetStateAction<TowerEntity[]>>;
-  /** State setter for projectiles list. */
-  setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>;
-  /** State setter for effects list. */
-  setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>;
-  /** State setter for global game state. */
-  setGameState: React.Dispatch<React.SetStateAction<GameState>>;
-  /** State setter for wave state. */
-  setWaveState?: React.Dispatch<React.SetStateAction<WaveState>>;
-  /** Reset wave state manually. */
-  resetWave?: () => void;
-  /** Method to update wave logic (delta time). */
-  updateWave?: (delta: number, currentEnemies: EnemyEntity[]) => void;
-  /** Current Map Grid. */
-  mapGrid: TileType[][];
-  /** Current Path Waypoints. */
-  pathWaypoints: Vector2[];
-  /** Advance to the next sector (map). */
-  startNextSector: () => void;
-  /** Purchase an upgrade. */
-  purchaseUpgrade: (type: UpgradeType, cost: number) => void;
-}
+import { useGameOrchestrator } from './orchestrator';
+import { GameContextProps } from './contextTypes';
 
 /** Context for managing game state. */
 const GameContext = createContext<GameContextProps | undefined>(undefined);
@@ -156,105 +67,22 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pathWaypoints,
   );
 
-  /**
-   * Initializes the game state for a new session.
-   */
-  const startGame = useCallback(() => {
-    startGameStats();
-    resetWave();
-    setEnemies([]);
-    setTowers([]);
-    setProjectiles([]);
-    setEffects([]);
-    setSelectedEntityId(null);
-  }, [
-    startGameStats,
-    resetWave,
-    setEnemies,
-    setTowers,
-    setProjectiles,
-    setEffects,
-    setSelectedEntityId,
-  ]);
-
-  /**
-   * Resets the game state to default values (idle).
-   */
-  const resetGame = useCallback(() => {
-    resetGameStats();
-    resetWave(); // Ensure wave state is reset to 0
-    setEnemies([]);
-    setTowers([]);
-    setProjectiles([]);
-    setEffects([]);
-    setSelectedEntityId(null);
-  }, [
-    resetGameStats,
-    resetWave,
-    setEnemies,
-    setTowers,
-    setProjectiles,
-    setEffects,
-    setSelectedEntityId,
-  ]);
-
-  const startNextSector = useCallback(() => {
-    // 1. Calculate new starting money based on Greed
-    const greedLevel = gameState.upgrades[UpgradeType.GLOBAL_GREED] || 0;
-    const startMoney = 150 * (1 + greedLevel * 0.05);
-
-    // 2. Clear entities
-    setEnemies([]);
-    setTowers([]);
-    setProjectiles([]);
-    setEffects([]);
-    setSelectedEntityId(null);
-
-    // 3. Update Game State (Map + Money + Status)
-    setGameState((prev) => ({
-      ...prev,
-      currentMapIndex: prev.currentMapIndex + 1,
-      money: startMoney,
-      gameStatus: 'playing', // Resume playing
-      isPlaying: true,
-      totalDamageDealt: 0,
-      totalCurrencyEarned: 0,
-    }));
-
-    // 4. Reset Wave Manager state to preparing for next wave
-    // We don't want to reset wave number to 0, just phase.
-    // This requires exposing a way to set phase or just calling resetWave?
-    // If resetWave sets wave to 0, we can't use it.
-    // Let's assume for now we just change gameStatus and useWaveManager reacts or we add a specific "nextSector" method to wave manager.
-    // Actually, useWaveManager needs to be told "we are ready for next wave".
-    // If we are in 'victory', we need to transition.
-    // We'll fix useWaveManager logic next.
-  }, [
-    gameState.upgrades,
-    setEnemies,
-    setTowers,
-    setProjectiles,
-    setEffects,
-    setSelectedEntityId,
+  const {
+    startGame,
+    resetGame,
+    startNextSector,
+    purchaseUpgrade,
+  } = useGameOrchestrator(
+    gameState,
     setGameState,
-  ]);
-
-  const purchaseUpgrade = useCallback(
-    (type: UpgradeType, cost: number) => {
-      setGameState((prev) => {
-        if (prev.researchPoints < cost) return prev;
-        const currentLevel = prev.upgrades[type] || 0;
-        return {
-          ...prev,
-          researchPoints: prev.researchPoints - cost,
-          upgrades: {
-            ...prev.upgrades,
-            [type]: currentLevel + 1,
-          },
-        };
-      });
-    },
-    [setGameState],
+    setEnemies,
+    setTowers,
+    setProjectiles,
+    setEffects,
+    setSelectedEntityId,
+    startGameStats,
+    resetGameStats,
+    resetWave
   );
 
   return (

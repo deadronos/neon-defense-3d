@@ -1,0 +1,92 @@
+import React from 'react';
+import type {
+  EnemyEntity,
+  GameState,
+  ProjectileEntity,
+  TowerEntity,
+  TowerType,
+  EffectEntity,
+  WaveState,
+  TileType,
+  Vector2,
+  UpgradeType,
+} from '../types';
+
+/**
+ * Interface defining the properties and methods available in the GameContext.
+ */
+export interface GameContextProps {
+  /** Current global game state (money, lives, wave, etc). */
+  gameState: GameState;
+  /** List of currently active enemies. */
+  enemies: EnemyEntity[];
+  /** List of placed towers. */
+  towers: TowerEntity[];
+  /** List of active projectiles. */
+  projectiles: ProjectileEntity[];
+  /** List of visual effects. */
+  effects: EffectEntity[];
+  /** Current state of the wave system. */
+  waveState?: WaveState;
+  /**
+   * Places a tower on the grid.
+   * @param x - The x-coordinate of the grid.
+   * @param z - The z-coordinate of the grid.
+   * @param type - The type of tower to place.
+   */
+  placeTower: (x: number, z: number, type: TowerType) => void;
+  /** Starts the game session. */
+  startGame: () => void;
+  /** Resets the game to its initial state. */
+  resetGame: () => void;
+  /** Currently selected tower type for building (null if none). */
+  selectedTower: TowerType | null;
+  /** Sets the currently selected tower type for building. */
+  setSelectedTower: (t: TowerType | null) => void;
+  /** ID of the currently selected tower entity (for upgrading/selling). */
+  selectedEntityId: string | null;
+  /** Sets the ID of the selected tower entity. */
+  setSelectedEntityId: (id: string | null) => void;
+  /**
+   * Upgrades a specific tower.
+   * @param id - The ID of the tower to upgrade.
+   */
+  upgradeTower: (id: string) => void;
+  /**
+   * Sells a specific tower.
+   * @param id - The ID of the tower to sell.
+   */
+  sellTower: (id: string) => void;
+
+  /**
+   * Checks if a tower can be placed at the given coordinates.
+   * @param x - The x-coordinate of the grid.
+   * @param z - The z-coordinate of the grid.
+   * @returns True if placement is valid, false otherwise.
+   */
+  isValidPlacement: (x: number, z: number) => boolean;
+  /** State setter for enemies list. */
+  setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>;
+  /** State setter for towers list. */
+  setTowers: React.Dispatch<React.SetStateAction<TowerEntity[]>>;
+  /** State setter for projectiles list. */
+  setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>;
+  /** State setter for effects list. */
+  setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>;
+  /** State setter for global game state. */
+  setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+  /** State setter for wave state. */
+  setWaveState?: React.Dispatch<React.SetStateAction<WaveState>>;
+  /** Reset wave state manually. */
+  resetWave?: () => void;
+  /** Method to update wave logic (delta time). */
+  updateWave?: (delta: number, currentEnemies: EnemyEntity[]) => void;
+  /** Current Map Grid. */
+  mapGrid: TileType[][];
+  /** Current Path Waypoints. */
+  pathWaypoints: Vector2[];
+  /** Advance to the next sector (map). */
+  startNextSector: () => void;
+  /** Purchase an upgrade. */
+  purchaseUpgrade: (type: UpgradeType, cost: number) => void;
+}
