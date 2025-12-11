@@ -12,6 +12,8 @@ import { useWaveManager } from './useWaveManager';
 import { useGameStats } from './hooks/useGameStats';
 import { useTowerState } from './hooks/useTowerState';
 import { useEntityState } from './hooks/useEntityState';
+import { MAP_LAYOUTS, getMapGrid, generatePath } from '../constants';
+import { TileType, Vector2, UpgradeType } from '../types';
 
 /**
  * Interface defining the properties and methods available in the GameContext.
@@ -82,6 +84,14 @@ interface GameContextProps {
   resetWave?: () => void;
   /** Method to update wave logic (delta time). */
   updateWave?: (delta: number, currentEnemies: EnemyEntity[]) => void;
+  /** Current Map Grid. */
+  mapGrid: TileType[][];
+  /** Current Path Waypoints. */
+  pathWaypoints: Vector2[];
+  /** Advance to the next sector (map). */
+  startNextSector: () => void;
+  /** Purchase an upgrade. */
+  purchaseUpgrade: (type: UpgradeType, cost: number) => void;
 }
 
 /** Context for managing game state. */
@@ -117,6 +127,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setEffects,
   } = useEntityState();
 
+  // Derive Map Data
+  const currentMapLayout = MAP_LAYOUTS[gameState.currentMapIndex % MAP_LAYOUTS.length];
+  // Memoize these if performance becomes an issue, but map index changes rarely.
+  const mapGrid = getMapGrid(currentMapLayout);
+  const pathWaypoints = generatePath(currentMapLayout);
+
   const {
     towers,
     setTowers,
@@ -130,7 +146,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isValidPlacement,
   } = useTowerState(gameState, setGameState);
 
-  const { waveState, updateWave, resetWave } = useWaveManager(gameState.isPlaying, setEnemies, setGameState);
+  const { waveState, updateWave, resetWave } = useWaveManager(gameState, setEnemies, setGameState, pathWaypoints);
 
   /**
    * Initializes the game state for a new session.
@@ -157,6 +173,54 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setEffects([]);
     setSelectedEntityId(null);
   }, [resetGameStats, resetWave, setEnemies, setTowers, setProjectiles, setEffects, setSelectedEntityId]);
+
+  const startNextSector = useCallback(() => {
+    // 1. Calculate new starting money based on Greed
+    const greedLevel = gameState.upgrades[UpgradeType.GLOBAL_GREED] || 0;
+    const startMoney = 150 * (1 + greedLevel * 0.05);
+
+    // 2. Clear entities
+    setEnemies([]);
+    setTowers([]);
+    setProjectiles([]);
+    setEffects([]);
+    setSelectedEntityId(null);
+
+    // 3. Update Game State (Map + Money + Status)
+    setGameState(prev => ({
+      ...prev,
+      currentMapIndex: prev.currentMapIndex + 1,
+      money: startMoney,
+      gameStatus: 'playing', // Resume playing
+      isPlaying: true,
+      totalDamageDealt: 0,
+      totalCurrencyEarned: 0,
+    }));
+    
+    // 4. Reset Wave Manager state to preparing for next wave
+    // We don't want to reset wave number to 0, just phase.
+    // This requires exposing a way to set phase or just calling resetWave?
+    // If resetWave sets wave to 0, we can't use it.
+    // Let's assume for now we just change gameStatus and useWaveManager reacts or we add a specific "nextSector" method to wave manager.
+    // Actually, useWaveManager needs to be told "we are ready for next wave".
+    // If we are in 'victory', we need to transition.
+    // We'll fix useWaveManager logic next.
+  }, [gameState.upgrades, setEnemies, setTowers, setProjectiles, setEffects, setSelectedEntityId, setGameState]);
+
+  const purchaseUpgrade = useCallback((type: UpgradeType, cost: number) => {
+    setGameState(prev => {
+      if (prev.researchPoints < cost) return prev;
+      const currentLevel = prev.upgrades[type] || 0;
+      return {
+        ...prev,
+        researchPoints: prev.researchPoints - cost,
+        upgrades: {
+          ...prev.upgrades,
+          [type]: currentLevel + 1
+        }
+      };
+    });
+  }, [setGameState]);
 
   return (
     <GameContext.Provider
@@ -185,6 +249,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updateWave,
         resetWave,
         setWaveState: undefined, // Managed internally by hook
+        mapGrid: getMapGrid(MAP_LAYOUTS[gameState.currentMapIndex % MAP_LAYOUTS.length]),
+        pathWaypoints: generatePath(MAP_LAYOUTS[gameState.currentMapIndex % MAP_LAYOUTS.length]),
+        startNextSector,
+        purchaseUpgrade,
       }}
     >
       {children}

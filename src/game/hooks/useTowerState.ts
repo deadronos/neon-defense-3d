@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { Vector3 } from 'three';
 import { MAP_GRID, TOWER_CONFIGS, TILE_SIZE } from '../../constants';
+import { getTowerStats } from '../utils';
 import { TileType } from '../../types';
 import type { TowerEntity, TowerType, GameState } from '../../types';
 
@@ -80,8 +81,8 @@ export const useTowerState = (
         prev.map((t) => {
           if (t.id !== id) return t;
 
-          const config = TOWER_CONFIGS[t.type];
-          const upgradeCost = Math.floor(config.cost * Math.pow(1.5, t.level));
+          const stats = getTowerStats(t.type, t.level, gameState.upgrades);
+          const upgradeCost = stats.upgradeCost;
 
           if (gameState.money >= upgradeCost) {
             setGameState((g) => ({ ...g, money: g.money - upgradeCost }));
@@ -91,7 +92,7 @@ export const useTowerState = (
         })
       );
     },
-    [gameState.money, setGameState]
+    [gameState.money, gameState.upgrades, setGameState]
   );
 
   /**

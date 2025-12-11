@@ -38,6 +38,10 @@ export const GameLoopBridge = () => {
     const now = state.clock.elapsedTime;
     setTowers((prevTowers) => updateTowers(prevTowers, enemies, now, setProjectiles));
 
+    // Calculate Greed Multiplier
+    const greedLevel = gameState.upgrades?.['GLOBAL_GREED'] || 0;
+    const greedMultiplier = 1 + greedLevel * 0.05;
+
     // Projectile Move & Collision
     setProjectiles((prevProjectiles) =>
       updateProjectiles(
@@ -47,7 +51,8 @@ export const GameLoopBridge = () => {
         now,
         setEnemies,
         setGameState,
-        setEffects
+        setEffects,
+        greedMultiplier
       )
     );
   });

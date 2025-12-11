@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { TOWER_CONFIGS } from '../constants';
 import { useGame } from '../game/GameState';
 import { getTowerStats } from '../game/utils';
 import { TowerType } from '../types';
+import { VictoryPopup } from './VictoryPopup';
+import { TechTreeModal } from './TechTreeModal';
 
 /**
- * A helper component to display a tooltip on hover.
+ * A helper component to display a helper tooltip on hover.
  */
 const Tooltip = ({ text, className = '' }: { text: React.ReactNode; className?: string }) => (
   <div
@@ -33,6 +35,15 @@ export const UI = () => {
     setSelectedEntityId,
     waveState,
   } = useGame();
+
+  const [showTechTree, setShowTechTree] = useState(false);
+
+  // Reset tech tree visibility when game status changes to playing or idle
+  useEffect(() => {
+    if (gameState.gameStatus === 'playing' || gameState.gameStatus === 'idle') {
+      setShowTechTree(false);
+    }
+  }, [gameState.gameStatus]);
 
   if (gameState.gameStatus === 'idle') {
     return (
@@ -82,6 +93,14 @@ export const UI = () => {
         </div>
       </div>
     );
+  }
+
+  // Victory / Tech Tree UI
+  if (gameState.gameStatus === 'victory') {
+    if (showTechTree) {
+      return <TechTreeModal />;
+    }
+    return <VictoryPopup onOpenTechTree={() => setShowTechTree(true)} />;
   }
 
   // Determine if we are inspecting a tower
@@ -152,6 +171,9 @@ export const UI = () => {
               const isSelected = selectedTower === type;
               const canAfford = gameState.money >= config.cost;
 
+              // Display base stats, assume level 1 and active upgrades
+              const stats = getTowerStats(type, 1, gameState.upgrades);
+
               return (
                 <button
                   key={type}
@@ -205,14 +227,14 @@ export const UI = () => {
                     <p className="text-gray-400 mb-3 italic">{config.description}</p>
                     <div className="grid grid-cols-2 gap-y-1 text-gray-500 font-mono text-[10px]">
                       <span>
-                        DMG: <span className="text-white">{config.damage}</span>
+                        DMG: <span className="text-white">{stats.damage.toFixed(0)}</span>
                       </span>
                       <span>
                         SPD:{' '}
-                        <span className="text-white">{(1 / config.cooldown).toFixed(1)}/s</span>
+                        <span className="text-white">{(1 / stats.cooldown).toFixed(1)}/s</span>
                       </span>
                       <span className="col-span-2">
-                        RNG: <span className="text-white">{config.range}M</span>
+                        RNG: <span className="text-white">{stats.range.toFixed(1)}M</span>
                       </span>
                     </div>
                   </div>
@@ -251,10 +273,12 @@ export const UI = () => {
                   const current = getTowerStats(
                     selectedTowerEntity.type,
                     selectedTowerEntity.level,
+                    gameState.upgrades
                   );
                   const next = getTowerStats(
                     selectedTowerEntity.type,
                     selectedTowerEntity.level + 1,
+                    gameState.upgrades
                   );
                   return (
                     <>
@@ -308,6 +332,7 @@ export const UI = () => {
                 const nextStats = getTowerStats(
                   selectedTowerEntity.type,
                   selectedTowerEntity.level + 1,
+                  gameState.upgrades
                 );
                 const canAfford = gameState.money >= nextStats.upgradeCost;
                 return (

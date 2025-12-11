@@ -6,7 +6,12 @@ import { TowerType } from './types';
  * 0: Grass, 1: Path, 2: Spawn, 3: Base
  * Represents a 12x8 Grid.
  */
-const RAW_MAP = [
+/**
+ * Map definitions as 2D arrays of integers.
+ * 0: Grass, 1: Path, 2: Spawn, 3: Base
+ * Represents a 12x8 Grid.
+ */
+const MAP_1 = [
   [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
   [2, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0],
   [0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0],
@@ -17,32 +22,53 @@ const RAW_MAP = [
   [0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 ];
 
+const MAP_2 = [
+  [2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+  [0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0],
+  [0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0],
+];
+
+const MAP_3 = [
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+  [0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+  [0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0],
+  [0, 1, 0, 3, 0, 0, 1, 0, 0, 1, 0, 0],
+  [0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
+  [2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+];
+
+export const MAP_LAYOUTS = [MAP_1, MAP_2, MAP_3];
+
 /** The width of the map grid. */
-export const MAP_WIDTH = RAW_MAP[0].length;
+// Assuming all maps have same dimensions
+export const MAP_WIDTH = MAP_LAYOUTS[0][0].length;
 /** The height of the map grid. */
-export const MAP_HEIGHT = RAW_MAP.length;
+export const MAP_HEIGHT = MAP_LAYOUTS[0].length;
 /** The size of each tile in world units. */
 export const TILE_SIZE = 2; // World units per tile
 
 /**
- * The map grid converted to TileType enums.
- */
-export const MAP_GRID: TileType[][] = RAW_MAP.map((row) => row.map((cell) => cell as TileType));
-
-/**
  * Generates a path from the spawn point to the base using Breadth-First Search (BFS).
  *
+ * @param mapLayout The 2D array map definition.
  * @returns An array of Vector2 coordinates representing the path. Returns an empty array if no path is found.
  */
-const generatePath = (): Vector2[] => {
+export const generatePath = (mapLayout: number[][]): Vector2[] => {
   let start: Vector2 | null = null;
   let end: Vector2 | null = null;
 
   // Find start and end points
   for (let z = 0; z < MAP_HEIGHT; z++) {
     for (let x = 0; x < MAP_WIDTH; x++) {
-      if (RAW_MAP[z][x] === 2) start = [x, z];
-      if (RAW_MAP[z][x] === 3) end = [x, z];
+      if (mapLayout[z][x] === 2) start = [x, z];
+      if (mapLayout[z][x] === 3) end = [x, z];
     }
   }
 
@@ -71,11 +97,10 @@ const generatePath = (): Vector2[] => {
 
     for (const [nx, nz] of neighbors) {
       if (nx >= 0 && nx < MAP_WIDTH && nz >= 0 && nz < MAP_HEIGHT) {
-        const type = RAW_MAP[nz][nx];
+        const type = mapLayout[nz][nx];
         const key = `${nx},${nz}`;
 
         // Walkable tiles: Path (1) or Base (3)
-        // (Spawn (2) is start, so we don't return to it usually, but it's handled by visited set)
         if ((type === 1 || type === 3) && !visited.has(key)) {
           visited.add(key);
           queue.push({ pos: [nx, nz], path: [...path, [nx, nz]] });
@@ -88,9 +113,17 @@ const generatePath = (): Vector2[] => {
 };
 
 /**
- * Pre-calculated path waypoints from spawn to base.
+ * Helper to convert raw map to TileType grid.
  */
-export const PATH_WAYPOINTS = generatePath();
+export const getMapGrid = (mapLayout: number[][]): TileType[][] => 
+  mapLayout.map((row) => row.map((cell) => cell as TileType));
+
+/**
+ * INITIAL MAP DATA (For default initialization)
+ */
+export const INITIAL_MAP_LAYOUT = MAP_LAYOUTS[0];
+export const INITIAL_MAP_GRID = getMapGrid(INITIAL_MAP_LAYOUT);
+export const INITIAL_PATH = generatePath(INITIAL_MAP_LAYOUT);
 
 /**
  * Configuration definitions for different enemy types.

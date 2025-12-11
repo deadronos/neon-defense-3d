@@ -31,9 +31,12 @@ export const useProjectileBehavior = () => {
       currentTime: number,
       setEnemies: React.Dispatch<React.SetStateAction<EnemyEntity[]>>,
       setGameState: React.Dispatch<React.SetStateAction<GameState>>,
-      setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>
+      setEffects: React.Dispatch<React.SetStateAction<EffectEntity[]>>,
+      greedMultiplier: number = 1
     ): ProjectileEntity[] => {
       const hits: Record<string, number> = {};
+      let frameTotalDamage = 0;
+
       const activeProjectiles = projectiles
         .map((p) => {
           const newP = { ...p } as any;
@@ -43,6 +46,7 @@ export const useProjectileBehavior = () => {
           newP.progress += delta * 3;
           if (newP.progress >= 1) {
             hits[newP.targetId] = (hits[newP.targetId] || 0) + newP.damage;
+            frameTotalDamage += newP.damage;
             return null;
           }
           return newP;
@@ -78,7 +82,7 @@ export const useProjectileBehavior = () => {
               const remainingHp = e.hp - hpDamage;
 
               if (remainingHp <= 0) {
-                moneyGained += e.config.reward;
+                moneyGained += Math.floor(e.config.reward * greedMultiplier);
                 newEffects.push({
                   id: Math.random().toString(),
                   type: 'explosion',
@@ -97,14 +101,15 @@ export const useProjectileBehavior = () => {
             }
           }
 
-          if (moneyGained > 0 || newEffects.length > 0) {
-            // Use setTimeout to break out of the render cycle for state updates if necessary,
-            // but in this context (inside setEnemies callback), it's safe to call other setters?
-            // Actually, calling setGameState inside setEnemies might trigger a warning if not careful.
-            // Using setTimeout ensures it happens after the current render pass.
+          if (moneyGained > 0 || newEffects.length > 0 || frameTotalDamage > 0) {
             setTimeout(() => {
-              if (moneyGained > 0)
-                setGameState((g) => ({ ...g, money: g.money + moneyGained }));
+              if (moneyGained > 0 || frameTotalDamage > 0)
+                setGameState((g) => ({
+                   ...g,
+                   money: g.money + moneyGained,
+                   totalCurrencyEarned: (g.totalCurrencyEarned || 0) + moneyGained,
+                   totalDamageDealt: (g.totalDamageDealt || 0) + frameTotalDamage
+                }));
               if (newEffects.length > 0)
                 setEffects((prev) => [...prev, ...newEffects]);
             }, 0);
