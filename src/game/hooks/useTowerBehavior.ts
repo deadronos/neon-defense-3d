@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import * as THREE from 'three';
+
 import { TOWER_CONFIGS } from '../../constants';
 import type { TowerEntity, EnemyEntity, ProjectileEntity, TowerType } from '../../types';
 import { getTowerStats } from '../utils';
@@ -23,7 +24,7 @@ export const useTowerBehavior = () => {
       towers: TowerEntity[],
       enemies: EnemyEntity[],
       now: number,
-      setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>
+      setProjectiles: React.Dispatch<React.SetStateAction<ProjectileEntity[]>>,
     ): TowerEntity[] => {
       const newProjs: ProjectileEntity[] = [];
       const updatedTowers = towers.map((t) => {
@@ -44,7 +45,7 @@ export const useTowerBehavior = () => {
         }
 
         if (target) {
-          newProjs.push({
+          const proj: ProjectileEntity = {
             id: Math.random().toString(),
             startPos: t.position.clone().add(new THREE.Vector3(0, 1.5, 0)),
             targetId: target.id,
@@ -52,7 +53,8 @@ export const useTowerBehavior = () => {
             progress: 0,
             damage: stats.damage,
             color: TOWER_CONFIGS[t.type as TowerType].color,
-          } as any);
+          };
+          newProjs.push(proj);
           return { ...t, lastFired: now, targetId: target.id };
         }
         return t;
@@ -63,7 +65,7 @@ export const useTowerBehavior = () => {
       }
       return updatedTowers;
     },
-    []
+    [],
   );
 
   return { updateTowers };

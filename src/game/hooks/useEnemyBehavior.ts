@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import * as THREE from 'three';
-import { PATH_WAYPOINTS, TILE_SIZE } from '../../constants';
-import type { EnemyEntity, GameState } from '../../types';
+
+import { TILE_SIZE } from '../../constants';
+import type { EnemyEntity, GameState, Vector2 } from '../../types';
 
 /**
  * Hook to manage enemy movement logic and life deduction.
@@ -15,18 +16,20 @@ export const useEnemyBehavior = () => {
    * @param enemies - List of current enemies.
    * @param delta - Time delta.
    * @param setGameState - State setter for game state (to deduct lives).
+   * @param pathWaypoints - The current path waypoints.
    * @returns The updated list of enemies.
    */
   const updateEnemies = useCallback(
     (
       enemies: EnemyEntity[],
       delta: number,
-      setGameState: React.Dispatch<React.SetStateAction<GameState>>
+      setGameState: React.Dispatch<React.SetStateAction<GameState>>,
+      pathWaypoints: Vector2[],
     ): EnemyEntity[] => {
       let hpLoss = 0;
       const nextEnemies = enemies
         .map((e) => {
-          const newEnemy = { ...e } as any;
+          const newEnemy = { ...e } as EnemyEntity;
 
           // Ability Logic (Dash)
           let currentSpeed = newEnemy.config.speed;
@@ -43,8 +46,8 @@ export const useEnemyBehavior = () => {
             }
           }
 
-          const p1 = PATH_WAYPOINTS[newEnemy.pathIndex];
-          const p2 = PATH_WAYPOINTS[newEnemy.pathIndex + 1];
+          const p1 = pathWaypoints[newEnemy.pathIndex];
+          const p2 = pathWaypoints[newEnemy.pathIndex + 1];
 
           if (!p2) {
             hpLoss++;
@@ -59,18 +62,18 @@ export const useEnemyBehavior = () => {
           if (newEnemy.progress >= 1) {
             newEnemy.progress = 0;
             newEnemy.pathIndex++;
-            if (newEnemy.pathIndex >= PATH_WAYPOINTS.length - 1) {
+            if (newEnemy.pathIndex >= pathWaypoints.length - 1) {
               hpLoss++;
               return null;
             }
           }
 
-          const pp1 = PATH_WAYPOINTS[newEnemy.pathIndex];
-          const pp2 = PATH_WAYPOINTS[newEnemy.pathIndex + 1] || pp1;
+          const pp1 = pathWaypoints[newEnemy.pathIndex];
+          const pp2 = pathWaypoints[newEnemy.pathIndex + 1] || pp1;
           newEnemy.position = new THREE.Vector3(
             (pp1[0] + (pp2[0] - pp1[0]) * newEnemy.progress) * TILE_SIZE,
             1,
-            (pp1[1] + (pp2[1] - pp1[1]) * newEnemy.progress) * TILE_SIZE
+            (pp1[1] + (pp2[1] - pp1[1]) * newEnemy.progress) * TILE_SIZE,
           );
           return newEnemy;
         })
@@ -86,7 +89,7 @@ export const useEnemyBehavior = () => {
 
       return nextEnemies;
     },
-    []
+    [],
   );
 
   return { updateEnemies };

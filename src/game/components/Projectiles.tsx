@@ -1,7 +1,8 @@
-import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
+import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
-import { ProjectileEntity, EnemyEntity } from '../../types';
+
+import type { ProjectileEntity, EnemyEntity } from '../../types';
 
 export const InstancedProjectiles: React.FC<{
   projectiles: ProjectileEntity[];
@@ -38,12 +39,11 @@ export const InstancedProjectiles: React.FC<{
 
     projectiles.forEach((p, i) => {
       if (i >= count) return;
-
-      const pColor = (p as any).color; // Assuming color string
+      const pColor = p.color; // color string
       let cached = colorCache.get(pColor);
       if (!cached) {
-         cached = new THREE.Color(pColor).multiplyScalar(2);
-         colorCache.set(pColor, cached);
+        cached = new THREE.Color(pColor).multiplyScalar(2);
+        colorCache.set(pColor, cached);
       }
 
       const target = enemyMap.get(p.targetId || '');
@@ -56,7 +56,7 @@ export const InstancedProjectiles: React.FC<{
       // Note: Data doesn't persist targets position if dead.
       // We'll skip rendering if target missing (or it will glitch)
       if (target) {
-        const start = (p as any).startPos;
+        const start = p.startPos;
         const end = target.position;
 
         // Lerp position
@@ -78,7 +78,7 @@ export const InstancedProjectiles: React.FC<{
         meshRef.current?.setColorAt(i, cached); // Boost emissive look
       } else {
         // Hide
-         meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+        meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
       }
     });
 
