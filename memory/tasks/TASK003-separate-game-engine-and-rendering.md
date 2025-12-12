@@ -1,8 +1,8 @@
 # TASK003 — Separate Game Engine and Rendering
 
-**Status:** In Progress — Phase 1 scaffolding
+**Status:** In Progress — engine gameplay migration underway
 **Added:** 2025-12-12
-**Updated:** 2025-12-13
+**Updated:** 2025-12-12
 
 ## Original Request
 
@@ -86,8 +86,8 @@ This task will be implemented as two PRs.
 | 1.4 | Add selectors for world positions | Done | 2025-12-12 | Pure selectors derive world coordinates without `three`. |
 | 1.5 | Add UI action `removeEffect(effectId)` | Done | 2025-12-13 | Reducer exposes remove-effect path + tests. |
 | 1.6 | Add runtime bridge applying engine results to UI | Done | 2025-12-13 | Runtime helper applies tick results + renderer intents. |
-| 2.1 | Migrate wave/enemy/tower/projectile into engine reducer tick | In Progress | 2025-12-13 | Added wave tick + enemy step, and composed them via `stepEngine` so spawning feeds directly into movement and event aggregation. |
-| 2.2 | Remove `setTimeout` ordering via deferred events | Not Started | 2025-12-12 | |
+| 2.1 | Migrate wave/enemy/tower/projectile into engine reducer tick | Done | 2025-12-12 | Added `stepTowers` + `stepProjectiles`, composed into `stepEngine`, and added engine-level tests. |
+| 2.2 | Remove `setTimeout` ordering via deferred events | In Progress | 2025-12-12 | Engine projectile rewards now emit deferred events; legacy `useProjectileBehavior` still uses `setTimeout` until PR2 wiring lands. |
 | 2.3 | Hard cut context exports (dispatch/actions only) | Not Started | 2025-12-12 | |
 | 2.4 | Update components to use selectors + dispatch intents | Not Started | 2025-12-12 | |
 
