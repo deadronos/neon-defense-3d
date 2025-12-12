@@ -8,7 +8,6 @@ describe('engine uiReducer', () => {
     const initial = createInitialUiState();
     const next = uiReducer(initial, { type: 'startGame' });
     expect(next.gameStatus).toBe('playing');
-    expect(next.isPlaying).toBe(true);
     expect(next.money).toBe(150);
     expect(next.lives).toBe(20);
     expect(next.wave).toBe(1);
@@ -30,7 +29,6 @@ describe('engine uiReducer', () => {
     const playing = {
       ...createInitialUiState(),
       gameStatus: 'playing' as const,
-      isPlaying: true,
       totalDamageDealt: 400,
       totalCurrencyEarned: 200,
       researchPoints: 0,
@@ -42,7 +40,6 @@ describe('engine uiReducer', () => {
     });
 
     expect(next.gameStatus).toBe('victory');
-    expect(next.isPlaying).toBe(false);
     expect(next.researchPoints).toBe(4); // floor(400/200 + 200/100)
   });
 });

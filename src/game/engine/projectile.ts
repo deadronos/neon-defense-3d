@@ -42,9 +42,13 @@ export const stepProjectiles = (
   let frameTotalDamage = 0;
 
   const activeProjectiles: EngineProjectile[] = [];
+  const enemiesById = new Map<string, EngineEnemy>();
+  for (const enemy of state.enemies) {
+    enemiesById.set(enemy.id, enemy);
+  }
 
   for (const projectile of state.projectiles) {
-    const target = state.enemies.find((enemy) => enemy.id === projectile.targetId);
+    const target = enemiesById.get(projectile.targetId);
     if (!target) continue;
 
     const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;

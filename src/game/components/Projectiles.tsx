@@ -13,6 +13,8 @@ export const InstancedProjectiles: React.FC<{
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const count = 1000;
   const dummy = useMemo(() => new THREE.Object3D(), []);
+  const enemyMapRef = useRef<Map<string, EnemyEntity>>(new Map());
+  const colorCacheRef = useRef<Map<string, THREE.Color>>(new Map());
 
   // Precomute geometry alignment: Cylinder is Y-up, we want Z-forward for lookAt
   const geometry = useMemo(() => {
@@ -29,15 +31,13 @@ export const InstancedProjectiles: React.FC<{
   useFrame(() => {
     if (!meshRef.current) return;
 
-    // Optimization: Create a map for fast enemy lookup
-    // Since enemies array is new every frame, this is O(N) which is fine
-    const enemyMap = new Map<string, EnemyEntity>();
-    for (const e of enemies) {
-      enemyMap.set(e.id, e);
+    const enemyMap = enemyMapRef.current;
+    enemyMap.clear();
+    for (const enemy of enemies) {
+      enemyMap.set(enemy.id, enemy);
     }
 
-    // Color cache for projectiles
-    const colorCache = new Map<string, THREE.Color>();
+    const colorCache = colorCacheRef.current;
 
     projectiles.forEach((p, i) => {
       if (i >= count) return;

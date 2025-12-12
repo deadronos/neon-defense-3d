@@ -14,7 +14,7 @@ import type {
   EffectEntity,
   EnemyConfig,
   EnemyEntity,
-  GameState as LegacyGameState,
+  GameState,
   ProjectileEntity,
   TowerEntity,
   TowerType,
@@ -57,7 +57,7 @@ const toWaveState = (engineWave: EngineState['wave']): WaveState | null => {
 const toEnemyEntity = (
   enemy: EngineEnemy,
   enemyTypeMap: Map<string, EnemyTypeConfig>,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
 ): EnemyEntity => {
   const baseConfig = enemyTypeMap.get(enemy.type);
   const config: EnemyConfig = {
@@ -208,7 +208,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const mapGrid = useMemo(() => getMapGrid(currentMapLayout), [currentMapLayout]);
   const pathWaypoints = useMemo(() => generatePath(currentMapLayout), [currentMapLayout]);
 
-  const enginePathWaypoints = pathWaypoints as unknown as EngineVector2[];
+  const enginePathWaypoints: readonly EngineVector2[] = pathWaypoints;
 
   const enemies = useMemo(
     () =>
@@ -317,7 +317,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [enginePathWaypoints],
   );
 
-  const gameState: LegacyGameState = runtime.ui as unknown as LegacyGameState;
+  const gameState: GameState = {
+    ...runtime.ui,
+    isPlaying: runtime.ui.gameStatus === 'playing',
+  };
 
   return (
     <GameContext.Provider

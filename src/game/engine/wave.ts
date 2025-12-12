@@ -94,7 +94,7 @@ const spawnEnemy = (
 
 const startNextWave = (
   waveState: EngineWaveState,
-  prepTimeMs: number,
+  _prepTimeMs: number,
 ): { wave: EngineWaveState; events: EngineEvent[] } => {
   const nextWave = waveState.wave + 1;
   const config = createWaveConfig(nextWave);
