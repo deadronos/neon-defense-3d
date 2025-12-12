@@ -7,13 +7,16 @@
 ## Recent changes (code highlights)
 
 - `InstancedEnemies` and `InstancedProjectiles` use `THREE.InstancedMesh` for large counts (see `src/game/components/Enemies.tsx` and `src/game/components/Projectiles.tsx`).
-- `GameLoopBridge` (`src/game/components/GameLoop.tsx`) centralizes per-frame logic via `useFrame`: enemy movement, tower firing, projectile updates, and wave management.
-- Wave system moved to `useWaveManager` with phases and spawn logic; path generation uses BFS in `src/constants.ts` (`generatePath`).
+- `GameLoopBridge` (`src/game/components/GameLoop.tsx`) now delegates simulation stepping to the pure engine via `useGame().step(...)`.
+- `GameProvider` (`src/game/GameState.tsx`) is now reducer-driven (engine + UI), with entity arrays derived from engine state via selectors (no `three` types in engine state).
+- Engine wave progression now lives in `src/game/engine/wave.ts`; path generation uses BFS in `src/constants.ts` (`generatePath`).
 - UI overlay (`src/components/UI.tsx`) handles game states (`idle`, `playing`, `gameover`, `victory`) and build/upgrade flows. Victory transitions grant research points.
+- Engine/runtime unit tests live under `src/tests/game/engine/` and cover tick contracts and state transitions.
 
 ## Next steps
 
-- Add small unit tests around `useWaveManager`, `useEnemyBehavior`, and `useProjectileBehavior` to lock expected behavior.
+- Do a manual gameplay parity pass (movement, firing cadence, rewards, victory after wave 10).
+- Consider reducing per-frame allocations from deriving `THREE.Vector3` in selectors if performance/GC becomes an issue.
 - Create design docs for major features (e.g., Tech Tree/sector progression) under `memory/designs/`.
 - Monitor runtime performance and reduce allocations in hot loops if GC pressure appears.
 

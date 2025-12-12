@@ -15,14 +15,10 @@ import { Tower } from './Tower';
 import { World } from './World';
 
 export const SceneContent = () => {
-  const { enemies, towers, projectiles, effects, setEffects } = useGame();
+  const { enemies, towers, projectiles, effects, removeEffect } = useGame();
 
   const offsetX = (-MAP_WIDTH * TILE_SIZE) / 2 + TILE_SIZE / 2;
   const offsetZ = (-MAP_HEIGHT * TILE_SIZE) / 2 + TILE_SIZE / 2;
-
-  const removeEffect = (id: string) => {
-    setEffects((prev) => prev.filter((e) => e.id !== id));
-  };
 
   return (
     <>
