@@ -40,23 +40,19 @@ This task will be implemented as two PRs.
 **Outcome:** Specs are executable in code: reducers + event model + selectors exist, but gameplay behavior may still be driven by existing hooks while wiring is stabilized.
 
 - Add engine contracts:
-
   - `engineReducer` state shape including `pendingEvents` + deterministic `idCounters`.
   - `EngineResult = { patch, events: { immediate, deferred } }`.
   - Tick dependency injection (`rng`, `nowMs`, `deltaMs`).
 
 - Add UI contracts:
-
   - `uiReducer` for gameflow/economy/selection.
   - `removeEffect(effectId)` action (renderer dispatches; no raw setter).
 
 - Introduce selectors:
-
   - Derive render positions from engine path/grid progress.
   - Ensure engine state does not store `three` types.
 
 - Add initial engine unit tests:
-
   - Deterministic ID counters.
   - Deferred events stored as `pendingEvents` and processed next tick.
   - `rng` injection produces deterministic outcomes under test.
@@ -77,20 +73,20 @@ This task will be implemented as two PRs.
 
 ### Subtasks
 
-| ID  | Description | Status | Updated | Notes |
-| --- | ----------- | ------ | ------- | ----- |
-| 0.1 | Baseline test run + notes | Done | 2025-12-12 | `npm test` (vitest) ✅ |
-| 1.1 | Define engine tick result + event taxonomy | Done | 2025-12-12 | Added engine events/contracts scaffolding. |
-| 1.2 | Add `pendingEvents` + deterministic `idCounters` | Done | 2025-12-12 | `EngineState` stores counters + helpers to promote deferred events. |
-| 1.3 | Add `rng` injection + deterministic test RNG | Done | 2025-12-12 | Introduced `createDeterministicRng` utility with tests. |
-| 1.4 | Add selectors for world positions | Done | 2025-12-12 | Pure selectors derive world coordinates without `three`. |
-| 1.5 | Add UI action `removeEffect(effectId)` | Done | 2025-12-13 | Reducer exposes remove-effect path + tests. |
-| 1.6 | Add runtime bridge applying engine results to UI | Done | 2025-12-13 | Runtime helper applies tick results + renderer intents. |
-| 2.1 | Migrate wave/enemy/tower/projectile into engine reducer tick | Done | 2025-12-12 | Added `stepTowers` + `stepProjectiles`, composed into `stepEngine`, and added engine-level tests. |
-| 2.2 | Remove `setTimeout` ordering via deferred events | Done | 2025-12-12 | Projectile kills emit deferred `EnemyKilled` + `DamageDealt`; deferred ordering is handled via `pendingEvents`. |
-| 2.3 | Hard cut context exports (dispatch/actions only) | Done | 2025-12-12 | Removed `setEnemies`/`setTowers`/`setProjectiles`/`setEffects` from context; loop uses `step()` instead. |
-| 2.4 | Update components to use selectors + dispatch intents | Done | 2025-12-12 | `GameLoopBridge` steps engine; effects are removed via `removeEffect(id)` intent. |
-| 2.5 | Retire legacy stepping modules | Done | 2025-12-12 | Removed unused legacy hooks/orchestrator/wave manager and replaced tests with engine/runtime coverage. |
+| ID  | Description                                                  | Status | Updated    | Notes                                                                                                           |
+| --- | ------------------------------------------------------------ | ------ | ---------- | --------------------------------------------------------------------------------------------------------------- |
+| 0.1 | Baseline test run + notes                                    | Done   | 2025-12-12 | `npm test` (vitest) ✅                                                                                          |
+| 1.1 | Define engine tick result + event taxonomy                   | Done   | 2025-12-12 | Added engine events/contracts scaffolding.                                                                      |
+| 1.2 | Add `pendingEvents` + deterministic `idCounters`             | Done   | 2025-12-12 | `EngineState` stores counters + helpers to promote deferred events.                                             |
+| 1.3 | Add `rng` injection + deterministic test RNG                 | Done   | 2025-12-12 | Introduced `createDeterministicRng` utility with tests.                                                         |
+| 1.4 | Add selectors for world positions                            | Done   | 2025-12-12 | Pure selectors derive world coordinates without `three`.                                                        |
+| 1.5 | Add UI action `removeEffect(effectId)`                       | Done   | 2025-12-13 | Reducer exposes remove-effect path + tests.                                                                     |
+| 1.6 | Add runtime bridge applying engine results to UI             | Done   | 2025-12-13 | Runtime helper applies tick results + renderer intents.                                                         |
+| 2.1 | Migrate wave/enemy/tower/projectile into engine reducer tick | Done   | 2025-12-12 | Added `stepTowers` + `stepProjectiles`, composed into `stepEngine`, and added engine-level tests.               |
+| 2.2 | Remove `setTimeout` ordering via deferred events             | Done   | 2025-12-12 | Projectile kills emit deferred `EnemyKilled` + `DamageDealt`; deferred ordering is handled via `pendingEvents`. |
+| 2.3 | Hard cut context exports (dispatch/actions only)             | Done   | 2025-12-12 | Removed `setEnemies`/`setTowers`/`setProjectiles`/`setEffects` from context; loop uses `step()` instead.        |
+| 2.4 | Update components to use selectors + dispatch intents        | Done   | 2025-12-12 | `GameLoopBridge` steps engine; effects are removed via `removeEffect(id)` intent.                               |
+| 2.5 | Retire legacy stepping modules                               | Done   | 2025-12-12 | Removed unused legacy hooks/orchestrator/wave manager and replaced tests with engine/runtime coverage.          |
 
 ## Risks / Notes
 
