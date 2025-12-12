@@ -11,7 +11,9 @@ import {
   removeEffectById,
   resolveEngineTick,
 } from '../state';
+import { applyEngineRuntimeAction } from '../runtime';
 import type { EngineEnemy, EngineEvents, EngineTickResult } from '../types';
+import { createInitialUiState } from '../uiReducer';
 
 describe('engine id allocation', () => {
   it('increments deterministic counters per entity type', () => {
@@ -212,5 +214,50 @@ describe('event helpers', () => {
       { type: 'MoneyAwarded', amount: 1 },
       { type: 'LivesLost', amount: 2 },
     ]);
+  });
+});
+
+describe('runtime helpers', () => {
+  it('applies tick results to engine and hydrates UI via immediate events', () => {
+    const initial = {
+      engine: applyEnginePatch(createInitialEngineState(), {
+        pendingEvents: [{ type: 'MoneyAwarded', amount: 3 }],
+        effects: [{ id: 'fx-1', type: 'hit', position: [0, 0, 0] }],
+      }),
+      ui: createInitialUiState(),
+    };
+
+    const result: EngineTickResult = {
+      patch: { effects: [] },
+      events: {
+        immediate: [
+          { type: 'LivesLost', amount: 1 },
+          { type: 'EnemyKilled', enemyId: 'enemy-1', reward: 5 },
+        ],
+        deferred: [{ type: 'WaveStarted', wave: 4 }],
+      },
+    };
+
+    const next = applyEngineRuntimeAction(initial, { type: 'applyTickResult', result });
+    expect(next.engine.effects).toEqual([]); // renderer cleanup honored by patch
+    expect(next.engine.pendingEvents).toEqual([{ type: 'WaveStarted', wave: 4 }]);
+    expect(next.ui.money).toBe(8); // 3 from pending + 5 from kill
+    expect(next.ui.lives).toBe(19);
+  });
+
+  it('allows renderer intent to remove effects without changing UI', () => {
+    const initial = {
+      engine: applyEnginePatch(createInitialEngineState(), {
+        effects: [
+          { id: 'fx-1', type: 'hit', position: [0, 0, 0] },
+          { id: 'fx-2', type: 'spawn', position: [1, 0, 1] },
+        ],
+      }),
+      ui: createInitialUiState(),
+    };
+
+    const next = applyEngineRuntimeAction(initial, { type: 'removeEffect', effectId: 'fx-2' });
+    expect(next.engine.effects.map((fx) => fx.id)).toEqual(['fx-1']);
+    expect(next.ui).toBe(initial.ui);
   });
 });
