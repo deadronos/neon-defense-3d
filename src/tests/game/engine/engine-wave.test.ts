@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import { createDeterministicRng } from '../../../game/engine/rng';
 import { applyEnginePatch, createInitialEngineState } from '../../../game/engine/state';
-import { stepWave } from '../../../game/engine/wave';
 import type { EngineTickContext } from '../../../game/engine/types';
+import { stepWave } from '../../../game/engine/wave';
 
 const makeContext = (deltaMs: number): EngineTickContext => ({
   deltaMs,

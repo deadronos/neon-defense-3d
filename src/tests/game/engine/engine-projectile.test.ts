@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createInitialEngineState } from '../../../game/engine/state';
 import { stepProjectiles } from '../../../game/engine/projectile';
+import { createInitialEngineState } from '../../../game/engine/state';
 
 const path: [number, number][] = [
   [0, 0],

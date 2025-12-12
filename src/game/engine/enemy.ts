@@ -30,7 +30,8 @@ export const stepEnemies = (
 
   for (const enemy of state.enemies) {
     let currentSpeed = enemy.speed ?? 0;
-    const hasDashAbility = enemy.abilityCooldown !== undefined || enemy.abilityActiveTimer !== undefined;
+    const hasDashAbility =
+      enemy.abilityCooldown !== undefined || enemy.abilityActiveTimer !== undefined;
     const abilityActiveTimer = enemy.abilityActiveTimer ?? 0;
     const abilityCooldown = enemy.abilityCooldown ?? 0;
 
@@ -81,7 +82,11 @@ export const stepEnemies = (
   }
 
   if (livesLost > 0) {
-    const lifeLossEvent: EngineEvent = { type: 'LivesLost', amount: livesLost, source: 'enemy-leak' };
+    const lifeLossEvent: EngineEvent = {
+      type: 'LivesLost',
+      amount: livesLost,
+      source: 'enemy-leak',
+    };
     events.immediate.push(lifeLossEvent);
   }
 

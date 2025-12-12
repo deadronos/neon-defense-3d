@@ -39,4 +39,3 @@ describe('GameProvider (engine-backed)', () => {
     expect(result.current.gameState.money).toBe(60);
   });
 });
-

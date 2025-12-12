@@ -1,4 +1,5 @@
 import { ENEMY_TYPES } from '../../constants';
+
 import type { EngineEvent } from './events';
 import { allocateId, applyEnginePatch } from './state';
 import type {

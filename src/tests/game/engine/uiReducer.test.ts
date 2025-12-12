@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { UpgradeType } from '../../../types';
 import { uiReducer, createInitialUiState } from '../../../game/engine/uiReducer';
+import { UpgradeType } from '../../../types';
 
 describe('engine uiReducer', () => {
   it('startGame initializes session values', () => {
@@ -46,4 +46,3 @@ describe('engine uiReducer', () => {
     expect(next.researchPoints).toBe(4); // floor(400/200 + 200/100)
   });
 });
-

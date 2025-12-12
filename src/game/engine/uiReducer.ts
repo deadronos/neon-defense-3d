@@ -1,7 +1,7 @@
-import type { EngineEvent } from './events';
-
 import { UpgradeType } from '../../types';
 import type { TowerType } from '../../types';
+
+import type { EngineEvent } from './events';
 
 export interface UiState {
   money: number;
