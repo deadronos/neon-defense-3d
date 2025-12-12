@@ -11,6 +11,10 @@ export interface EngineEnemy {
   hp: number;
   shield?: number;
   maxShield?: number;
+  speed?: number;
+  reward?: number;
+  color?: string;
+  scale?: number;
   abilityCooldown?: number;
   abilityActiveTimer?: number;
   frozen?: number;
@@ -50,7 +54,8 @@ export interface EngineWaveState {
   phase: 'preparing' | 'spawning' | 'active' | 'completed';
   enemiesRemainingToSpawn: number;
   enemiesAlive: number;
-  timer: number;
+  timerMs: number;
+  spawnIntervalMs: number;
 }
 
 export interface EngineIdCounters {

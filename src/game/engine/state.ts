@@ -6,7 +6,6 @@ import type {
   EngineTickResult,
 } from './types';
 import type { EngineEvent } from './events';
-
 export const createInitialEngineState = (): EngineState => ({
   enemies: [],
   towers: [],
