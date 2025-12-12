@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { createDeterministicRng } from '../rng';
-import { applyEnginePatch, createInitialEngineState } from '../state';
-import { stepEngine } from '../step';
+import { createDeterministicRng } from '../../../game/engine/rng';
+import { applyEnginePatch, createInitialEngineState } from '../../../game/engine/state';
+import { stepEngine } from '../../../game/engine/step';
 
 const path = [
   [0, 0],
   [1, 0],
 ] as const;
 
-describe('stepEngine', () => {
+describe('engine stepEngine', () => {
   it('spawns enemies for the wave and advances them in the same tick', () => {
     const state = applyEnginePatch(createInitialEngineState(), {
       wave: {
@@ -22,7 +22,12 @@ describe('stepEngine', () => {
       },
     });
 
-    const result = stepEngine(state, path, { deltaMs: 1000, nowMs: 0, rng: createDeterministicRng(5) }, { tileSize: 4 });
+    const result = stepEngine(
+      state,
+      path,
+      { deltaMs: 1000, nowMs: 0, rng: createDeterministicRng(5) },
+      { tileSize: 4 },
+    );
 
     expect(result.patch.enemies?.length).toBe(1);
     expect(result.patch.enemies?.[0].progress).toBeGreaterThan(0);
@@ -55,3 +60,4 @@ describe('stepEngine', () => {
     expect(result.patch.enemies).toEqual([]);
   });
 });
+
