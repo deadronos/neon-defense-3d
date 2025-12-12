@@ -34,7 +34,12 @@ describe('engine stepTowers', () => {
       ],
     };
 
-    const result = stepTowers(state, path, { deltaMs: 16, nowMs: 1000, rng: () => 0.5 }, { tileSize: 2 });
+    const result = stepTowers(
+      state,
+      path,
+      { deltaMs: 16, nowMs: 1000, rng: () => 0.5 },
+      { tileSize: 2 },
+    );
 
     expect(result.patch.idCounters).toEqual({ projectile: 1 });
     expect(result.patch.projectiles).toHaveLength(1);

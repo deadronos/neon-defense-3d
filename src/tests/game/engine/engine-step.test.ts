@@ -60,4 +60,3 @@ describe('engine stepEngine', () => {
     expect(result.patch.enemies).toEqual([]);
   });
 });
-

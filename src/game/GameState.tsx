@@ -2,12 +2,19 @@ import { createContext, useCallback, useContext, useMemo, useReducer, useRef } f
 import type { ReactNode } from 'react';
 import { Vector3 } from 'three';
 
-import { ENEMY_TYPES, MAP_LAYOUTS, TILE_SIZE, TOWER_CONFIGS, generatePath, getMapGrid } from '../constants';
+import {
+  ENEMY_TYPES,
+  MAP_LAYOUTS,
+  TILE_SIZE,
+  TOWER_CONFIGS,
+  generatePath,
+  getMapGrid,
+} from '../constants';
 import type {
   EffectEntity,
   EnemyConfig,
   EnemyEntity,
-  GameState as LegacyGameState,
+  GameState,
   ProjectileEntity,
   TowerEntity,
   TowerType,
@@ -17,12 +24,12 @@ import type {
 import { TileType, UpgradeType } from '../types';
 
 import type { GameContextProps } from './contextTypes';
-import { stepEngine } from './engine/step';
 import { applyEngineRuntimeAction } from './engine/runtime';
 import { selectEnemyWorldPosition } from './engine/selectors';
 import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
-import { createInitialUiState, uiReducer } from './engine/uiReducer';
+import { stepEngine } from './engine/step';
 import type { EngineEnemy, EngineState, EngineVector2 } from './engine/types';
+import { createInitialUiState, uiReducer } from './engine/uiReducer';
 import { getTowerStats } from './utils';
 
 type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
@@ -50,7 +57,7 @@ const toWaveState = (engineWave: EngineState['wave']): WaveState | null => {
 const toEnemyEntity = (
   enemy: EngineEnemy,
   enemyTypeMap: Map<string, EnemyTypeConfig>,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
 ): EnemyEntity => {
   const baseConfig = enemyTypeMap.get(enemy.type);
   const config: EnemyConfig = {
@@ -166,7 +173,9 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
       const config = TOWER_CONFIGS[tower.type as TowerType];
       const refund = Math.floor((config?.cost ?? 0) * 0.7);
       return {
-        engine: applyEnginePatch(state.engine, { towers: state.engine.towers.filter((t) => t.id !== action.id) }),
+        engine: applyEnginePatch(state.engine, {
+          towers: state.engine.towers.filter((t) => t.id !== action.id),
+        }),
         ui: { ...state.ui, money: state.ui.money + refund, selectedEntityId: null },
       };
     }
@@ -199,10 +208,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const mapGrid = useMemo(() => getMapGrid(currentMapLayout), [currentMapLayout]);
   const pathWaypoints = useMemo(() => generatePath(currentMapLayout), [currentMapLayout]);
 
-  const enginePathWaypoints = pathWaypoints as unknown as EngineVector2[];
+  const enginePathWaypoints: readonly EngineVector2[] = pathWaypoints;
 
   const enemies = useMemo(
-    () => runtime.engine.enemies.map((enemy) => toEnemyEntity(enemy, enemyTypeMap, enginePathWaypoints)),
+    () =>
+      runtime.engine.enemies.map((enemy) =>
+        toEnemyEntity(enemy, enemyTypeMap, enginePathWaypoints),
+      ),
     [runtime.engine.enemies, enemyTypeMap, enginePathWaypoints],
   );
 
@@ -227,7 +239,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     (x: number, z: number) => {
       if (x < 0 || x >= mapGrid[0].length || z < 0 || z >= mapGrid.length) return false;
       if (mapGrid[z][x] !== TileType.Grass) return false;
-      if (runtimeRef.current.engine.towers.some((t) => t.gridPosition[0] === x && t.gridPosition[1] === z))
+      if (
+        runtimeRef.current.engine.towers.some(
+          (t) => t.gridPosition[0] === x && t.gridPosition[1] === z,
+        )
+      )
         return false;
       return true;
     },
@@ -274,28 +290,37 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'uiAction', action: { type: 'setSelectedEntity', id } });
   }, []);
 
-  const removeEffect = useCallback((id: string) => dispatch({ type: 'removeEffect', effectId: id }), []);
+  const removeEffect = useCallback(
+    (id: string) => dispatch({ type: 'removeEffect', effectId: id }),
+    [],
+  );
 
-  const step = useCallback((deltaSeconds: number, nowSeconds: number) => {
-    const snapshot = runtimeRef.current;
-    if (snapshot.ui.gameStatus !== 'playing') return;
+  const step = useCallback(
+    (deltaSeconds: number, nowSeconds: number) => {
+      const snapshot = runtimeRef.current;
+      if (snapshot.ui.gameStatus !== 'playing') return;
 
-    const deltaMs = deltaSeconds * 1000;
-    const nowMs = nowSeconds * 1000;
-    const greedLevel = snapshot.ui.upgrades?.[UpgradeType.GLOBAL_GREED] || 0;
-    const greedMultiplier = 1 + greedLevel * 0.05;
+      const deltaMs = deltaSeconds * 1000;
+      const nowMs = nowSeconds * 1000;
+      const greedLevel = snapshot.ui.upgrades?.[UpgradeType.GLOBAL_GREED] || 0;
+      const greedMultiplier = 1 + greedLevel * 0.05;
 
-    const result = stepEngine(
-      snapshot.engine,
-      enginePathWaypoints,
-      { deltaMs, nowMs, rng: Math.random },
-      { tileSize: TILE_SIZE, greedMultiplier },
-    );
+      const result = stepEngine(
+        snapshot.engine,
+        enginePathWaypoints,
+        { deltaMs, nowMs, rng: Math.random },
+        { tileSize: TILE_SIZE, greedMultiplier },
+      );
 
-    dispatch({ type: 'applyTickResult', result });
-  }, [enginePathWaypoints]);
+      dispatch({ type: 'applyTickResult', result });
+    },
+    [enginePathWaypoints],
+  );
 
-  const gameState: LegacyGameState = runtime.ui as unknown as LegacyGameState;
+  const gameState: GameState = {
+    ...runtime.ui,
+    isPlaying: runtime.ui.gameStatus === 'playing',
+  };
 
   return (
     <GameContext.Provider

@@ -1,6 +1,7 @@
-import { mergeEvents } from './events';
 import { stepEnemies } from './enemy';
+import { mergeEvents } from './events';
 import { stepProjectiles } from './projectile';
+import { applyEnginePatch } from './state';
 import { stepTowers } from './tower';
 import type {
   EngineEvents,
@@ -10,7 +11,6 @@ import type {
   EngineTickResult,
   EngineVector2,
 } from './types';
-import { applyEnginePatch } from './state';
 import { stepWave } from './wave';
 
 export interface StepEngineOptions {

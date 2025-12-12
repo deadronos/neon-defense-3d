@@ -1,8 +1,8 @@
-import type { EngineTickResult } from './types';
-import type { UiState, UiAction } from './uiReducer';
 import { engineReducer } from './state';
-import { uiReducer } from './uiReducer';
+import type { EngineTickResult } from './types';
 import type { EngineState } from './types';
+import type { UiState, UiAction } from './uiReducer';
+import { uiReducer } from './uiReducer';
 
 export interface EngineRuntimeState {
   engine: EngineState;

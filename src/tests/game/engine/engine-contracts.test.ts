@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 
 import { mergeEvents } from '../../../game/engine/events';
 import { createDeterministicRng } from '../../../game/engine/rng';
-import { selectEnemyWorldPosition, selectProjectileWorldPosition } from '../../../game/engine/selectors';
+import { applyEngineRuntimeAction } from '../../../game/engine/runtime';
+import {
+  selectEnemyWorldPosition,
+  selectProjectileWorldPosition,
+} from '../../../game/engine/selectors';
 import {
   allocateId,
   applyEnginePatch,
@@ -11,7 +15,6 @@ import {
   removeEffectById,
   resolveEngineTick,
 } from '../../../game/engine/state';
-import { applyEngineRuntimeAction } from '../../../game/engine/runtime';
 import type { EngineEnemy, EngineEvents, EngineTickResult } from '../../../game/engine/types';
 import { createInitialUiState } from '../../../game/engine/uiReducer';
 
@@ -261,4 +264,3 @@ describe('runtime helpers', () => {
     expect(next.ui).toBe(initial.ui);
   });
 });
-

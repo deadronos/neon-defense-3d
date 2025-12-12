@@ -3,7 +3,7 @@
 **Status:** Active  
 **Added:** 2025-12-12  
 **Updated:** 2025-12-12  
-**Owner:** AI-assisted refactor proposal  
+**Owner:** AI-assisted refactor proposal
 
 ## Summary
 
@@ -29,9 +29,9 @@ The key idea is to introduce a pure, testable engine module driven by reducers. 
 
 - Rendering is already mostly separated into `src/game/components/*`.
 - Gameplay logic is spread across:
-
   - Frame orchestration: `src/game/components/GameLoop.tsx` (`GameLoopBridge` using `useFrame`)
   - Logic hooks: `src/game/hooks/useEnemyBehavior.ts`, `useTowerBehavior.ts`, `useProjectileBehavior.ts`, `useWaveManager.ts`
+
 - The Game Context (`src/game/GameState.tsx`) currently exposes raw setters (e.g. `setEnemies`, `setProjectiles`) which makes it easy for view code to “reach into” logic concerns.
 
 ## Requirements (EARS)
@@ -51,12 +51,10 @@ The key idea is to introduce a pure, testable engine module driven by reducers. 
 ## Finalized Decisions
 
 - **State model:** Use two reducers:
-
   - `engineReducer` owns deterministic simulation state (enemies/towers/projectiles/waves) and engine bookkeeping.
   - `uiReducer` owns UI/gameflow state (money, lives, selection, menus, win/lose state).
 
 - **Engine tick contract:** Engine tick returns `{ patch, events }` where:
-
   - `events.immediate[]` MUST be applied in the same tick.
   - `events.deferred[]` MUST be stored as `pendingEvents` and applied at the start of the next tick.
 
@@ -219,11 +217,11 @@ Engine state MUST NOT store `THREE.Vector3`.
 ### Phase 2 — Introduce composed `step`
 
 - Implement `engine/step.ts` to:
-  1) wave update/spawns
-  2) enemy move/life loss
-  3) tower targeting/spawn projectiles
-  4) projectile resolve hits/rewards/effects
-  5) return a single patch
+  1. wave update/spawns
+  2. enemy move/life loss
+  3. tower targeting/spawn projectiles
+  4. projectile resolve hits/rewards/effects
+  5. return a single patch
 
 ### Phase 3 — Adapter + context cleanup
 

@@ -17,4 +17,4 @@
 ## Known issues / technical debt
 
 - Visual effects were simplified for performance (instancing); decide whether to reintroduce advanced effects via shaders/instanced approaches.
-- The `startNextSector` implementation in `GameState` has TODOs in code and may require refinement for persistent sector state.
+- Engine/runtime parity and performance: watch allocations in render-loop hot paths and keep engine tick deterministic.

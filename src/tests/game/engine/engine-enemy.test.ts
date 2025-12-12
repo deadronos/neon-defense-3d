@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { createInitialEngineState } from '../../../game/engine/state';
 import { stepEnemies } from '../../../game/engine/enemy';
+import { createInitialEngineState } from '../../../game/engine/state';
 import type { EngineEnemy } from '../../../game/engine/types';
 
 const baseEnemy = (overrides: Partial<EngineEnemy> = {}): EngineEnemy => ({
@@ -49,7 +49,9 @@ describe('engine stepEnemies', () => {
     const result = stepEnemies(state, path, context, { tileSize: 2 });
 
     expect(result.patch.enemies).toEqual([]);
-    expect(result.events.immediate).toEqual([{ type: 'LivesLost', amount: 1, source: 'enemy-leak' }]);
+    expect(result.events.immediate).toEqual([
+      { type: 'LivesLost', amount: 1, source: 'enemy-leak' },
+    ]);
   });
 
   it('applies dash speed multiplier while the ability is active', () => {

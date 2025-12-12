@@ -1,13 +1,12 @@
-import type { EngineEvent } from './events';
-
 import { UpgradeType } from '../../types';
 import type { TowerType } from '../../types';
+
+import type { EngineEvent } from './events';
 
 export interface UiState {
   money: number;
   lives: number;
   wave: number;
-  isPlaying: boolean;
   gameStatus: 'idle' | 'playing' | 'gameover' | 'victory';
   selectedEntityId: string | null;
   selectedTower: TowerType | null;
@@ -26,7 +25,6 @@ export type UiAction =
   | { type: 'startNextSector' }
   | { type: 'purchaseUpgrade'; upgrade: UpgradeType; cost: number }
   | { type: 'spendMoney'; amount: number }
-  | { type: 'setPlaying'; isPlaying: boolean }
   | { type: 'setGameStatus'; gameStatus: UiState['gameStatus'] }
   | { type: 'setSelectedTower'; tower: TowerType | null }
   | { type: 'setSelectedEntity'; id: string | null }
@@ -36,7 +34,6 @@ export const createInitialUiState = (): UiState => ({
   money: 150,
   lives: 20,
   wave: 1,
-  isPlaying: false,
   gameStatus: 'idle',
   selectedEntityId: null,
   selectedTower: null,
@@ -57,7 +54,6 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
         ...state,
         lives,
         gameStatus: lives <= 0 ? 'gameover' : state.gameStatus,
-        isPlaying: lives <= 0 ? false : state.isPlaying,
       };
     }
     case 'DamageDealt':
@@ -70,7 +66,6 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
         return {
           ...state,
           gameStatus: 'victory',
-          isPlaying: false,
           researchPoints: state.researchPoints + earnedRP,
         };
       }
@@ -92,7 +87,6 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
     case 'startGame':
       return {
         ...state,
-        isPlaying: true,
         gameStatus: 'playing',
         lives: 20,
         money: 150,
@@ -108,7 +102,6 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
     case 'resetGame':
       return {
         ...state,
-        isPlaying: false,
         gameStatus: 'idle',
         lives: 20,
         money: 150,
@@ -130,7 +123,6 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         money: startMoney,
         wave: 1,
         gameStatus: 'playing',
-        isPlaying: true,
         totalDamageDealt: 0,
         totalCurrencyEarned: 0,
         selectedEntityId: null,
@@ -151,8 +143,6 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
     }
     case 'spendMoney':
       return { ...state, money: Math.max(0, state.money - action.amount) };
-    case 'setPlaying':
-      return { ...state, isPlaying: action.isPlaying };
     case 'setGameStatus':
       return { ...state, gameStatus: action.gameStatus };
     case 'setSelectedTower':
