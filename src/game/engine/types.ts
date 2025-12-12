@@ -1,7 +1,7 @@
 import type { EngineEvent } from './events';
 
-export type EngineVector2 = [number, number];
-export type EngineVector3 = [number, number, number];
+export type EngineVector2 = readonly [number, number];
+export type EngineVector3 = readonly [number, number, number];
 
 export interface EngineEnemy {
   id: string;
@@ -60,6 +60,7 @@ export interface EngineWaveState {
 
 export interface EngineIdCounters {
   enemy: number;
+  tower: number;
   projectile: number;
   effect: number;
 }

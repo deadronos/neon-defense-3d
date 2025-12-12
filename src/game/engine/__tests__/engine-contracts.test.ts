@@ -25,7 +25,7 @@ describe('engine id allocation', () => {
     expect(enemyId).toBe('enemy-1');
     expect(projectileId).toBe('projectile-1');
     expect(secondEnemy).toBe('enemy-2');
-    expect(finalState.idCounters).toEqual({ enemy: 2, projectile: 1, effect: 0 });
+    expect(finalState.idCounters).toEqual({ enemy: 2, tower: 0, projectile: 1, effect: 0 });
   });
 });
 
@@ -85,7 +85,7 @@ describe('engine event handling contract', () => {
           color: '#fff',
         },
       ],
-      idCounters: { enemy: 1, projectile: 1, effect: 0 },
+      idCounters: { enemy: 1, tower: 0, projectile: 1, effect: 0 },
     });
 
     const result: EngineTickResult = {
@@ -110,7 +110,7 @@ describe('engine event handling contract', () => {
     ]);
     expect(nextState.pendingEvents).toEqual([{ type: 'WaveStarted', wave: 2 }]);
     expect(nextState.projectiles).toHaveLength(0);
-    expect(nextState.idCounters).toEqual({ enemy: 1, projectile: 2, effect: 0 });
+    expect(nextState.idCounters).toEqual({ enemy: 1, tower: 0, projectile: 2, effect: 0 });
   });
 });
 
@@ -241,7 +241,7 @@ describe('runtime helpers', () => {
     const next = applyEngineRuntimeAction(initial, { type: 'applyTickResult', result });
     expect(next.engine.effects).toEqual([]); // renderer cleanup honored by patch
     expect(next.engine.pendingEvents).toEqual([{ type: 'WaveStarted', wave: 4 }]);
-    expect(next.ui.money).toBe(8); // 3 from pending + 5 from kill
+    expect(next.ui.money).toBe(158); // 150 initial + 3 from pending + 5 from kill
     expect(next.ui.lives).toBe(19);
   });
 

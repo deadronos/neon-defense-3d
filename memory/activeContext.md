@@ -7,15 +7,15 @@
 ## Recent changes (code highlights)
 
 - `InstancedEnemies` and `InstancedProjectiles` use `THREE.InstancedMesh` for large counts (see `src/game/components/Enemies.tsx` and `src/game/components/Projectiles.tsx`).
-- `GameLoopBridge` (`src/game/components/GameLoop.tsx`) centralizes per-frame logic via `useFrame`: enemy movement, tower firing, projectile updates, and wave management.
-- Engine scaffolding for DESIGN002/TASK003 now includes tower + projectile stepping (`src/game/engine/tower.ts`, `src/game/engine/projectile.ts`) composed via `src/game/engine/step.ts`, with unit tests under `src/tests/game/engine/`.
+- `GameLoopBridge` (`src/game/components/GameLoop.tsx`) now delegates simulation stepping to the pure engine via `useGame().step(...)`.
+- `GameProvider` (`src/game/GameState.tsx`) is now reducer-driven (engine + UI), with entity arrays derived from engine state via selectors (no `three` types in engine state).
 - Wave system moved to `useWaveManager` with phases and spawn logic; path generation uses BFS in `src/constants.ts` (`generatePath`).
 - UI overlay (`src/components/UI.tsx`) handles game states (`idle`, `playing`, `gameover`, `victory`) and build/upgrade flows. Victory transitions grant research points.
 
 ## Next steps
 
 - Add small unit tests around `useWaveManager`, `useEnemyBehavior`, and `useProjectileBehavior` to lock expected behavior.
-- Wire `GameLoopBridge` to drive the reducer-based engine tick (removing legacy hook stepping + `setTimeout` ordering).
+- Remove/retire unused legacy stepping hooks (`useEnemyBehavior`, `useTowerBehavior`, `useProjectileBehavior`, `useWaveManager`) once engine parity is confirmed.
 - Create design docs for major features (e.g., Tech Tree/sector progression) under `memory/designs/`.
 - Monitor runtime performance and reduce allocations in hot loops if GC pressure appears.
 

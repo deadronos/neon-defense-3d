@@ -28,7 +28,7 @@ describe('engine stepTowers', () => {
           id: 'tower-1',
           type: 'Basic',
           level: 1,
-          gridPosition: [0, 0],
+          gridPosition: [0, 0] as [number, number],
           lastFired: 0,
         },
       ],
@@ -48,4 +48,3 @@ describe('engine stepTowers', () => {
     expect(result.patch.towers?.[0]?.lastFired).toBe(1000);
   });
 });
-

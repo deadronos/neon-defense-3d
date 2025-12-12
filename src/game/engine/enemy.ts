@@ -17,7 +17,7 @@ const DEFAULT_TILE_SIZE = 2;
 
 export const stepEnemies = (
   state: EngineState,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
   context: EngineTickContext,
   options: StepEnemiesOptions = {},
 ): EngineTickResult => {

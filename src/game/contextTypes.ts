@@ -1,5 +1,3 @@
-import type { Dispatch, SetStateAction } from 'react';
-
 import type {
   EnemyEntity,
   GameState,
@@ -29,6 +27,10 @@ export interface GameContextProps {
   effects: EffectEntity[];
   /** Current state of the wave system. */
   waveState?: WaveState;
+  /** Steps the simulation (called from the render-loop bridge). */
+  step: (deltaSeconds: number, nowSeconds: number) => void;
+  /** Renderer intent: remove an effect by id. */
+  removeEffect: (id: string) => void;
   /**
    * Places a tower on the grid.
    * @param x - The x-coordinate of the grid.
@@ -66,22 +68,6 @@ export interface GameContextProps {
    * @returns True if placement is valid, false otherwise.
    */
   isValidPlacement: (x: number, z: number) => boolean;
-  /** State setter for enemies list. */
-  setEnemies: Dispatch<SetStateAction<EnemyEntity[]>>;
-  /** State setter for towers list. */
-  setTowers: Dispatch<SetStateAction<TowerEntity[]>>;
-  /** State setter for projectiles list. */
-  setProjectiles: Dispatch<SetStateAction<ProjectileEntity[]>>;
-  /** State setter for effects list. */
-  setEffects: Dispatch<SetStateAction<EffectEntity[]>>;
-  /** State setter for global game state. */
-  setGameState: Dispatch<SetStateAction<GameState>>;
-  /** State setter for wave state. */
-  setWaveState?: Dispatch<SetStateAction<WaveState>>;
-  /** Reset wave state manually. */
-  resetWave?: () => void;
-  /** Method to update wave logic (delta time). */
-  updateWave?: (delta: number, currentEnemies: EnemyEntity[]) => void;
   /** Current Map Grid. */
   mapGrid: TileType[][];
   /** Current Path Waypoints. */

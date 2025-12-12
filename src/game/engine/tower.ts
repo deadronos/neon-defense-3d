@@ -45,7 +45,7 @@ const distance = (a: EngineVector3, b: EngineVector3) =>
 
 export const stepTowers = (
   state: EngineState,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
   context: EngineTickContext,
   options: StepTowersOptions = {},
 ): EngineTickResult => {

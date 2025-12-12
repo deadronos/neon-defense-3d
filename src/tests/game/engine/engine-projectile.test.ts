@@ -55,7 +55,9 @@ describe('engine stepProjectiles', () => {
     expect(result.patch.idCounters).toEqual({ effect: 1 });
 
     expect(result.events.immediate).toEqual([]);
-    expect(result.events.deferred).toEqual([{ type: 'EnemyKilled', enemyId: 'enemy-1', reward: 11 }]);
+    expect(result.events.deferred).toEqual([
+      { type: 'EnemyKilled', enemyId: 'enemy-1', reward: 11 },
+      { type: 'DamageDealt', amount: 50 },
+    ]);
   });
 });
-
