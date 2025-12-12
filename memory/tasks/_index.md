@@ -6,7 +6,7 @@
 
 ## Pending
 
-- (none)
+- [TASK003] Separate game engine and rendering — Extract pure engine layer + adapters, then migrate context/actions (2025-12-12)
 
 ## Completed
 
