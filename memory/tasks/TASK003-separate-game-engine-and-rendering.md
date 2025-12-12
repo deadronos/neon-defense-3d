@@ -1,8 +1,8 @@
 # TASK003 — Separate Game Engine and Rendering
 
-**Status:** Pending  
-**Added:** 2025-12-12  
-**Updated:** 2025-12-12  
+**Status:** In Progress — Phase 1 scaffolding
+**Added:** 2025-12-12
+**Updated:** 2025-12-12
 
 ## Original Request
 
@@ -73,18 +73,18 @@ This task will be implemented as two PRs.
 
 ## Progress Tracking
 
-**Overall Status:** Not Started — 0%
+**Overall Status:** In Progress — 35%
 
 ### Subtasks
 
 | ID  | Description | Status | Updated | Notes |
 | --- | ----------- | ------ | ------- | ----- |
-| 0.1 | Baseline test run + notes | Not Started | 2025-12-12 | |
-| 1.1 | Define engine tick result + event taxonomy | Not Started | 2025-12-12 | |
-| 1.2 | Add `pendingEvents` + deterministic `idCounters` | Not Started | 2025-12-12 | |
-| 1.3 | Add `rng` injection + deterministic test RNG | Not Started | 2025-12-12 | |
-| 1.4 | Add selectors for world positions | Not Started | 2025-12-12 | |
-| 1.5 | Add UI action `removeEffect(effectId)` | Not Started | 2025-12-12 | |
+| 0.1 | Baseline test run + notes | Done | 2025-12-12 | `npm test` (vitest) ✅ |
+| 1.1 | Define engine tick result + event taxonomy | Done | 2025-12-12 | Added engine events/contracts scaffolding. |
+| 1.2 | Add `pendingEvents` + deterministic `idCounters` | Done | 2025-12-12 | `EngineState` stores counters + helpers to promote deferred events. |
+| 1.3 | Add `rng` injection + deterministic test RNG | Done | 2025-12-12 | Introduced `createDeterministicRng` utility with tests. |
+| 1.4 | Add selectors for world positions | Done | 2025-12-12 | Pure selectors derive world coordinates without `three`. |
+| 1.5 | Add UI action `removeEffect(effectId)` | Done | 2025-12-13 | Reducer exposes remove-effect path + tests. |
 | 2.1 | Migrate wave/enemy/tower/projectile into engine reducer tick | Not Started | 2025-12-12 | |
 | 2.2 | Remove `setTimeout` ordering via deferred events | Not Started | 2025-12-12 | |
 | 2.3 | Hard cut context exports (dispatch/actions only) | Not Started | 2025-12-12 | |
