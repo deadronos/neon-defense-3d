@@ -1,6 +1,6 @@
 # TASK003 — Separate Game Engine and Rendering
 
-**Status:** In Progress — engine gameplay migration underway
+**Status:** Done
 **Added:** 2025-12-12
 **Updated:** 2025-12-12
 
@@ -16,8 +16,8 @@ Current code already has partial separation:
 
 - Rendering: `src/game/components/*`
 - Per-frame orchestration: `src/game/components/GameLoop.tsx` (`GameLoopBridge`)
-- Behavior logic: `src/game/hooks/useEnemyBehavior.ts`, `useTowerBehavior.ts`, `useProjectileBehavior.ts`, `useWaveManager.ts`
-- State/context: `src/game/GameState.tsx` (currently exposes raw setters)
+- Engine logic: `src/game/engine/*` (pure, reducer-driven)
+- State/context: `src/game/GameState.tsx` exposes actions + `step()` (no raw entity setters)
 
 ## Requirements (Acceptance)
 
@@ -73,7 +73,7 @@ This task will be implemented as two PRs.
 
 ## Progress Tracking
 
-**Overall Status:** In Progress — 50%
+**Overall Status:** Done — 100%
 
 ### Subtasks
 
@@ -87,9 +87,10 @@ This task will be implemented as two PRs.
 | 1.5 | Add UI action `removeEffect(effectId)` | Done | 2025-12-13 | Reducer exposes remove-effect path + tests. |
 | 1.6 | Add runtime bridge applying engine results to UI | Done | 2025-12-13 | Runtime helper applies tick results + renderer intents. |
 | 2.1 | Migrate wave/enemy/tower/projectile into engine reducer tick | Done | 2025-12-12 | Added `stepTowers` + `stepProjectiles`, composed into `stepEngine`, and added engine-level tests. |
-| 2.2 | Remove `setTimeout` ordering via deferred events | In Progress | 2025-12-12 | Engine projectile rewards now emit deferred events; legacy `useProjectileBehavior` still uses `setTimeout` until PR2 wiring lands. |
-| 2.3 | Hard cut context exports (dispatch/actions only) | Not Started | 2025-12-12 | |
-| 2.4 | Update components to use selectors + dispatch intents | Not Started | 2025-12-12 | |
+| 2.2 | Remove `setTimeout` ordering via deferred events | Done | 2025-12-12 | Projectile kills emit deferred `EnemyKilled` + `DamageDealt`; deferred ordering is handled via `pendingEvents`. |
+| 2.3 | Hard cut context exports (dispatch/actions only) | Done | 2025-12-12 | Removed `setEnemies`/`setTowers`/`setProjectiles`/`setEffects` from context; loop uses `step()` instead. |
+| 2.4 | Update components to use selectors + dispatch intents | Done | 2025-12-12 | `GameLoopBridge` steps engine; effects are removed via `removeEffect(id)` intent. |
+| 2.5 | Retire legacy stepping modules | Done | 2025-12-12 | Removed unused legacy hooks/orchestrator/wave manager and replaced tests with engine/runtime coverage. |
 
 ## Risks / Notes
 

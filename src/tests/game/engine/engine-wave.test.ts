@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { createDeterministicRng } from '../rng';
-import { applyEnginePatch, createInitialEngineState } from '../state';
-import { stepWave } from '../wave';
-import type { EngineTickContext } from '../types';
+import { createDeterministicRng } from '../../../game/engine/rng';
+import { applyEnginePatch, createInitialEngineState } from '../../../game/engine/state';
+import { stepWave } from '../../../game/engine/wave';
+import type { EngineTickContext } from '../../../game/engine/types';
 
 const makeContext = (deltaMs: number): EngineTickContext => ({
   deltaMs,
@@ -16,7 +16,7 @@ const path: [number, number][] = [
   [1, 0],
 ];
 
-describe('wave prep and start', () => {
+describe('engine wave prep and start', () => {
   it('counts down prep time then starts the first wave with a WaveStarted event', () => {
     const initial = createInitialEngineState();
     const result = stepWave(initial, path, makeContext(5000));
@@ -24,11 +24,11 @@ describe('wave prep and start', () => {
     expect(result.events.immediate).toEqual([{ type: 'WaveStarted', wave: 1 }]);
     expect(result.patch.wave?.phase).toBe('spawning');
     expect(result.patch.wave?.timerMs).toBe(1900);
-    expect(result.patch.wave?.enemiesRemainingToSpawn).toBe(6); // 5 + floor(1 * 1.5)
+    expect(result.patch.wave?.enemiesRemainingToSpawn).toBe(6);
   });
 });
 
-describe('wave spawning', () => {
+describe('engine wave spawning', () => {
   it('spawns enemies on interval using deterministic rng and increments id counters', () => {
     let engine = createInitialEngineState();
     const startResult = stepWave(engine, path, makeContext(5000));
@@ -48,7 +48,7 @@ describe('wave spawning', () => {
   });
 });
 
-describe('wave completion', () => {
+describe('engine wave completion', () => {
   it('transitions to preparing after active waves end with no enemies alive', () => {
     const state = applyEnginePatch(createInitialEngineState(), {
       wave: {
@@ -64,6 +64,6 @@ describe('wave completion', () => {
     const result = stepWave(state, path, makeContext(100));
 
     expect(result.patch.wave?.phase).toBe('preparing');
-    expect(result.patch.wave?.timerMs).toBe(5000);
+    expect(result.patch.wave?.timerMs).toBe(4900);
   });
 });

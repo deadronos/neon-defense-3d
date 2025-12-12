@@ -12,7 +12,7 @@ export const createInitialEngineState = (): EngineState => ({
   projectiles: [],
   effects: [],
   wave: null,
-  idCounters: { enemy: 0, projectile: 0, effect: 0 },
+  idCounters: { enemy: 0, tower: 0, projectile: 0, effect: 0 },
   pendingEvents: [],
 });
 

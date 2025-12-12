@@ -21,7 +21,7 @@ export interface StepEngineOptions {
 
 export const stepEngine = (
   state: EngineState,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
   context: EngineTickContext,
   options: StepEngineOptions = {},
 ): EngineTickResult => {

@@ -24,7 +24,7 @@ const DEFAULT_EFFECT_SCALE = 0.4;
 
 export const stepProjectiles = (
   state: EngineState,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
   context: EngineTickContext,
   options: StepProjectilesOptions = {},
 ): EngineTickResult => {
@@ -39,6 +39,7 @@ export const stepProjectiles = (
   }
 
   const hits = new Map<string, number>();
+  let frameTotalDamage = 0;
 
   const activeProjectiles: EngineProjectile[] = [];
 
@@ -49,6 +50,7 @@ export const stepProjectiles = (
     const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;
     if (nextProgress >= 1) {
       hits.set(projectile.targetId, (hits.get(projectile.targetId) ?? 0) + projectile.damage);
+      frameTotalDamage += projectile.damage;
       continue;
     }
 
@@ -118,6 +120,10 @@ export const stepProjectiles = (
     idCounters:
       nextEffectCounter !== state.idCounters.effect ? { effect: nextEffectCounter } : undefined,
   };
+
+  if (frameTotalDamage > 0) {
+    events.deferred.push({ type: 'DamageDealt', amount: frameTotalDamage });
+  }
 
   return { patch, events };
 };

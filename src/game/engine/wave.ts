@@ -112,7 +112,7 @@ const startNextWave = (
 
 export const stepWave = (
   state: EngineState,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
   context: EngineTickContext,
   options: StepWaveOptions = {},
 ): EngineTickResult => {
@@ -128,6 +128,7 @@ export const stepWave = (
   const shouldCompleteWave =
     waveState.phase === 'active' && waveState.enemiesRemainingToSpawn === 0 && enemies.length === 0;
   if (shouldCompleteWave) {
+    events.immediate.push({ type: 'WaveCompleted', wave: waveState.wave });
     waveState = {
       ...waveState,
       phase: 'completed',

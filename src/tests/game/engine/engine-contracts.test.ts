@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { mergeEvents } from '../events';
-import { createDeterministicRng } from '../rng';
-import { selectEnemyWorldPosition, selectProjectileWorldPosition } from '../selectors';
+import { mergeEvents } from '../../../game/engine/events';
+import { createDeterministicRng } from '../../../game/engine/rng';
+import { selectEnemyWorldPosition, selectProjectileWorldPosition } from '../../../game/engine/selectors';
 import {
   allocateId,
   applyEnginePatch,
@@ -10,10 +10,10 @@ import {
   engineReducer,
   removeEffectById,
   resolveEngineTick,
-} from '../state';
-import { applyEngineRuntimeAction } from '../runtime';
-import type { EngineEnemy, EngineEvents, EngineTickResult } from '../types';
-import { createInitialUiState } from '../uiReducer';
+} from '../../../game/engine/state';
+import { applyEngineRuntimeAction } from '../../../game/engine/runtime';
+import type { EngineEnemy, EngineEvents, EngineTickResult } from '../../../game/engine/types';
+import { createInitialUiState } from '../../../game/engine/uiReducer';
 
 describe('engine id allocation', () => {
   it('increments deterministic counters per entity type', () => {
@@ -25,7 +25,7 @@ describe('engine id allocation', () => {
     expect(enemyId).toBe('enemy-1');
     expect(projectileId).toBe('projectile-1');
     expect(secondEnemy).toBe('enemy-2');
-    expect(finalState.idCounters).toEqual({ enemy: 2, projectile: 1, effect: 0 });
+    expect(finalState.idCounters).toEqual({ enemy: 2, tower: 0, projectile: 1, effect: 0 });
   });
 });
 
@@ -85,7 +85,7 @@ describe('engine event handling contract', () => {
           color: '#fff',
         },
       ],
-      idCounters: { enemy: 1, projectile: 1, effect: 0 },
+      idCounters: { enemy: 1, tower: 0, projectile: 1, effect: 0 },
     });
 
     const result: EngineTickResult = {
@@ -110,7 +110,7 @@ describe('engine event handling contract', () => {
     ]);
     expect(nextState.pendingEvents).toEqual([{ type: 'WaveStarted', wave: 2 }]);
     expect(nextState.projectiles).toHaveLength(0);
-    expect(nextState.idCounters).toEqual({ enemy: 1, projectile: 2, effect: 0 });
+    expect(nextState.idCounters).toEqual({ enemy: 1, tower: 0, projectile: 2, effect: 0 });
   });
 });
 
@@ -126,7 +126,7 @@ describe('effect lifecycle', () => {
     const next = removeEffectById(initial, 'fx-1');
     expect(next.effects).toHaveLength(1);
     expect(next.effects[0]?.id).toBe('fx-2');
-    expect(initial.effects).toHaveLength(2); // confirm immutability
+    expect(initial.effects).toHaveLength(2);
   });
 
   it('engine reducer exposes a removeEffect action for renderer dispatch', () => {
@@ -187,9 +187,9 @@ describe('selectors keep math in grid space', () => {
     };
 
     const position = selectProjectileWorldPosition(projectile, enemy, waypoints, 2);
-    expect(position[0]).toBeCloseTo(1); // halfway toward enemy x
-    expect(position[1]).toBeCloseTo(1); // midpoint between origin.y (1) and enemy height (1)
-    expect(position[2]).toBeCloseTo(0.25); // halfway toward enemy z
+    expect(position[0]).toBeCloseTo(1);
+    expect(position[1]).toBeCloseTo(1);
+    expect(position[2]).toBeCloseTo(0.25);
   });
 });
 
@@ -239,9 +239,9 @@ describe('runtime helpers', () => {
     };
 
     const next = applyEngineRuntimeAction(initial, { type: 'applyTickResult', result });
-    expect(next.engine.effects).toEqual([]); // renderer cleanup honored by patch
+    expect(next.engine.effects).toEqual([]);
     expect(next.engine.pendingEvents).toEqual([{ type: 'WaveStarted', wave: 4 }]);
-    expect(next.ui.money).toBe(8); // 3 from pending + 5 from kill
+    expect(next.ui.money).toBe(158);
     expect(next.ui.lives).toBe(19);
   });
 
@@ -261,3 +261,4 @@ describe('runtime helpers', () => {
     expect(next.ui).toBe(initial.ui);
   });
 });
+

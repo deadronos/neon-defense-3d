@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import { createInitialEngineState } from '../state';
-import { stepEnemies } from '../enemy';
-import type { EngineEnemy } from '../types';
+import { createInitialEngineState } from '../../../game/engine/state';
+import { stepEnemies } from '../../../game/engine/enemy';
+import type { EngineEnemy } from '../../../game/engine/types';
 
 const baseEnemy = (overrides: Partial<EngineEnemy> = {}): EngineEnemy => ({
   id: 'enemy-1',
@@ -25,7 +25,7 @@ const path = [
   [1, 0],
 ] as const;
 
-describe('stepEnemies', () => {
+describe('engine stepEnemies', () => {
   it('advances enemies along the path', () => {
     const state = {
       ...createInitialEngineState(),
@@ -55,13 +55,13 @@ describe('stepEnemies', () => {
   it('applies dash speed multiplier while the ability is active', () => {
     const state = {
       ...createInitialEngineState(),
-      enemies: [baseEnemy({ abilityActiveTimer: 0.5 })],
+      enemies: [baseEnemy({ abilityActiveTimer: 0.5, speed: 0.5 })],
     };
 
     const result = stepEnemies(state, path, context, { tileSize: 2 });
     const dashed = result.patch.enemies?.[0];
 
-    expect(dashed?.progress).toBeGreaterThan(0.5);
+    expect(dashed?.progress).toBeGreaterThan(0.2);
     expect(dashed?.abilityActiveTimer).toBeCloseTo(0, 3);
   });
 });

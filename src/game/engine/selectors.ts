@@ -4,7 +4,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export const selectEnemyWorldPosition = (
   enemy: EngineEnemy,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
   tileSize: number,
 ): EngineVector3 => {
   const p1 = pathWaypoints[enemy.pathIndex] ?? [0, 0];
@@ -17,7 +17,7 @@ export const selectEnemyWorldPosition = (
 export const selectProjectileWorldPosition = (
   projectile: EngineProjectile,
   target: EngineEnemy | undefined,
-  pathWaypoints: EngineVector2[],
+  pathWaypoints: readonly EngineVector2[],
   tileSize: number,
 ): EngineVector3 => {
   if (!target) return projectile.origin;
