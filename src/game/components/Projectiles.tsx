@@ -4,7 +4,7 @@ import * as THREE from 'three';
 
 import type { ProjectileEntity, EnemyEntity } from '../../types';
 
-import { hideUnusedInstances } from './instancing/instancedUtils';
+import { hideUnusedInstances, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedProjectiles: React.FC<{
   projectiles: ProjectileEntity[];
@@ -80,7 +80,8 @@ export const InstancedProjectiles: React.FC<{
         meshRef.current?.setColorAt(i, cached); // Boost emissive look
       } else {
         // Hide
-        meshRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+        // Optimization: Use shared ZERO_MATRIX to avoid creating new Matrix4
+        meshRef.current?.setMatrixAt(i, ZERO_MATRIX);
       }
     });
 
