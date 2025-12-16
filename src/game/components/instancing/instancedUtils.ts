@@ -1,5 +1,9 @@
 import * as THREE from 'three';
 
+// Optimization: Shared temporary objects to avoid garbage collection in high-frequency render loops
+export const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
+export const TEMP_COLOR = new THREE.Color();
+
 /**
  * Hides unused instances in an InstancedMesh by setting their scale to zero.
  * @param mesh - The instanced mesh to update.
@@ -7,8 +11,7 @@ import * as THREE from 'three';
  * @param count - The total number of instances (buffer size).
  */
 export function hideUnusedInstances(mesh: THREE.InstancedMesh, startIndex: number, count: number) {
-  const matrix = new THREE.Matrix4().makeScale(0, 0, 0);
   for (let i = startIndex; i < count; i++) {
-    mesh.setMatrixAt(i, matrix);
+    mesh.setMatrixAt(i, ZERO_MATRIX);
   }
 }

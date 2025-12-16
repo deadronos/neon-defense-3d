@@ -4,7 +4,7 @@ import * as THREE from 'three';
 
 import type { EnemyEntity } from '../../types';
 
-import { hideUnusedInstances } from './instancing/instancedUtils';
+import { hideUnusedInstances, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
@@ -32,17 +32,19 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
       const isDashing = enemy.abilityActiveTimer > 0;
       const baseColor = isDashing ? '#ffffff' : enemy.config.color;
       // High intensity color for neon look
-      const color = new THREE.Color(baseColor).multiplyScalar(2);
-      meshRef.current?.setColorAt(i, color);
+      // Optimization: Reuse shared TEMP_COLOR to avoid GC overhead
+      TEMP_COLOR.set(baseColor).multiplyScalar(2);
+      meshRef.current?.setColorAt(i, TEMP_COLOR);
 
       // Update Shield
       if (enemy.shield > 0) {
         dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
         dummy.updateMatrix();
         shieldRef.current?.setMatrixAt(i, dummy.matrix);
-        shieldRef.current?.setColorAt(i, new THREE.Color('#00ffff'));
+        TEMP_COLOR.set('#00ffff');
+        shieldRef.current?.setColorAt(i, TEMP_COLOR);
       } else {
-        shieldRef.current?.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+        shieldRef.current?.setMatrixAt(i, ZERO_MATRIX);
       }
     });
 
