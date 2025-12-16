@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import type { EffectEntity } from '../../types';
 
 import { spawnExplosion } from './effects/spawners';
+import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 import { ParticlePool } from './instancing/ParticlePool';
 
 export const InstancedExplosions: React.FC<{
@@ -67,17 +68,16 @@ export const InstancedExplosions: React.FC<{
           dummy.updateMatrix();
 
           meshRef.current.setMatrixAt(i, dummy.matrix);
-          meshRef.current.setColorAt(
-            i,
-            new THREE.Color(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]),
-          );
+          // Optimization: Reuse shared TEMP_COLOR to avoid creating new THREE.Color per particle per frame
+          TEMP_COLOR.setRGB(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]);
+          meshRef.current.setColorAt(i, TEMP_COLOR);
 
           const effectId = pool.associatedEffectId[i];
           if (effectId) activeEffectIds.add(effectId);
         }
       } else {
         // Hide inactive
-        meshRef.current.setMatrixAt(i, new THREE.Matrix4().makeScale(0, 0, 0));
+        meshRef.current.setMatrixAt(i, ZERO_MATRIX);
       }
     }
 
