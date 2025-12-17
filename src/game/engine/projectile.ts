@@ -1,3 +1,4 @@
+import type { EngineCache } from './step';
 import type { EngineEvent } from './events';
 import { selectEnemyWorldPosition } from './selectors';
 import type {
@@ -27,6 +28,7 @@ export const stepProjectiles = (
   pathWaypoints: readonly EngineVector2[],
   context: EngineTickContext,
   options: StepProjectilesOptions = {},
+  cache?: EngineCache,
 ): EngineTickResult => {
   const tileSize = options.tileSize ?? DEFAULT_TILE_SIZE;
   const greedMultiplier = options.greedMultiplier ?? 1;
@@ -38,11 +40,18 @@ export const stepProjectiles = (
     return { patch: {}, events };
   }
 
-  const hits = new Map<string, number>();
+  // Reuse or create structures
+  const hits = cache ? cache.projectileHits : new Map<string, number>();
+  if (cache) hits.clear();
+
+  const activeProjectiles = cache ? cache.activeProjectiles : [];
+  if (cache) activeProjectiles.length = 0; // Clear array
+
   let frameTotalDamage = 0;
 
-  const activeProjectiles: EngineProjectile[] = [];
-  const enemiesById = new Map<string, EngineEnemy>();
+  const enemiesById = cache ? cache.enemiesById : new Map<string, EngineEnemy>();
+  if (cache) enemiesById.clear();
+
   for (const enemy of state.enemies) {
     enemiesById.set(enemy.id, enemy);
   }
@@ -118,7 +127,7 @@ export const stepProjectiles = (
   }
 
   const patch: EnginePatch = {
-    projectiles: activeProjectiles,
+    projectiles: cache ? activeProjectiles.slice() : activeProjectiles,
     enemies: hits.size > 0 ? nextEnemies : undefined,
     effects: nextEffects !== state.effects ? nextEffects : undefined,
     idCounters:

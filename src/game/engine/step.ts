@@ -13,6 +13,16 @@ import type {
 } from './types';
 import { stepWave } from './wave';
 
+export interface EngineCache {
+  // Reusable structures for projectiles
+  projectileHits: Map<string, number>;
+  activeProjectiles: EngineProjectile[];
+  enemiesById: Map<string, EngineEnemy>;
+
+  // Reusable structures for enemies
+  nextEnemies: EngineEnemy[];
+}
+
 export interface StepEngineOptions {
   greedMultiplier?: number;
   prepTimeMs?: number;
@@ -24,13 +34,14 @@ export const stepEngine = (
   pathWaypoints: readonly EngineVector2[],
   context: EngineTickContext,
   options: StepEngineOptions = {},
+  cache?: EngineCache,
 ): EngineTickResult => {
   const tileSize = options.tileSize;
   const waveResult = stepWave(state, pathWaypoints, context, { prepTimeMs: options.prepTimeMs });
   let workingState = applyEnginePatch(state, waveResult.patch);
   const patch: EnginePatch = { ...waveResult.patch };
 
-  const enemyResult = stepEnemies(workingState, pathWaypoints, context, { tileSize });
+  const enemyResult = stepEnemies(workingState, pathWaypoints, context, { tileSize }, cache);
   if (enemyResult.patch.enemies !== undefined) patch.enemies = enemyResult.patch.enemies;
   workingState = applyEnginePatch(workingState, enemyResult.patch);
 
@@ -42,10 +53,16 @@ export const stepEngine = (
   }
   workingState = applyEnginePatch(workingState, towerResult.patch);
 
-  const projectileResult = stepProjectiles(workingState, pathWaypoints, context, {
-    tileSize,
-    greedMultiplier: options.greedMultiplier,
-  });
+  const projectileResult = stepProjectiles(
+    workingState,
+    pathWaypoints,
+    context,
+    {
+      tileSize,
+      greedMultiplier: options.greedMultiplier,
+    },
+    cache,
+  );
   if (projectileResult.patch.enemies !== undefined) patch.enemies = projectileResult.patch.enemies;
   patch.projectiles = projectileResult.patch.projectiles ?? patch.projectiles;
   patch.effects = projectileResult.patch.effects ?? patch.effects;

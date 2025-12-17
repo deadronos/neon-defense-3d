@@ -1,3 +1,4 @@
+import type { EngineCache } from './step';
 import type { EngineEvent } from './events';
 import type {
   EngineEnemy,
@@ -20,12 +21,15 @@ export const stepEnemies = (
   pathWaypoints: readonly EngineVector2[],
   context: EngineTickContext,
   options: StepEnemiesOptions = {},
+  cache?: EngineCache,
 ): EngineTickResult => {
   const tileSize = options.tileSize ?? DEFAULT_TILE_SIZE;
   const deltaSeconds = context.deltaMs / 1000;
 
   const events: EngineEvents = { immediate: [], deferred: [] };
-  const nextEnemies: EngineEnemy[] = [];
+  const nextEnemies: EngineEnemy[] = cache ? cache.nextEnemies : [];
+  if (cache) nextEnemies.length = 0;
+
   let livesLost = 0;
 
   for (const enemy of state.enemies) {
@@ -90,7 +94,7 @@ export const stepEnemies = (
     events.immediate.push(lifeLossEvent);
   }
 
-  const patch: EnginePatch = { enemies: nextEnemies };
+  const patch: EnginePatch = { enemies: cache ? nextEnemies.slice() : nextEnemies };
 
   return { patch, events };
 };
