@@ -21,7 +21,20 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
     const count = 500; // Max towers
     const dummy = useMemo(() => new THREE.Object3D(), []);
 
+    // Ensure bounding sphere is always infinite to prevent culling issues
     useFrame(() => {
+        const applyBounds = (ref: React.RefObject<THREE.InstancedMesh>) => {
+            if (ref.current && ref.current.geometry) {
+                if (ref.current.geometry.boundingSphere?.radius !== Infinity) {
+                    ref.current.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Infinity);
+                }
+            }
+        };
+        applyBounds(baseRef);
+        applyBounds(turretRef);
+        applyBounds(ringRef);
+        applyBounds(rangeRef);
+
         if (!baseRef.current || !turretRef.current || !ringRef.current) return;
 
         towers.forEach((tower, i) => {
@@ -102,6 +115,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
     const handlePointerDown = (e: ThreeEvent<MouseEvent>) => {
         e.stopPropagation();
         if (e.instanceId !== undefined && towers[e.instanceId]) {
+            console.log('Tower selected (PointerDown):', towers[e.instanceId].id);
             setSelectedEntityId(towers[e.instanceId].id);
         }
     };
@@ -109,13 +123,13 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
     return (
         <group>
             {/* Base */}
-            <instancedMesh ref={baseRef} args={[undefined, undefined, count]} onPointerDown={handlePointerDown}>
+            <instancedMesh ref={baseRef} args={[undefined, undefined, count]} onPointerDown={handlePointerDown} frustumCulled={false}>
                 <boxGeometry args={[1, 1, 1]} /> {/* scaled to 1.5, 0.4, 1.5 in loop */}
                 <meshStandardMaterial color="#111" metalness={0.9} roughness={0.1} />
             </instancedMesh>
 
             {/* Turret */}
-            <instancedMesh ref={turretRef} args={[undefined, undefined, count]} onPointerDown={handlePointerDown}>
+            <instancedMesh ref={turretRef} args={[undefined, undefined, count]} onPointerDown={handlePointerDown} frustumCulled={false}>
                 <octahedronGeometry args={[0.5]} />
                 <meshStandardMaterial
                     color="black"
@@ -127,13 +141,13 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
             </instancedMesh>
 
             {/* Floating Rings */}
-            <instancedMesh ref={ringRef} args={[undefined, undefined, count]} onPointerDown={handlePointerDown}>
+            <instancedMesh ref={ringRef} args={[undefined, undefined, count]} onPointerDown={handlePointerDown} frustumCulled={false}>
                 <ringGeometry args={[0.6, 0.65, 32]} />
                 <meshBasicMaterial toneMapped={false} side={THREE.DoubleSide} />
             </instancedMesh>
 
             {/* Range Rings - Only visible when selected */}
-            <instancedMesh ref={rangeRef} args={[undefined, undefined, count]}>
+            <instancedMesh ref={rangeRef} args={[undefined, undefined, count]} frustumCulled={false}>
                 <ringGeometry args={[0.99, 1, 64]} />
                 {/* We use scale to set range. 1 unit radius. */}
                 <meshBasicMaterial transparent opacity={0.3} toneMapped={false} side={THREE.DoubleSide} />
