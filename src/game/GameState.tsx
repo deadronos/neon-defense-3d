@@ -339,7 +339,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         towers,
         projectiles,
         effects,
-        waveState: waveState ?? undefined,
+        waveState: waveState ?? null,
         step,
         removeEffect,
         placeTower,

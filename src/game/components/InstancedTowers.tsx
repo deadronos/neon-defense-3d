@@ -22,7 +22,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
 
   // Ensure bounding sphere is always infinite to prevent culling issues
   useFrame(() => {
-    const applyBounds = (ref: React.RefObject<THREE.InstancedMesh>) => {
+    const applyBounds = (ref: React.RefObject<THREE.InstancedMesh | null>) => {
       if (ref.current && ref.current.geometry) {
         if (ref.current.geometry.boundingSphere?.radius !== Infinity) {
           ref.current.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Infinity);
@@ -94,9 +94,9 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
       }
     });
 
-    hideUnusedInstances(baseRef.current, towers.length, count);
-    hideUnusedInstances(turretRef.current, towers.length, count);
-    hideUnusedInstances(ringRef.current, towers.length, count);
+    if (baseRef.current) hideUnusedInstances(baseRef.current, towers.length, count);
+    if (turretRef.current) hideUnusedInstances(turretRef.current, towers.length, count);
+    if (ringRef.current) hideUnusedInstances(ringRef.current, towers.length, count);
     if (rangeRef.current) hideUnusedInstances(rangeRef.current, towers.length, count);
 
     baseRef.current.instanceMatrix.needsUpdate = true;
