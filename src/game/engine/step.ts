@@ -10,6 +10,8 @@ import type {
   EngineTickContext,
   EngineTickResult,
   EngineVector2,
+  EngineEnemy,
+  EngineProjectile,
 } from './types';
 import { stepWave } from './wave';
 

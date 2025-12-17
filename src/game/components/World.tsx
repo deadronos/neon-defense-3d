@@ -5,7 +5,8 @@ import { TileType } from '../../types';
 import { useGame } from '../GameState';
 
 export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }) => {
-  const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId, towers } = useGame();
+  const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId, towers } =
+    useGame();
   const [hovered, setHovered] = useState(false);
 
   let color = '#000000';
@@ -45,9 +46,7 @@ export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z,
           if (gameState.gameStatus !== 'playing') return;
 
           // Check if there's a tower here
-          const existingTower = towers.find(
-            (t) => t.gridPos[0] === x && t.gridPos[1] === z
-          );
+          const existingTower = towers.find((t) => t.gridPos[0] === x && t.gridPos[1] === z);
 
           if (existingTower) {
             setSelectedEntityId(existingTower.id);

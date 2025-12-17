@@ -1,5 +1,5 @@
-import type { EngineCache } from './step';
 import type { EngineEvent } from './events';
+import type { EngineCache } from './step';
 import type {
   EngineEnemy,
   EngineEvents,

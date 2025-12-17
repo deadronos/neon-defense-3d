@@ -1,12 +1,11 @@
-import type { EngineCache } from './step';
 import type { EngineEvent } from './events';
 import { selectEnemyWorldPosition } from './selectors';
+import type { EngineCache } from './step';
 import type {
   EngineEffectIntent,
   EngineEnemy,
   EngineEvents,
   EnginePatch,
-  EngineProjectile,
   EngineState,
   EngineTickContext,
   EngineTickResult,
