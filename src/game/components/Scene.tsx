@@ -11,8 +11,8 @@ import { InstancedExplosions } from './Effects';
 import { InstancedEnemies } from './Enemies';
 import { GameLoopBridge } from './GameLoop';
 import { InstancedProjectiles } from './Projectiles';
-import { InstancedTrails } from './Trails';
 import { Tower } from './Tower';
+import { InstancedTrails } from './Trails';
 import { World } from './World';
 
 export const SceneContent = () => {
