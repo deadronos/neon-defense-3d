@@ -12,6 +12,7 @@ import { InstancedEnemies } from './Enemies';
 import { GameLoopBridge } from './GameLoop';
 import { InstancedProjectiles } from './Projectiles';
 import { Tower } from './Tower';
+import { InstancedTrails } from './Trails';
 import { World } from './World';
 
 export const SceneContent = () => {
@@ -37,6 +38,7 @@ export const SceneContent = () => {
         {towers.map((t) => (
           <Tower key={t.id} data={t} enemies={enemies} />
         ))}
+        <InstancedTrails enemies={enemies} />
         <InstancedEnemies enemies={enemies} />
         <InstancedProjectiles projectiles={projectiles} enemies={enemies} />
         {effects.length > 0 && <InstancedExplosions effects={effects} remove={removeEffect} />}
