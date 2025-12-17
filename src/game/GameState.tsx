@@ -28,6 +28,7 @@ import { applyEngineRuntimeAction } from './engine/runtime';
 import { selectEnemyWorldPosition } from './engine/selectors';
 import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
 import { stepEngine } from './engine/step';
+import type { EngineCache } from './engine/step';
 import type { EngineEnemy, EngineState, EngineVector2 } from './engine/types';
 import { createInitialUiState, uiReducer } from './engine/uiReducer';
 import { getTowerStats } from './utils';
@@ -204,6 +205,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const runtimeRef = useRef(runtime);
   runtimeRef.current = runtime;
 
+  const engineCacheRef = useRef<EngineCache>({
+    projectileHits: new Map(),
+    activeProjectiles: [],
+    enemiesById: new Map(),
+    nextEnemies: [],
+  });
+
   const currentMapLayout = MAP_LAYOUTS[runtime.ui.currentMapIndex % MAP_LAYOUTS.length];
   const mapGrid = useMemo(() => getMapGrid(currentMapLayout), [currentMapLayout]);
   const pathWaypoints = useMemo(() => generatePath(currentMapLayout), [currentMapLayout]);
@@ -310,6 +318,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         enginePathWaypoints,
         { deltaMs, nowMs, rng: Math.random },
         { tileSize: TILE_SIZE, greedMultiplier },
+        engineCacheRef.current,
       );
 
       dispatch({ type: 'applyTickResult', result });
@@ -330,7 +339,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         towers,
         projectiles,
         effects,
-        waveState: waveState ?? undefined,
+        waveState: waveState ?? null,
         step,
         removeEffect,
         placeTower,

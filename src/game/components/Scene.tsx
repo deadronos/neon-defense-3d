@@ -10,8 +10,9 @@ import { StarField } from '../StarField';
 import { InstancedExplosions } from './Effects';
 import { InstancedEnemies } from './Enemies';
 import { GameLoopBridge } from './GameLoop';
+import { InstancedTowers } from './InstancedTowers';
 import { InstancedProjectiles } from './Projectiles';
-import { Tower } from './Tower';
+// import { Tower } from './Tower'; // Keep for ref? No, replacing usage.
 import { InstancedTrails } from './Trails';
 import { World } from './World';
 
@@ -35,9 +36,7 @@ export const SceneContent = () => {
       <World />
 
       <group position={[offsetX, 0, offsetZ]}>
-        {towers.map((t) => (
-          <Tower key={t.id} data={t} enemies={enemies} />
-        ))}
+        <InstancedTowers towers={towers} />
         <InstancedTrails enemies={enemies} />
         <InstancedEnemies enemies={enemies} />
         <InstancedProjectiles projectiles={projectiles} enemies={enemies} />

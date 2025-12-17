@@ -23,13 +23,15 @@ export interface StepWaveOptions {
   prepTimeMs?: number;
 }
 
+type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
+
 const createWaveConfig = (wave: number) => {
   const count = 5 + Math.floor(wave * 1.5);
   const intervalMs = Math.max(
     MIN_SPAWN_INTERVAL_MS,
     BASE_SPAWN_INTERVAL_MS - wave * INTERVAL_DECAY_PER_WAVE_MS,
   );
-  const types = [ENEMY_TYPES.BASIC];
+  const types: EnemyTypeConfig[] = [ENEMY_TYPES.BASIC];
   if (wave >= 2) types.push(ENEMY_TYPES.FAST);
   if (wave >= 5) types.push(ENEMY_TYPES.TANK);
   if (wave % 5 === 0) types.push(ENEMY_TYPES.BOSS);

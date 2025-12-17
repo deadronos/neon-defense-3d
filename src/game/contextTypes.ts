@@ -26,7 +26,7 @@ export interface GameContextProps {
   /** List of visual effects. */
   effects: EffectEntity[];
   /** Current state of the wave system. */
-  waveState?: WaveState;
+  waveState: WaveState | null;
   /** Steps the simulation (called from the render-loop bridge). */
   step: (deltaSeconds: number, nowSeconds: number) => void;
   /** Renderer intent: remove an effect by id. */
