@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import * as THREE from 'three';
 
 import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
 import { useGame } from '../GameState';
+
+const GRID_PLANE_GEO = new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE);
 
 export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }) => {
   const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId, towers } =
@@ -74,11 +77,11 @@ export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z,
           metalness={0.8}
         />
       </mesh>
-      {/* Grid Border */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, 0]}>
-        <planeGeometry args={[TILE_SIZE, TILE_SIZE]} />
-        <meshBasicMaterial color="#1a1a40" wireframe />
-      </mesh>
+      {/* Grid Floor Overlay */}
+      <lineSegments position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <edgesGeometry args={[GRID_PLANE_GEO]} />
+        <lineBasicMaterial color="#4444ff" opacity={0.3} transparent />
+      </lineSegments>
     </group>
   );
 };

@@ -9,11 +9,13 @@ import { hideUnusedInstances, TEMP_COLOR, ZERO_MATRIX } from './instancing/insta
 export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies }) => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const shieldRef = useRef<THREE.InstancedMesh>(null);
+  const ringRef = useRef<THREE.InstancedMesh>(null); // Rotating ring
   const count = 1000;
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  useFrame(() => {
-    if (!meshRef.current || !shieldRef.current) return;
+  useFrame(({ clock }) => {
+    if (!meshRef.current || !shieldRef.current || !ringRef.current) return;
+    const time = clock.getElapsedTime();
 
     enemies.forEach((enemy, i) => {
       if (i >= count) return;
@@ -39,6 +41,7 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
       // Update Shield
       if (enemy.shield > 0) {
         dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
+        dummy.rotation.set(0, 0, 0); // Reset rotation for shield sphere
         dummy.updateMatrix();
         shieldRef.current?.setMatrixAt(i, dummy.matrix);
         TEMP_COLOR.set('#00ffff');
@@ -46,17 +49,30 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
       } else {
         shieldRef.current?.setMatrixAt(i, ZERO_MATRIX);
       }
+
+      // Rotating Ring
+      dummy.scale.set(scale * 2.0, scale * 2.0, scale * 2.0);
+      dummy.rotation.set(time * 2, time, 0);
+      dummy.updateMatrix();
+      ringRef.current?.setMatrixAt(i, dummy.matrix);
+      // Ring color logic - maybe darker than body?
+      TEMP_COLOR.set(enemy.config.color).multiplyScalar(0.5);
+      ringRef.current?.setColorAt(i, TEMP_COLOR);
     });
 
     // Hide unused
     if (meshRef.current) hideUnusedInstances(meshRef.current, enemies.length, count);
     if (shieldRef.current) hideUnusedInstances(shieldRef.current, enemies.length, count);
+    if (ringRef.current) hideUnusedInstances(ringRef.current, enemies.length, count);
 
     meshRef.current.instanceMatrix.needsUpdate = true;
     if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
 
     shieldRef.current.instanceMatrix.needsUpdate = true;
     if (shieldRef.current.instanceColor) shieldRef.current.instanceColor.needsUpdate = true;
+
+    ringRef.current.instanceMatrix.needsUpdate = true;
+    if (ringRef.current.instanceColor) ringRef.current.instanceColor.needsUpdate = true;
   });
 
   return (
@@ -75,6 +91,12 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
           depthWrite={false}
           blending={THREE.AdditiveBlending}
         />
+      </instancedMesh>
+
+      {/* Rotating Ring */}
+      <instancedMesh ref={ringRef} args={[undefined, undefined, count]}>
+        <torusGeometry args={[0.7, 0.05, 8, 32]} />
+        <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
     </group>
   );
