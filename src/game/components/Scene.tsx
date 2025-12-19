@@ -17,14 +17,17 @@ import { InstancedTrails } from './Trails';
 import { World } from './World';
 
 export const SceneContent = () => {
-  const { enemies, towers, projectiles, effects, removeEffect } = useGame();
+  const { enemies, towers, projectiles, effects, removeEffect, gameState } = useGame();
+  const isHigh = gameState.graphicsQuality === 'high';
+
+  const chromaticOffset = React.useMemo(() => new THREE.Vector2(0.002, 0.002), []);
 
   const offsetX = (-MAP_WIDTH * TILE_SIZE) / 2 + TILE_SIZE / 2;
   const offsetZ = (-MAP_HEIGHT * TILE_SIZE) / 2 + TILE_SIZE / 2;
 
   return (
     <>
-      <StarField count={3000} />
+      <StarField count={isHigh ? 3000 : 1200} />
 
       {/* Dark Ambient & Rim Lighting */}
       <ambientLight intensity={0.1} />
@@ -37,7 +40,7 @@ export const SceneContent = () => {
 
       <group position={[offsetX, 0, offsetZ]}>
         <InstancedTowers towers={towers} />
-        <InstancedTrails enemies={enemies} />
+        {isHigh && <InstancedTrails enemies={enemies} />}
         <InstancedEnemies enemies={enemies} />
         <InstancedProjectiles projectiles={projectiles} enemies={enemies} />
         {effects.length > 0 && <InstancedExplosions effects={effects} remove={removeEffect} />}
@@ -51,18 +54,20 @@ export const SceneContent = () => {
         maxDistance={50}
       />
 
-      <SoftShadows size={10} samples={8} />
+      {isHigh && <SoftShadows size={10} samples={8} />}
 
       {/* Post Processing */}
-      <EffectComposer enableNormalPass={false}>
-        <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.6} />
-        <Vignette eskil={false} offset={0.1} darkness={1.1} />
-        <ChromaticAberration
-          offset={new THREE.Vector2(0.002, 0.002)}
-          radialModulation={false}
-          modulationOffset={0}
-        />
-      </EffectComposer>
+      {isHigh && (
+        <EffectComposer enableNormalPass={false}>
+          <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.6} />
+          <Vignette eskil={false} offset={0.1} darkness={1.1} />
+          <ChromaticAberration
+            offset={chromaticOffset}
+            radialModulation={false}
+            modulationOffset={0}
+          />
+        </EffectComposer>
+      )}
     </>
   );
 };

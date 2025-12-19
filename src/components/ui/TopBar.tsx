@@ -1,15 +1,25 @@
 import React from 'react';
 
 import type { WaveState } from '../../types';
+import type { GraphicsQuality } from '../../types';
 
 interface TopBarProps {
   lives: number;
   money: number;
   wave: number;
   waveState: WaveState | null;
+  graphicsQuality: GraphicsQuality;
+  onToggleGraphicsQuality: () => void;
 }
 
-export const TopBar: React.FC<TopBarProps> = ({ lives, money, wave, waveState }) => {
+export const TopBar: React.FC<TopBarProps> = ({
+  lives,
+  money,
+  wave,
+  waveState,
+  graphicsQuality,
+  onToggleGraphicsQuality,
+}) => {
   return (
     <div className="absolute top-0 w-full p-6 flex justify-between items-start pointer-events-auto">
       <div className="flex gap-6">
@@ -47,6 +57,15 @@ export const TopBar: React.FC<TopBarProps> = ({ lives, money, wave, waveState })
           </div>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={onToggleGraphicsQuality}
+        className="bg-black/40 border border-fuchsia-500/40 hover:border-fuchsia-400/70 text-fuchsia-200 px-4 py-2 rounded-md font-mono text-xs uppercase tracking-wider"
+        aria-label="Toggle graphics quality"
+      >
+        Quality: {graphicsQuality === 'high' ? 'High' : 'Low'}
+      </button>
     </div>
   );
 };

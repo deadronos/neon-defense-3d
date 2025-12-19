@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import React, { useRef, useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import type { EnemyEntity } from '../../types';
@@ -13,15 +13,35 @@ export const InstancedTrails: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies 
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const colorHelper = useMemo(() => new THREE.Color(), []);
 
+  // Throttle per-enemy trail spawning to avoid saturating the particle buffer.
+  const lastSpawnByEnemyIdRef = useRef<Map<string, number>>(new Map());
+  const spawnIntervalSeconds = 0.05; // 20 particles/sec per enemy max
+
   // Particle system pool
   const [pool] = useState(() => new ParticlePool(count));
+
+  // Hide all instances on mount (otherwise InstancedMesh starts as identity matrices).
+  useLayoutEffect(() => {
+    if (!meshRef.current) return;
+    for (let i = 0; i < count; i++) {
+      meshRef.current.setMatrixAt(i, ZERO_MATRIX);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  }, [count]);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
 
+    const now = state.clock.elapsedTime;
+    const lastSpawnByEnemyId = lastSpawnByEnemyIdRef.current;
+
     // 1. Spawn new particles
     // Iterate enemies and spawn a trail particle at their current position
     for (const enemy of enemies) {
+      const last = lastSpawnByEnemyId.get(enemy.id) ?? -Infinity;
+      if (now - last < spawnIntervalSeconds) continue;
+      lastSpawnByEnemyId.set(enemy.id, now);
+
       colorHelper.set(enemy.config.color);
 
       // Add small random offset for volume/jitter
@@ -46,34 +66,34 @@ export const InstancedTrails: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies 
     }
 
     // 2. Update active particles
-    for (let i = 0; i < count; i++) {
-      if (pool.active[i]) {
-        pool.life[i] -= delta;
+    // Iterate only active indices (dense list) for O(active) cost.
+    // Note: when a particle dies we swap-remove it, so do not increment the list position.
+    for (let listPos = 0; listPos < pool.activeListSize; ) {
+      const i = pool.activeList[listPos];
 
-        if (pool.life[i] <= 0) {
-          pool.active[i] = 0;
-          meshRef.current.setMatrixAt(i, ZERO_MATRIX);
-        } else {
-          // Update visualization
-          dummy.position.set(
-            pool.position[i * 3],
-            pool.position[i * 3 + 1],
-            pool.position[i * 3 + 2],
-          );
-
-          // Fade out scale
-          const lifeRatio = pool.life[i] / pool.maxLife[i];
-          const s = pool.scale[i] * lifeRatio;
-
-          dummy.scale.set(s, s, s);
-          dummy.updateMatrix();
-          meshRef.current.setMatrixAt(i, dummy.matrix);
-
-          // Set color
-          TEMP_COLOR.setRGB(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]);
-          meshRef.current.setColorAt(i, TEMP_COLOR);
-        }
+      pool.life[i] -= delta;
+      if (pool.life[i] <= 0) {
+        pool.deactivateParticle(i);
+        meshRef.current.setMatrixAt(i, ZERO_MATRIX);
+        continue;
       }
+
+      // Update visualization
+      dummy.position.set(pool.position[i * 3], pool.position[i * 3 + 1], pool.position[i * 3 + 2]);
+
+      // Fade out scale
+      const lifeRatio = pool.life[i] / pool.maxLife[i];
+      const s = pool.scale[i] * lifeRatio;
+
+      dummy.scale.set(s, s, s);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+
+      // Set color
+      TEMP_COLOR.setRGB(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]);
+      meshRef.current.setColorAt(i, TEMP_COLOR);
+
+      listPos++;
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true;

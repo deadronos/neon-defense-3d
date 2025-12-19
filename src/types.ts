@@ -5,6 +5,9 @@ import type { Vector3 } from 'three';
  */
 export type Vector2 = [number, number];
 
+/** Renderer quality preset for performance tuning. */
+export type GraphicsQuality = 'high' | 'low';
+
 /**
  * Interface representing the global state of the game.
  */
@@ -21,6 +24,9 @@ export interface GameState {
   isGameOver?: boolean;
   /** Current status of the game session. */
   gameStatus: 'idle' | 'playing' | 'gameover' | 'victory'; // Added 'victory'
+
+  /** Graphics quality preset (affects postprocessing, trails, etc.). */
+  graphicsQuality: GraphicsQuality;
 
   /** Index of the current map in the campaign. */
   currentMapIndex: number;

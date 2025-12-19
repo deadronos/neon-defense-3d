@@ -18,6 +18,7 @@ export const UI = () => {
     gameState,
     startGame,
     resetGame,
+    setGraphicsQuality,
     selectedTower,
     setSelectedTower,
     selectedEntityId,
@@ -66,6 +67,10 @@ export const UI = () => {
         money={gameState.money}
         wave={gameState.wave}
         waveState={waveState}
+        graphicsQuality={gameState.graphicsQuality}
+        onToggleGraphicsQuality={() =>
+          setGraphicsQuality(gameState.graphicsQuality === 'high' ? 'low' : 'high')
+        }
       />
 
       {showBuildMenu && (

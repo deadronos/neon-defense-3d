@@ -15,6 +15,7 @@ import type {
   EnemyConfig,
   EnemyEntity,
   GameState,
+  GraphicsQuality,
   ProjectileEntity,
   TowerEntity,
   TowerType,
@@ -290,6 +291,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'uiAction', action: { type: 'purchaseUpgrade', upgrade: type, cost } });
   }, []);
 
+  const setGraphicsQuality = useCallback((quality: GraphicsQuality) => {
+    dispatch({ type: 'uiAction', action: { type: 'setGraphicsQuality', quality } });
+  }, []);
+
   const setSelectedTower = useCallback((tower: TowerType | null) => {
     dispatch({ type: 'uiAction', action: { type: 'setSelectedTower', tower } });
   }, []);
@@ -356,6 +361,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         pathWaypoints,
         startNextSector,
         purchaseUpgrade,
+        setGraphicsQuality,
       }}
     >
       {children}
