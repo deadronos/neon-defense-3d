@@ -1,88 +1,92 @@
-import { useFrame } from '@react-three/fiber';
-import React, { useRef, useMemo } from 'react';
+import React from 'react';
 import * as THREE from 'three';
 
 import type { EnemyEntity } from '../../types';
+import { useInstancedEntities } from '../hooks/useInstancedEntities';
 
-import { hideUnusedInstances, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies }) => {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-  const shieldRef = useRef<THREE.InstancedMesh>(null);
-  const ringRef = useRef<THREE.InstancedMesh>(null); // Rotating ring
   const count = 1000;
-  const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  useFrame(({ clock }) => {
-    if (!meshRef.current || !shieldRef.current || !ringRef.current) return;
-    const time = clock.getElapsedTime();
-
-    enemies.forEach((enemy, i) => {
-      if (i >= count) return;
-
+  // --- 1. Body Mesh ---
+  const meshRef = useInstancedEntities({
+    entities: enemies,
+    count,
+    updateEntity: (enemy, dummy, i, mesh) => {
       const scale = enemy.config.scale || 0.4;
 
-      // Update Body
       dummy.position.copy(enemy.position);
       dummy.position.y += scale + 0.1;
       dummy.rotation.set(0, 0, 0);
       dummy.scale.set(scale, scale, scale);
       dummy.updateMatrix();
-      meshRef.current?.setMatrixAt(i, dummy.matrix);
+      mesh.setMatrixAt(i, dummy.matrix);
 
       // Color logic
       const isDashing = enemy.abilityActiveTimer > 0;
       const baseColor = isDashing ? '#ffffff' : enemy.config.color;
-      // High intensity color for neon look
-      // Optimization: Reuse shared TEMP_COLOR to avoid GC overhead
       TEMP_COLOR.set(baseColor).multiplyScalar(2);
-      meshRef.current?.setColorAt(i, TEMP_COLOR);
+      mesh.setColorAt(i, TEMP_COLOR);
+    },
+  });
 
-      // Update Shield
+  // --- 2. Shield Mesh ---
+  const shieldRef = useInstancedEntities({
+    entities: enemies,
+    count,
+    updateEntity: (enemy, dummy, i, mesh) => {
       if (enemy.shield > 0) {
-        dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
-        dummy.rotation.set(0, 0, 0); // Reset rotation for shield sphere
-        dummy.updateMatrix();
-        shieldRef.current?.setMatrixAt(i, dummy.matrix);
-        TEMP_COLOR.set('#00ffff');
-        shieldRef.current?.setColorAt(i, TEMP_COLOR);
-      } else {
-        shieldRef.current?.setMatrixAt(i, ZERO_MATRIX);
-      }
+        const scale = enemy.config.scale || 0.4;
 
-      // Rotating Ring
+        dummy.position.copy(enemy.position);
+        dummy.position.y += scale + 0.1; // Match body height
+        dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
+        dummy.rotation.set(0, 0, 0);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+
+        TEMP_COLOR.set('#00ffff');
+        mesh.setColorAt(i, TEMP_COLOR);
+      } else {
+        mesh.setMatrixAt(i, ZERO_MATRIX);
+      }
+    },
+  });
+
+  // --- 3. Ring Mesh (Rotating) ---
+  const ringRef = useInstancedEntities({
+    entities: enemies,
+    count,
+    updateEntity: (enemy, dummy, i, mesh) => {
+      const scale = enemy.config.scale || 0.4;
+      const time = Date.now() * 0.001; // Should match clock.getElapsedTime() roughly, but internal state might vary.
+      // Better to use a consistent time source if possible, but useInstancedEntities doesn't pass clock.
+      // We can use performance.now() or just Date.now().
+      // The original code used `clock.getElapsedTime()`.
+      // Let's stick to Date.now() / 1000 for simplicity as it's visual only.
+
+      dummy.position.copy(enemy.position);
+      dummy.position.y += scale + 0.1; // Match body height
+
       dummy.scale.set(scale * 2.0, scale * 2.0, scale * 2.0);
       dummy.rotation.set(time * 2, time, 0);
       dummy.updateMatrix();
-      ringRef.current?.setMatrixAt(i, dummy.matrix);
-      // Ring color logic - maybe darker than body?
+      mesh.setMatrixAt(i, dummy.matrix);
+
       TEMP_COLOR.set(enemy.config.color).multiplyScalar(0.5);
-      ringRef.current?.setColorAt(i, TEMP_COLOR);
-    });
-
-    // Hide unused
-    if (meshRef.current) hideUnusedInstances(meshRef.current, enemies.length, count);
-    if (shieldRef.current) hideUnusedInstances(shieldRef.current, enemies.length, count);
-    if (ringRef.current) hideUnusedInstances(ringRef.current, enemies.length, count);
-
-    meshRef.current.instanceMatrix.needsUpdate = true;
-    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
-
-    shieldRef.current.instanceMatrix.needsUpdate = true;
-    if (shieldRef.current.instanceColor) shieldRef.current.instanceColor.needsUpdate = true;
-
-    ringRef.current.instanceMatrix.needsUpdate = true;
-    if (ringRef.current.instanceColor) ringRef.current.instanceColor.needsUpdate = true;
+      mesh.setColorAt(i, TEMP_COLOR);
+    },
   });
 
   return (
     <group>
-      <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+      <instancedMesh ref={meshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <dodecahedronGeometry args={[1, 0]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
 
-      <instancedMesh ref={shieldRef} args={[undefined, undefined, count]}>
+      <instancedMesh ref={shieldRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <sphereGeometry args={[1, 16, 16]} />
         <meshBasicMaterial
           color="white"
@@ -94,7 +98,7 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
       </instancedMesh>
 
       {/* Rotating Ring */}
-      <instancedMesh ref={ringRef} args={[undefined, undefined, count]}>
+      <instancedMesh ref={ringRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <torusGeometry args={[0.7, 0.05, 8, 32]} />
         <meshBasicMaterial toneMapped={false} />
       </instancedMesh>
