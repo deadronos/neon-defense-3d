@@ -35,7 +35,7 @@ export const InstancedProjectiles: React.FC<{
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, 2000]}>
+    <instancedMesh ref={meshRef} args={[undefined, undefined, 2000]} frustumCulled={false}>
       <icosahedronGeometry args={[0.5, 0]} />
       <meshBasicMaterial toneMapped={false} />
     </instancedMesh>

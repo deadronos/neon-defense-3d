@@ -159,24 +159,40 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
         ref={baseMeshRef}
         args={[baseGeometry, undefined, 100]}
         onPointerDown={handlePointerDown}
+        frustumCulled={false}
       >
         <meshStandardMaterial toneMapped={false} />
       </instancedMesh>
 
       {/* Turret */}
-      <instancedMesh ref={turretMeshRef} args={[undefined, undefined, 100]} raycast={() => null}>
+      <instancedMesh
+        ref={turretMeshRef}
+        args={[undefined, undefined, 100]}
+        raycast={() => null}
+        frustumCulled={false}
+      >
         <octahedronGeometry args={[0.5, 0]} />
         <meshStandardMaterial toneMapped={false} />
       </instancedMesh>
 
       {/* Floating Ring */}
-      <instancedMesh ref={ringMeshRef} args={[undefined, undefined, 100]} raycast={() => null}>
+      <instancedMesh
+        ref={ringMeshRef}
+        args={[undefined, undefined, 100]}
+        raycast={() => null}
+        frustumCulled={false}
+      >
         <torusGeometry args={[0.6, 0.05, 8, 32]} />
         <meshStandardMaterial toneMapped={false} />
       </instancedMesh>
 
       {/* Range Ring */}
-      <instancedMesh ref={rangeMeshRef} args={[undefined, undefined, 100]} raycast={() => null}>
+      <instancedMesh
+        ref={rangeMeshRef}
+        args={[undefined, undefined, 100]}
+        raycast={() => null}
+        frustumCulled={false}
+      >
         <torusGeometry args={[1, 0.05, 8, 64]} />
         <meshBasicMaterial color="#00ffff" transparent opacity={0.3} depthWrite={false} />
       </instancedMesh>
