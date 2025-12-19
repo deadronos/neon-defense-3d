@@ -25,6 +25,12 @@ describe('engine uiReducer', () => {
     expect(next.upgrades[UpgradeType.GLOBAL_DAMAGE]).toBe(1);
   });
 
+  it('setGraphicsQuality updates graphics preset', () => {
+    const initial = createInitialUiState();
+    const next = uiReducer(initial, { type: 'setGraphicsQuality', quality: 'low' });
+    expect(next.graphicsQuality).toBe('low');
+  });
+
   it('WaveCompleted triggers victory every 10 waves and awards RP', () => {
     const playing = {
       ...createInitialUiState(),
