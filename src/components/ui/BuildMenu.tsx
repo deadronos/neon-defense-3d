@@ -35,6 +35,10 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
           // Display base stats, assume level 1 and active upgrades
           const stats = getTowerStats(type, 1, upgrades);
 
+          const ariaLabel = isSelected
+            ? `Deselect ${config.name}`
+            : `Select ${config.name}, Cost ${config.cost}`;
+
           return (
             <button
               key={type}
@@ -45,6 +49,9 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
                   onSelectTower(type);
                 }
               }}
+              aria-label={ariaLabel}
+              aria-pressed={isSelected}
+              aria-disabled={!canAfford && !isSelected}
               className={`
                 relative group flex flex-col items-center p-3 transition-all duration-200 w-28 border
                 ${
@@ -81,7 +88,7 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
               </span>
 
               {/* Tooltip */}
-              <div className="absolute bottom-full mb-6 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200 w-48 bg-black/95 p-4 text-xs text-left border border-cyan-900 pointer-events-none shadow-2xl z-20 backdrop-blur-md">
+              <div className="absolute bottom-full mb-6 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 translate-y-2 group-hover:translate-y-0 group-focus-visible:translate-y-0 transition-all duration-200 w-48 bg-black/95 p-4 text-xs text-left border border-cyan-900 pointer-events-none shadow-2xl z-20 backdrop-blur-md">
                 <h3 className="font-bold text-cyan-400 text-sm mb-1 uppercase tracking-wider border-b border-cyan-900 pb-1">
                   {config.name}
                 </h3>
