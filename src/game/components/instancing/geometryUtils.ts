@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mergeBufferGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 export const createComplexTowerBase = (): THREE.BufferGeometry => {
   try {
@@ -63,7 +63,7 @@ export const createComplexTowerBase = (): THREE.BufferGeometry => {
     pylonGeo.dispose();
 
     // 3. Merge
-    const merged = mergeBufferGeometries(nonIndexedParts);
+    const merged = mergeGeometries(nonIndexedParts);
 
     // Cleanup non-indexed parts
     nonIndexedParts.forEach((g) => g.dispose());
