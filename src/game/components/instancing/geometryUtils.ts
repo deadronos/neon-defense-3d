@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
+export { mergeGeometries };
+
 export const createComplexTowerBase = (): THREE.BufferGeometry => {
   try {
     // 1. Create the main platform (Cross shape)

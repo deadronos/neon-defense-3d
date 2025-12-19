@@ -26,7 +26,7 @@ import { TileType, UpgradeType } from '../types';
 
 import type { GameContextProps } from './contextTypes';
 import { applyEngineRuntimeAction } from './engine/runtime';
-import { selectEnemyWorldPosition } from './engine/selectors';
+import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
 import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
 import { stepEngine } from './engine/step';
 import type { EngineCache } from './engine/step';
@@ -89,15 +89,24 @@ const toEnemyEntity = (
   };
 };
 
-const toProjectileEntity = (projectile: EngineState['projectiles'][number]): ProjectileEntity => ({
-  id: projectile.id,
-  startPos: new Vector3(projectile.origin[0], projectile.origin[1], projectile.origin[2]),
-  targetId: projectile.targetId,
-  speed: projectile.speed,
-  progress: projectile.progress,
-  damage: projectile.damage,
-  color: projectile.color,
-});
+const toProjectileEntity = (
+  projectile: EngineState['projectiles'][number],
+  enemies: EngineEnemy[],
+  pathWaypoints: readonly EngineVector2[],
+): ProjectileEntity => {
+  const target = enemies.find((e) => e.id === projectile.targetId);
+  const [x, y, z] = selectProjectileWorldPosition(projectile, target, pathWaypoints, TILE_SIZE);
+  return {
+    id: projectile.id,
+    startPos: new Vector3(projectile.origin[0], projectile.origin[1], projectile.origin[2]),
+    position: new Vector3(x, y, z),
+    targetId: projectile.targetId,
+    speed: projectile.speed,
+    progress: projectile.progress,
+    damage: projectile.damage,
+    color: projectile.color,
+  };
+};
 
 const toEffectEntity = (effect: EngineState['effects'][number]): EffectEntity => ({
   id: effect.id,
@@ -233,8 +242,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const projectiles = useMemo(
-    () => runtime.engine.projectiles.map((projectile) => toProjectileEntity(projectile)),
-    [runtime.engine.projectiles],
+    () =>
+      runtime.engine.projectiles.map((projectile) =>
+        toProjectileEntity(projectile, runtime.engine.enemies, enginePathWaypoints),
+      ),
+    [runtime.engine.projectiles, runtime.engine.enemies, enginePathWaypoints],
   );
 
   const effects = useMemo(
