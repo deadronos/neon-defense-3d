@@ -7,6 +7,7 @@ import type { TowerEntity, TowerType } from '../../types';
 import { useGame } from '../GameState';
 import { getTowerStats } from '../utils';
 
+import { createComplexTowerBase } from './instancing/geometryUtils';
 import { hideUnusedInstances, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers }) => {
@@ -19,6 +20,9 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
 
   const count = 500; // Max towers
   const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  // Complex geometry for base
+  const baseGeometry = useMemo(() => createComplexTowerBase(), []);
 
   // Ensure bounding sphere is always infinite to prevent culling issues
   useFrame(() => {
@@ -43,10 +47,10 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
       const stats = getTowerStats(tower.type, tower.level);
       const isSelected = selectedEntityId === tower.id;
 
-      // Base: position at [0, 0.2, 0] relative to tower center
-      dummy.position.copy(tower.position).add(new THREE.Vector3(0, 0.2, 0));
+      // Base: position at [0, 0, 0] relative to tower center (geometry handles offset)
+      dummy.position.copy(tower.position);
       dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(1.5, 0.4, 1.5);
+      dummy.scale.set(1, 1, 1); // Geometry is already sized
       dummy.updateMatrix();
       baseRef.current?.setMatrixAt(i, dummy.matrix);
       // Base color is constant dark, but maybe we want to tint it?
@@ -126,9 +130,9 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
         args={[undefined, undefined, count]}
         onPointerDown={handlePointerDown}
         frustumCulled={false}
+        geometry={baseGeometry}
       >
-        <boxGeometry args={[1, 1, 1]} /> {/* scaled to 1.5, 0.4, 1.5 in loop */}
-        <meshStandardMaterial color="#111" metalness={0.9} roughness={0.1} />
+        <meshStandardMaterial color="#222" metalness={0.9} roughness={0.2} />
       </instancedMesh>
 
       {/* Turret */}
