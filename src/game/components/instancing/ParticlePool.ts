@@ -5,6 +5,12 @@
 export class ParticlePool {
   public count: number;
   public active: Uint8Array;
+  /** Dense list of currently-active particle indices (for fast iteration). */
+  public activeList: Uint32Array;
+  /** Current number of active particles (prefix length of `activeList`). */
+  public activeListSize: number;
+  /** Maps particle index -> position in `activeList`, or -1 if inactive. */
+  public activeIndex: Int32Array;
   public life: Float32Array;
   public maxLife: Float32Array;
   public position: Float32Array;
@@ -21,6 +27,10 @@ export class ParticlePool {
   constructor(count: number) {
     this.count = count;
     this.active = new Uint8Array(count);
+    this.activeList = new Uint32Array(count);
+    this.activeListSize = 0;
+    this.activeIndex = new Int32Array(count);
+    this.activeIndex.fill(-1);
     this.life = new Float32Array(count);
     this.maxLife = new Float32Array(count);
     this.position = new Float32Array(count * 3);
@@ -62,6 +72,16 @@ export class ParticlePool {
   ) {
     const idx = this.curIndex;
     this.active[idx] = 1;
+
+    // Ensure the particle is present in the dense active list.
+    // Note: The ring buffer may overwrite an already-active particle.
+    if (this.activeIndex[idx] === -1) {
+      const pos = this.activeListSize;
+      this.activeList[pos] = idx;
+      this.activeIndex[idx] = pos;
+      this.activeListSize++;
+    }
+
     this.life[idx] = life;
     this.maxLife[idx] = life;
 
@@ -81,5 +101,30 @@ export class ParticlePool {
     this.associatedEffectId[idx] = effectId;
 
     this.curIndex = (this.curIndex + 1) % this.count;
+  }
+
+  /**
+   * Deactivates a particle and removes it from the dense active list in O(1).
+   */
+  deactivateParticle(idx: number) {
+    if (!this.active[idx]) return;
+
+    this.active[idx] = 0;
+    this.life[idx] = 0;
+    this.maxLife[idx] = 0;
+    this.associatedEffectId[idx] = null;
+
+    const pos = this.activeIndex[idx];
+    if (pos === -1) return;
+
+    const lastPos = this.activeListSize - 1;
+    const lastIdx = this.activeList[lastPos];
+
+    // Swap-remove.
+    this.activeList[pos] = lastIdx;
+    this.activeIndex[lastIdx] = pos;
+
+    this.activeIndex[idx] = -1;
+    this.activeListSize = lastPos;
   }
 }

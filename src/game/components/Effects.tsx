@@ -18,9 +18,19 @@ export const InstancedExplosions: React.FC<{
 
   // Track processed effects to avoid re-spawning
   const processedRef = useRef<Set<string>>(new Set());
+  const activeEffectIdsRef = useRef<Set<string>>(new Set());
 
   // Particle system pool
   const [pool] = React.useState(() => new ParticlePool(count));
+
+  // Hide all instances on mount (otherwise InstancedMesh starts as identity matrices).
+  React.useLayoutEffect(() => {
+    if (!meshRef.current) return;
+    for (let i = 0; i < count; i++) {
+      meshRef.current.setMatrixAt(i, ZERO_MATRIX);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  }, [count]);
 
   useFrame((state, delta) => {
     if (!meshRef.current) return;
@@ -40,45 +50,47 @@ export const InstancedExplosions: React.FC<{
       }
     });
 
-    // 2. Update and Render active particles
-    const activeEffectIds = new Set<string>();
+    // 2. Update and Render active particles (iterate only active indices)
+    const activeEffectIds = activeEffectIdsRef.current;
+    activeEffectIds.clear();
 
-    for (let i = 0; i < count; i++) {
-      if (pool.active[i]) {
-        pool.life[i] -= delta;
+    for (let listPos = 0; listPos < pool.activeListSize; ) {
+      const i = pool.activeList[listPos];
 
-        if (pool.life[i] <= 0) {
-          pool.active[i] = 0;
-        } else {
-          // Physics
-          pool.position[i * 3] += pool.velocity[i * 3] * delta;
-          pool.position[i * 3 + 1] += pool.velocity[i * 3 + 1] * delta;
-          pool.position[i * 3 + 2] += pool.velocity[i * 3 + 2] * delta;
+      pool.life[i] -= delta;
 
-          // Update Instance
-          dummy.position.set(
-            pool.position[i * 3],
-            pool.position[i * 3 + 1],
-            pool.position[i * 3 + 2],
-          );
-
-          // Scale down logic
-          const s = Math.max(0, pool.scale[i] * (pool.life[i] / pool.maxLife[i]));
-          dummy.scale.set(s, s, s);
-          dummy.updateMatrix();
-
-          meshRef.current.setMatrixAt(i, dummy.matrix);
-          // Optimization: Reuse shared TEMP_COLOR to avoid creating new THREE.Color per particle per frame
-          TEMP_COLOR.setRGB(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]);
-          meshRef.current.setColorAt(i, TEMP_COLOR);
-
-          const effectId = pool.associatedEffectId[i];
-          if (effectId) activeEffectIds.add(effectId);
-        }
-      } else {
-        // Hide inactive
+      if (pool.life[i] <= 0) {
+        pool.deactivateParticle(i);
         meshRef.current.setMatrixAt(i, ZERO_MATRIX);
+        continue;
       }
+
+      // Physics
+      pool.position[i * 3] += pool.velocity[i * 3] * delta;
+      pool.position[i * 3 + 1] += pool.velocity[i * 3 + 1] * delta;
+      pool.position[i * 3 + 2] += pool.velocity[i * 3 + 2] * delta;
+
+      // Update Instance
+      dummy.position.set(
+        pool.position[i * 3],
+        pool.position[i * 3 + 1],
+        pool.position[i * 3 + 2],
+      );
+
+      // Scale down logic
+      const s = Math.max(0, pool.scale[i] * (pool.life[i] / pool.maxLife[i]));
+      dummy.scale.set(s, s, s);
+      dummy.updateMatrix();
+
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+      // Optimization: Reuse shared TEMP_COLOR to avoid creating new THREE.Color per particle per frame
+      TEMP_COLOR.setRGB(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]);
+      meshRef.current.setColorAt(i, TEMP_COLOR);
+
+      const effectId = pool.associatedEffectId[i];
+      if (effectId) activeEffectIds.add(effectId);
+
+      listPos++;
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true;
