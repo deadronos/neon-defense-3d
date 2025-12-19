@@ -1,12 +1,18 @@
-import { useRef, useMemo, useEffect } from 'react';
-import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
-import { hideUnusedInstances, ZERO_MATRIX } from '../components/instancing/instancedUtils';
+import { useRef, useMemo } from 'react';
+import * as THREE from 'three';
+
+import { hideUnusedInstances } from '../components/instancing/instancedUtils';
 
 export interface UseInstancedEntitiesOptions<T> {
   entities: T[];
   count: number;
-  updateEntity: (entity: T, dummy: THREE.Object3D, index: number, mesh: THREE.InstancedMesh) => void;
+  updateEntity: (
+    entity: T,
+    dummy: THREE.Object3D,
+    index: number,
+    mesh: THREE.InstancedMesh,
+  ) => void;
   meshRef?: React.RefObject<THREE.InstancedMesh>;
 }
 

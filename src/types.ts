@@ -105,6 +105,8 @@ export interface ProjectileEntity {
   id: string;
   /** Starting position of the projectile. */
   startPos: Vector3;
+  /** Current world position of the projectile. */
+  position: Vector3;
   /** ID of the target enemy. */
   targetId: string | null;
   /** Speed of the projectile. */
