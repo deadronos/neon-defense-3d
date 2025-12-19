@@ -1,184 +1,178 @@
-import { useFrame, type ThreeEvent } from '@react-three/fiber';
-import React, { useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { ThreeEvent } from '@react-three/fiber';
 
-import { TOWER_CONFIGS } from '../../constants';
-import type { TowerEntity, TowerType } from '../../types';
+import type { TowerEntity, UpgradeType } from '../../types';
 import { useGame } from '../GameState';
-import { getTowerStats } from '../utils';
+import { useInstancedEntities } from '../hooks/useInstancedEntities';
 
 import { createComplexTowerBase } from './instancing/geometryUtils';
-import { hideUnusedInstances, ZERO_MATRIX } from './instancing/instancedUtils';
+import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { getTowerStats } from '../utils';
 
 export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers }) => {
-  const { setSelectedEntityId, selectedEntityId } = useGame();
+  const { setSelectedEntityId, selectedEntityId, gameState } = useGame();
+  const [baseGeometry, setBaseGeometry] = useState<THREE.BufferGeometry | null>(null);
 
-  const baseRef = useRef<THREE.InstancedMesh>(null);
-  const turretRef = useRef<THREE.InstancedMesh>(null);
-  const ringRef = useRef<THREE.InstancedMesh>(null);
-  const rangeRef = useRef<THREE.InstancedMesh>(null); // For selection ring
+  // Color Cache
+  const colorCache = useRef<Map<string, THREE.Color>>(new Map());
 
-  const count = 500; // Max towers
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  const turretOffset = useMemo(() => new THREE.Vector3(0, 1, 0), []);
-  const rangeOffset = useMemo(() => new THREE.Vector3(0, 0.1, 0), []);
-  const colorCacheRef = useRef<Map<string, THREE.Color>>(new Map());
+  useEffect(() => {
+    // Use shared utility for geometry
+    const geo = createComplexTowerBase();
+    setBaseGeometry(geo);
+    return () => { geo.dispose(); }
+  }, []);
 
-  // Complex geometry for base
-  const baseGeometry = useMemo(() => createComplexTowerBase(), []);
+  const getCachedColor = (colorStr: string) => {
+    if (!colorCache.current.has(colorStr)) {
+        colorCache.current.set(colorStr, new THREE.Color(colorStr));
+    }
+    return colorCache.current.get(colorStr)!;
+  };
 
-  // Ensure bounding sphere is always infinite to prevent culling issues
-  useFrame(() => {
-    const applyBounds = (ref: React.RefObject<THREE.InstancedMesh | null>) => {
-      if (ref.current && ref.current.geometry) {
-        if (ref.current.geometry.boundingSphere?.radius !== Infinity) {
-          ref.current.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), Infinity);
-        }
-      }
-    };
-    applyBounds(baseRef);
-    applyBounds(turretRef);
-    applyBounds(ringRef);
-    applyBounds(rangeRef);
-
-    if (!baseRef.current || !turretRef.current || !ringRef.current) return;
-
-    const colorCache = colorCacheRef.current;
-
-    towers.forEach((tower, i) => {
-      if (i >= count) return;
-
-      const config = TOWER_CONFIGS[tower.type as TowerType];
-      const isSelected = selectedEntityId === tower.id;
-
-      // Base: position at [0, 0, 0] relative to tower center (geometry handles offset)
-      dummy.position.copy(tower.position);
-      dummy.rotation.set(0, 0, 0);
-      dummy.scale.set(1, 1, 1); // Geometry is already sized
-      dummy.updateMatrix();
-      baseRef.current?.setMatrixAt(i, dummy.matrix);
-      // Base color is constant dark, but maybe we want to tint it?
-      // Original: color="#111"
-      // We can just set base color in material and ignore verify.
-
-      // Turret: position at [0, 1, 0] relative
-      dummy.position.copy(tower.position).add(turretOffset);
-      // Turret scale varies by level
-      const tScale = 1 + (tower.level - 1) * 0.1;
-      dummy.scale.set(tScale, tScale, tScale);
-      dummy.rotation.set(0, 0, 0); // TODO: Rotate towards target if we had that data easily accessible here?
-      // TowerEntity has targetId, but we'd need enemy position to lookAt.
-      // For performance, maybe skip rotation or implement later.
-      // Original Tower.tsx didn't seem to rotate turret visually based on target?
-      // Checked Tower.tsx: it just renders octahedron. No lookAt logic visible in the simplified view I saw.
-      dummy.updateMatrix();
-      turretRef.current?.setMatrixAt(i, dummy.matrix);
-
-      const color = config.color;
-      let cached = colorCache.get(color);
-      if (!cached) {
-        cached = new THREE.Color(color);
-        colorCache.set(color, cached);
-      }
-      turretRef.current?.setColorAt(i, cached);
-
-      // Rings: Floating at [0, 1, 0]
-      dummy.position.copy(tower.position).add(new THREE.Vector3(0, 1, 0));
-      dummy.rotation.set(Math.PI / 2, 0, 0);
-      dummy.scale.set(1, 1, 1); // Ring geometry handles size
-      dummy.updateMatrix();
-      ringRef.current?.setMatrixAt(i, dummy.matrix);
-      ringRef.current?.setColorAt(i, cached);
-
-      // Selection Range Ring
-      if (isSelected && rangeRef.current) {
-        const stats = getTowerStats(tower.type, tower.level);
-        // This is tricky with instancing. We only want ONE range ring usually.
-        // But if we use instancing for range rings, we can just hide all except selected.
-        dummy.position.copy(tower.position).add(rangeOffset);
-        dummy.rotation.set(-Math.PI / 2, 0, 0);
-        const r = stats.range;
-        dummy.scale.set(r, r, 1); // scaling a unit ring?
-        // Ring geometry args are inner/outer. Scaling acts on that.
+  // --- 1. Base Mesh (Static structure) ---
+  const baseMeshRef = useInstancedEntities({
+    entities: towers,
+    count: 100,
+    updateEntity: (tower, dummy, i, mesh) => {
+        dummy.position.copy(tower.position);
+        dummy.scale.set(1, 1, 1);
         dummy.updateMatrix();
-        rangeRef.current.setMatrixAt(i, dummy.matrix);
-        rangeRef.current.setColorAt(i, cached);
-      } else if (rangeRef.current) {
-        rangeRef.current.setMatrixAt(i, ZERO_MATRIX);
-      }
-    });
+        mesh.setMatrixAt(i, dummy.matrix);
 
-    if (baseRef.current) hideUnusedInstances(baseRef.current, towers.length, count);
-    if (turretRef.current) hideUnusedInstances(turretRef.current, towers.length, count);
-    if (ringRef.current) hideUnusedInstances(ringRef.current, towers.length, count);
-    if (rangeRef.current) hideUnusedInstances(rangeRef.current, towers.length, count);
+        const baseColor = tower.config?.color || '#00ff00';
+        const colorObj = getCachedColor(baseColor);
 
-    baseRef.current.instanceMatrix.needsUpdate = true;
-    turretRef.current.instanceMatrix.needsUpdate = true;
-    if (turretRef.current.instanceColor) turretRef.current.instanceColor.needsUpdate = true;
-    ringRef.current.instanceMatrix.needsUpdate = true;
-    if (ringRef.current.instanceColor) ringRef.current.instanceColor.needsUpdate = true;
+        // Highlight logic in shader/color
+        if (tower.id === selectedEntityId) {
+            TEMP_COLOR.set('#ffffff'); // Selected highlight
+        } else {
+            TEMP_COLOR.copy(colorObj).multiplyScalar(1.0);
+        }
+        mesh.setColorAt(i, TEMP_COLOR);
+    },
+  });
 
-    if (rangeRef.current) {
-      rangeRef.current.instanceMatrix.needsUpdate = true;
-      if (rangeRef.current.instanceColor) rangeRef.current.instanceColor.needsUpdate = true;
+  // --- 2. Turret Mesh (Rotates, Scales with level) ---
+  const turretMeshRef = useInstancedEntities({
+    entities: towers,
+    count: 100,
+    updateEntity: (tower, dummy, i, mesh) => {
+        dummy.position.copy(tower.position);
+        dummy.position.y += 0.8; // Floating above base
+
+        // Scale with level
+        const scale = 0.5 + (tower.level * 0.1);
+        dummy.scale.set(scale, scale, scale);
+
+        // Idle spin
+        dummy.rotation.y += 0.01;
+
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+
+        const baseColor = tower.config?.color || '#00ff00';
+        const colorObj = getCachedColor(baseColor);
+        TEMP_COLOR.copy(colorObj).multiplyScalar(2.0); // Bright neon
+        mesh.setColorAt(i, TEMP_COLOR);
     }
   });
 
-  const handlePointerDown = (e: ThreeEvent<MouseEvent>) => {
+  // --- 3. Floating Ring (Decorative) ---
+  const ringMeshRef = useInstancedEntities({
+    entities: towers,
+    count: 100,
+    updateEntity: (tower, dummy, i, mesh) => {
+        dummy.position.copy(tower.position);
+        dummy.position.y += 0.8; // Same height as turret center
+
+        // Oscillate and rotate
+        const time = Date.now() * 0.001;
+        dummy.rotation.x = Math.sin(time + i) * 0.2;
+        dummy.rotation.y = time;
+
+        const scale = 1.0 + Math.sin(time * 2 + i) * 0.1;
+        dummy.scale.set(scale, scale, scale);
+
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+
+        const baseColor = tower.config?.color || '#00ff00';
+        const colorObj = getCachedColor(baseColor);
+        TEMP_COLOR.copy(colorObj).multiplyScalar(0.8);
+        mesh.setColorAt(i, TEMP_COLOR);
+    }
+  });
+
+  // --- 4. Range Ring (Visible on Selection) ---
+  const rangeMeshRef = useInstancedEntities({
+    entities: towers,
+    count: 100,
+    updateEntity: (tower, dummy, i, mesh) => {
+        if (tower.id !== selectedEntityId) {
+            mesh.setMatrixAt(i, ZERO_MATRIX);
+            return;
+        }
+
+        const stats = getTowerStats(tower.type, tower.level, gameState.upgrades as { [key in UpgradeType]?: number });
+
+        dummy.position.copy(tower.position);
+        dummy.position.y += 0.1;
+
+        // Torus is XY plane. Rotate 90deg on X to lay flat XZ.
+        dummy.rotation.set(Math.PI / 2, 0, 0);
+
+        // Scale: Torus radius=1. We want radius=range.
+        dummy.scale.set(stats.range, stats.range, 1);
+
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
+
+        TEMP_COLOR.set('#00ffff');
+        mesh.setColorAt(i, TEMP_COLOR);
+    }
+  });
+
+  const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
-    if (e.instanceId !== undefined && towers[e.instanceId]) {
-      setSelectedEntityId(towers[e.instanceId].id);
+    if (e.instanceId === undefined) return;
+    const tower = towers[e.instanceId];
+    if (tower) {
+      setSelectedEntityId(tower.id);
     }
   };
 
+  if (!baseGeometry) return null;
+
   return (
     <group>
-      {/* Base */}
-      <instancedMesh
-        ref={baseRef}
-        args={[undefined, undefined, count]}
-        onPointerDown={handlePointerDown}
-        frustumCulled={false}
-        geometry={baseGeometry}
-      >
-        <meshStandardMaterial color="#222" metalness={0.9} roughness={0.2} />
-      </instancedMesh>
+        {/* Base */}
+        <instancedMesh
+            ref={baseMeshRef}
+            args={[baseGeometry, undefined, 100]}
+            onPointerDown={handlePointerDown}
+        >
+            <meshStandardMaterial toneMapped={false} />
+        </instancedMesh>
 
-      {/* Turret */}
-      <instancedMesh
-        ref={turretRef}
-        args={[undefined, undefined, count]}
-        onPointerDown={handlePointerDown}
-        frustumCulled={false}
-      >
-        <octahedronGeometry args={[0.5]} />
-        <meshStandardMaterial
-          color="black"
-          emissive="white"
-          emissiveIntensity={2}
-          roughness={0}
-          toneMapped={false}
-        />
-      </instancedMesh>
+        {/* Turret */}
+        <instancedMesh ref={turretMeshRef} args={[undefined, undefined, 100]} raycast={() => null}>
+            <octahedronGeometry args={[0.5, 0]} />
+            <meshStandardMaterial toneMapped={false} />
+        </instancedMesh>
 
-      {/* Floating Rings */}
-      <instancedMesh
-        ref={ringRef}
-        args={[undefined, undefined, count]}
-        onPointerDown={handlePointerDown}
-        frustumCulled={false}
-      >
-        <ringGeometry args={[0.6, 0.65, 32]} />
-        <meshBasicMaterial toneMapped={false} side={THREE.DoubleSide} />
-      </instancedMesh>
+        {/* Floating Ring */}
+        <instancedMesh ref={ringMeshRef} args={[undefined, undefined, 100]} raycast={() => null}>
+            <torusGeometry args={[0.6, 0.05, 8, 32]} />
+            <meshStandardMaterial toneMapped={false} />
+        </instancedMesh>
 
-      {/* Range Rings - Only visible when selected */}
-      <instancedMesh ref={rangeRef} args={[undefined, undefined, count]} frustumCulled={false}>
-        <ringGeometry args={[0.99, 1, 64]} />
-        {/* We use scale to set range. 1 unit radius. */}
-        <meshBasicMaterial transparent opacity={0.3} toneMapped={false} side={THREE.DoubleSide} />
-      </instancedMesh>
+        {/* Range Ring */}
+        <instancedMesh ref={rangeMeshRef} args={[undefined, undefined, 100]} raycast={() => null}>
+            <torusGeometry args={[1, 0.05, 8, 64]} />
+            <meshBasicMaterial color="#00ffff" transparent opacity={0.3} depthWrite={false} />
+        </instancedMesh>
     </group>
   );
 };

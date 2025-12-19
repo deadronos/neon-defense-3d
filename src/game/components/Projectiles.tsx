@@ -1,99 +1,51 @@
-import { useFrame } from '@react-three/fiber';
-import React, { useRef, useMemo } from 'react';
+import React from 'react';
 import * as THREE from 'three';
 
 import type { ProjectileEntity, EnemyEntity } from '../../types';
+import { useInstancedEntities } from '../hooks/useInstancedEntities';
 
-import { hideUnusedInstances, ZERO_MATRIX } from './instancing/instancedUtils';
+import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedProjectiles: React.FC<{
-  projectiles: ProjectileEntity[];
-  enemies: EnemyEntity[];
-}> = ({ projectiles, enemies }) => {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-  const count = 1000;
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  const enemyMapRef = useRef<Map<string, EnemyEntity>>(new Map());
-  const colorCacheRef = useRef<Map<string, THREE.Color>>(new Map());
+    projectiles: ProjectileEntity[];
+    enemies: EnemyEntity[];
+}> = ({
+  projectiles,
+  enemies
+}) => {
+  const meshRef = useInstancedEntities({
+    entities: projectiles,
+    count: 2000,
+    updateEntity: (proj, dummy, i, mesh) => {
+        if (!proj.active) {
+            mesh.setMatrixAt(i, ZERO_MATRIX);
+            return;
+        }
 
-  // Precomute geometry alignment: Cylinder is Y-up, we want Z-forward for lookAt
-  const geometry = useMemo(() => {
-    const geo = new THREE.CylinderGeometry(0.05, 0.05, 1, 6);
-    geo.rotateX(Math.PI / 2); // Align with Z axis
-    geo.translate(0, 0, 0.5); // Pivot at the back (start)? Or center?
-    // If we lerp position, position is current point.
-    // If it's a bolt, center is fine.
-    // Let's reset translation and just keep rotation.
-    // Actually, lookAt rotates the object around its center.
-    return geo;
-  }, []);
+        dummy.position.copy(proj.position);
 
-  useFrame(() => {
-    if (!meshRef.current) return;
+        // Look at target if possible
+        if (proj.targetId) {
+            const target = enemies.find(e => e.id === proj.targetId);
+            if (target) {
+                dummy.lookAt(target.position);
+            }
+        }
 
-    const enemyMap = enemyMapRef.current;
-    enemyMap.clear();
-    for (const enemy of enemies) {
-      enemyMap.set(enemy.id, enemy);
-    }
-
-    const colorCache = colorCacheRef.current;
-
-    projectiles.forEach((p, i) => {
-      if (i >= count) return;
-      const pColor = p.color; // color string
-      let cached = colorCache.get(pColor);
-      if (!cached) {
-        cached = new THREE.Color(pColor).multiplyScalar(2);
-        colorCache.set(pColor, cached);
-      }
-
-      const target = enemyMap.get(p.targetId || '');
-      // ... rest of logic
-
-      // If target exists, interpolate
-      // If target dead, projectile usually removed by GameLoop,
-      // but if frame lingers, we might point to last known?
-      // For now, if no target, hide or just point to last known?
-      // Note: Data doesn't persist targets position if dead.
-      // We'll skip rendering if target missing (or it will glitch)
-      if (target) {
-        const start = p.startPos;
-        const end = target.position;
-
-        // Lerp position
-        const x = start.x + (end.x - start.x) * p.progress;
-        const y = start.y + (end.y - start.y) * p.progress;
-        const z = start.z + (end.z - start.z) * p.progress;
-
-        dummy.position.set(x, y, z);
-        dummy.lookAt(end);
-
-        // Scale length based on speed or just fixed "long" bolt
-        // p.speed is around 20.
-        // Let's make it a nice long beam.
-        const length = 1.5;
-        dummy.scale.set(1, 1, length);
-
+        dummy.scale.set(0.3, 0.3, 0.3);
         dummy.updateMatrix();
-        meshRef.current?.setMatrixAt(i, dummy.matrix);
-        meshRef.current?.setColorAt(i, cached); // Boost emissive look
-      } else {
-        // Hide
-        // Optimization: Use shared ZERO_MATRIX to avoid creating new Matrix4
-        meshRef.current?.setMatrixAt(i, ZERO_MATRIX);
-      }
-    });
+        mesh.setMatrixAt(i, dummy.matrix);
 
-    // Hide remaining unused instances
-    if (meshRef.current) hideUnusedInstances(meshRef.current, projectiles.length, count);
-
-    meshRef.current.instanceMatrix.needsUpdate = true;
-    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
+        // Use projectile color
+        const color = proj.color || '#ff00ff';
+        TEMP_COLOR.set(color).multiplyScalar(5);
+        mesh.setColorAt(i, TEMP_COLOR);
+    },
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[geometry, undefined, count]}>
+    <instancedMesh ref={meshRef} args={[undefined, undefined, 2000]}>
+      <icosahedronGeometry args={[0.5, 0]} />
       <meshBasicMaterial toneMapped={false} />
     </instancedMesh>
   );
