@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { mergeBufferGeometries } from 'three-stdlib';
+import { mergeBufferGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
 
 export const createComplexTowerBase = (): THREE.BufferGeometry => {
   try {
@@ -28,7 +28,7 @@ export const createComplexTowerBase = (): THREE.BufferGeometry => {
       bevelEnabled: true,
       bevelThickness: 0.05,
       bevelSize: 0.05,
-      bevelSegments: 2
+      bevelSegments: 2,
     };
 
     const platformGeo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
@@ -46,7 +46,7 @@ export const createComplexTowerBase = (): THREE.BufferGeometry => {
       [pylonOffset, pylonOffset],
       [-pylonOffset, pylonOffset],
       [pylonOffset, -pylonOffset],
-      [-pylonOffset, -pylonOffset]
+      [-pylonOffset, -pylonOffset],
     ];
 
     positions.forEach(([x, z]) => {
@@ -56,26 +56,26 @@ export const createComplexTowerBase = (): THREE.BufferGeometry => {
     });
 
     // CRITICAL: Ensure all geometries are non-indexed for safe merging
-    const nonIndexedParts = parts.map(g => g.toNonIndexed());
+    const nonIndexedParts = parts.map((g) => g.toNonIndexed());
 
     // Dispose originals
-    parts.forEach(g => g.dispose());
+    parts.forEach((g) => g.dispose());
     pylonGeo.dispose();
 
     // 3. Merge
     const merged = mergeBufferGeometries(nonIndexedParts);
 
     // Cleanup non-indexed parts
-    nonIndexedParts.forEach(g => g.dispose());
+    nonIndexedParts.forEach((g) => g.dispose());
 
     if (!merged) {
-        console.error("Merge failed, returned null/undefined");
-        return new THREE.BoxGeometry(1, 0.2, 1);
+      console.error('Merge failed, returned null/undefined');
+      return new THREE.BoxGeometry(1, 0.2, 1);
     }
 
     return merged;
   } catch (e) {
-    console.error("Failed to generate complex tower geometry:", e);
+    console.error('Failed to generate complex tower geometry:', e);
     return new THREE.BoxGeometry(1, 0.2, 1);
   }
 };

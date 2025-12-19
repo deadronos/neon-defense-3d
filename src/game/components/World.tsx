@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import * as THREE from 'three';
 
 import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
