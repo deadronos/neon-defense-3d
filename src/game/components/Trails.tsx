@@ -79,11 +79,7 @@ export const InstancedTrails: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies 
       }
 
       // Update visualization
-      dummy.position.set(
-        pool.position[i * 3],
-        pool.position[i * 3 + 1],
-        pool.position[i * 3 + 2],
-      );
+      dummy.position.set(pool.position[i * 3], pool.position[i * 3 + 1], pool.position[i * 3 + 2]);
 
       // Fade out scale
       const lifeRatio = pool.life[i] / pool.maxLife[i];

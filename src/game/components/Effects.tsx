@@ -71,11 +71,7 @@ export const InstancedExplosions: React.FC<{
       pool.position[i * 3 + 2] += pool.velocity[i * 3 + 2] * delta;
 
       // Update Instance
-      dummy.position.set(
-        pool.position[i * 3],
-        pool.position[i * 3 + 1],
-        pool.position[i * 3 + 2],
-      );
+      dummy.position.set(pool.position[i * 3], pool.position[i * 3 + 1], pool.position[i * 3 + 2]);
 
       // Scale down logic
       const s = Math.max(0, pool.scale[i] * (pool.life[i] / pool.maxLife[i]));
