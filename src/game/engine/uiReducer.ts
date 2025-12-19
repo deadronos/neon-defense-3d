@@ -1,5 +1,5 @@
 import { UpgradeType } from '../../types';
-import type { TowerType } from '../../types';
+import type { GraphicsQuality, TowerType } from '../../types';
 
 import type { EngineEvent } from './events';
 
@@ -14,6 +14,7 @@ export interface UiState {
   researchPoints: number;
   totalDamageDealt: number;
   totalCurrencyEarned: number;
+  graphicsQuality: GraphicsQuality;
   upgrades: {
     [key in UpgradeType]?: number;
   };
@@ -26,6 +27,7 @@ export type UiAction =
   | { type: 'purchaseUpgrade'; upgrade: UpgradeType; cost: number }
   | { type: 'spendMoney'; amount: number }
   | { type: 'setGameStatus'; gameStatus: UiState['gameStatus'] }
+  | { type: 'setGraphicsQuality'; quality: GraphicsQuality }
   | { type: 'setSelectedTower'; tower: TowerType | null }
   | { type: 'setSelectedEntity'; id: string | null }
   | { type: 'applyEngineEvents'; events: EngineEvent[] };
@@ -41,6 +43,7 @@ export const createInitialUiState = (): UiState => ({
   researchPoints: 0,
   totalDamageDealt: 0,
   totalCurrencyEarned: 0,
+  graphicsQuality: 'high',
   upgrades: {},
 });
 
@@ -145,6 +148,8 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       return { ...state, money: Math.max(0, state.money - action.amount) };
     case 'setGameStatus':
       return { ...state, gameStatus: action.gameStatus };
+    case 'setGraphicsQuality':
+      return { ...state, graphicsQuality: action.quality };
     case 'setSelectedTower':
       return { ...state, selectedTower: action.tower };
     case 'setSelectedEntity':

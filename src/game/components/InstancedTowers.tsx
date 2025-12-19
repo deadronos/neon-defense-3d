@@ -20,6 +20,9 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
 
   const count = 500; // Max towers
   const dummy = useMemo(() => new THREE.Object3D(), []);
+  const turretOffset = useMemo(() => new THREE.Vector3(0, 1, 0), []);
+  const rangeOffset = useMemo(() => new THREE.Vector3(0, 0.1, 0), []);
+  const colorCacheRef = useRef<Map<string, THREE.Color>>(new Map());
 
   // Complex geometry for base
   const baseGeometry = useMemo(() => createComplexTowerBase(), []);
@@ -40,11 +43,12 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
 
     if (!baseRef.current || !turretRef.current || !ringRef.current) return;
 
+    const colorCache = colorCacheRef.current;
+
     towers.forEach((tower, i) => {
       if (i >= count) return;
 
       const config = TOWER_CONFIGS[tower.type as TowerType];
-      const stats = getTowerStats(tower.type, tower.level);
       const isSelected = selectedEntityId === tower.id;
 
       // Base: position at [0, 0, 0] relative to tower center (geometry handles offset)
@@ -58,7 +62,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
       // We can just set base color in material and ignore verify.
 
       // Turret: position at [0, 1, 0] relative
-      dummy.position.copy(tower.position).add(new THREE.Vector3(0, 1, 0));
+      dummy.position.copy(tower.position).add(turretOffset);
       // Turret scale varies by level
       const tScale = 1 + (tower.level - 1) * 0.1;
       dummy.scale.set(tScale, tScale, tScale);
@@ -71,7 +75,12 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
       turretRef.current?.setMatrixAt(i, dummy.matrix);
 
       const color = config.color;
-      turretRef.current?.setColorAt(i, new THREE.Color(color));
+      let cached = colorCache.get(color);
+      if (!cached) {
+        cached = new THREE.Color(color);
+        colorCache.set(color, cached);
+      }
+      turretRef.current?.setColorAt(i, cached);
 
       // Rings: Floating at [0, 1, 0]
       dummy.position.copy(tower.position).add(new THREE.Vector3(0, 1, 0));
@@ -79,20 +88,21 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
       dummy.scale.set(1, 1, 1); // Ring geometry handles size
       dummy.updateMatrix();
       ringRef.current?.setMatrixAt(i, dummy.matrix);
-      ringRef.current?.setColorAt(i, new THREE.Color(color));
+      ringRef.current?.setColorAt(i, cached);
 
       // Selection Range Ring
       if (isSelected && rangeRef.current) {
+        const stats = getTowerStats(tower.type, tower.level);
         // This is tricky with instancing. We only want ONE range ring usually.
         // But if we use instancing for range rings, we can just hide all except selected.
-        dummy.position.copy(tower.position).add(new THREE.Vector3(0, 0.1, 0));
+        dummy.position.copy(tower.position).add(rangeOffset);
         dummy.rotation.set(-Math.PI / 2, 0, 0);
         const r = stats.range;
         dummy.scale.set(r, r, 1); // scaling a unit ring?
         // Ring geometry args are inner/outer. Scaling acts on that.
         dummy.updateMatrix();
         rangeRef.current.setMatrixAt(i, dummy.matrix);
-        rangeRef.current.setColorAt(i, new THREE.Color(config.color));
+        rangeRef.current.setColorAt(i, cached);
       } else if (rangeRef.current) {
         rangeRef.current.setMatrixAt(i, ZERO_MATRIX);
       }

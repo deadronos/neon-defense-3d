@@ -1,6 +1,7 @@
 import type {
   EnemyEntity,
   GameState,
+  GraphicsQuality,
   ProjectileEntity,
   TowerEntity,
   TowerType,
@@ -76,4 +77,7 @@ export interface GameContextProps {
   startNextSector: () => void;
   /** Purchase an upgrade. */
   purchaseUpgrade: (type: UpgradeType, cost: number) => void;
+
+  /** Sets renderer quality preset (High/Low). */
+  setGraphicsQuality: (quality: GraphicsQuality) => void;
 }
