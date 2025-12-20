@@ -26,11 +26,15 @@ const getTowerStats = (towerType: string, level: number) => {
   const baseDamage = config?.damage ?? 0;
   const baseRange = config?.range ?? 0;
   const baseCooldown = config?.cooldown ?? 1;
+  const freezeDuration = config?.freezeDuration;
+  const splashRadius = config?.splashRadius;
 
   return {
     damage: baseDamage * (1 + (level - 1) * 0.25),
     range: baseRange * (1 + (level - 1) * 0.1),
     cooldownMs: Math.max(0.1, baseCooldown * (1 - (level - 1) * 0.05)) * 1000,
+    freezeDuration,
+    splashRadius,
   };
 };
 
@@ -98,6 +102,8 @@ export const stepTowers = (
       progress: 0,
       damage: stats.damage,
       color,
+      freezeDuration: stats.freezeDuration,
+      splashRadius: stats.splashRadius,
     });
 
     const nextTower: EngineTower = { ...tower, lastFired: context.nowMs, targetId };

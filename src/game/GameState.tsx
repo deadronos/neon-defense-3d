@@ -217,6 +217,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const engineCacheRef = useRef<EngineCache>({
     projectileHits: new Map(),
+    projectileFreeze: new Map(),
     activeProjectiles: [],
     enemiesById: new Map(),
     nextEnemies: [],
