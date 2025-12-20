@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { describe, it, expect, vi } from 'vitest';
+import { beforeEach, describe, it, expect, vi } from 'vitest';
 
 import { BuildMenu } from '../../components/ui/BuildMenu';
 import { TOWER_CONFIGS } from '../../constants';
@@ -14,6 +15,10 @@ describe('BuildMenu', () => {
     money: 1000,
     upgrades: {},
   };
+
+  beforeEach(() => {
+    mockOnSelectTower.mockReset();
+  });
 
   it('renders all tower types', () => {
     render(<BuildMenu {...defaultProps} />);
@@ -40,6 +45,36 @@ describe('BuildMenu', () => {
     expect(mockOnSelectTower).toHaveBeenCalledWith(TowerType.Basic);
   });
 
+  it('does not call onSelectTower when tower is unaffordable', async () => {
+    const user = userEvent.setup();
+    render(<BuildMenu {...defaultProps} money={0} />);
+
+    const basicConfig = TOWER_CONFIGS[TowerType.Basic];
+    const button = screen.getByRole('button', {
+      name: new RegExp(`Select ${basicConfig.name}`, 'i'),
+    });
+
+    await user.click(button);
+    expect(mockOnSelectTower).not.toHaveBeenCalled();
+  });
+
+  it('deselects a selected tower on click (even if currently unaffordable)', async () => {
+    const user = userEvent.setup();
+    const basicConfig = TOWER_CONFIGS[TowerType.Basic];
+    render(<BuildMenu {...defaultProps} money={0} selectedTower={TowerType.Basic} />);
+
+    const button = screen.getByRole('button', {
+      name: new RegExp(`Deselect ${basicConfig.name}`, 'i'),
+    });
+
+    // Selected towers should not be aria-disabled, so keyboard/mouse users can deselect.
+    expect(button).toHaveAttribute('aria-disabled', 'false');
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+
+    await user.click(button);
+    expect(mockOnSelectTower).toHaveBeenCalledWith(null);
+  });
+
   // UX & Accessibility Tests
 
   it('has accessible labels for tower buttons', () => {
@@ -62,6 +97,17 @@ describe('BuildMenu', () => {
     });
 
     expect(button).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('indicates unselected state via aria-pressed=false', () => {
+    render(<BuildMenu {...defaultProps} selectedTower={TowerType.Basic} />);
+
+    const rapidConfig = TOWER_CONFIGS[TowerType.Rapid];
+    const button = screen.getByRole('button', {
+      name: new RegExp(`Select ${rapidConfig.name}`, 'i'),
+    });
+
+    expect(button).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('indicates disabled state via aria-disabled when unaffordable', () => {
