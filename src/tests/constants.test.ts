@@ -11,9 +11,12 @@ import {
   INITIAL_PATH,
   ENEMY_TYPES,
   TOWER_CONFIGS,
+  generatePath,
 } from '@/constants';
 
 describe('constants', () => {
+  const makeEmptyMap = () => Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(0));
+
   it('has correct map width and height', () => {
     expect(MAP_WIDTH).toBe(12);
     expect(MAP_HEIGHT).toBe(8);
@@ -31,5 +34,25 @@ describe('constants', () => {
 
   it('has tower configs', () => {
     expect(Object.keys(TOWER_CONFIGS).length).toBeGreaterThan(0);
+  });
+
+  it('generatePath returns [] when spawn or base is missing', () => {
+    const noSpawn = makeEmptyMap();
+    // base at [1,1]
+    noSpawn[1]![1] = 3;
+    expect(generatePath(noSpawn)).toEqual([]);
+
+    const noBase = makeEmptyMap();
+    // spawn at [1,1]
+    noBase[1]![1] = 2;
+    expect(generatePath(noBase)).toEqual([]);
+  });
+
+  it('generatePath returns [] when there is no walkable route to base', () => {
+    const map = makeEmptyMap();
+    map[1]![1] = 2; // spawn
+    map[6]![10] = 3; // base
+    // No Path(1) tiles connecting them
+    expect(generatePath(map)).toEqual([]);
   });
 });
