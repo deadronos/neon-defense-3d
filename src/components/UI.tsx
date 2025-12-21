@@ -28,6 +28,7 @@ export const UI = () => {
     setSelectedEntityId,
     waveState,
     skipWave,
+    startNextSector,
   } = useGame();
 
   const [showTechTree, setShowTechTree] = useState(false);
@@ -46,7 +47,10 @@ export const UI = () => {
   }, [gameState.gameStatus]);
 
   if (gameState.gameStatus === 'idle') {
-    return <IdleScreen onStart={startGame} />;
+    if (showTechTree) {
+      return <TechTreeModal onClose={() => setShowTechTree(false)} />;
+    }
+    return <IdleScreen onStart={startGame} onOpenTechTree={() => setShowTechTree(true)} />;
   }
 
   if (gameState.gameStatus === 'gameover') {
@@ -56,7 +60,13 @@ export const UI = () => {
   // Victory / Tech Tree UI
   if (gameState.gameStatus === 'victory') {
     if (showTechTree) {
-      return <TechTreeModal />;
+      return (
+        <TechTreeModal
+          onClose={() => setShowTechTree(false)}
+          actionLabel="WARP TO NEXT SECTOR"
+          onAction={startNextSector}
+        />
+      );
     }
     return <VictoryPopup onOpenTechTree={() => setShowTechTree(true)} />;
   }
