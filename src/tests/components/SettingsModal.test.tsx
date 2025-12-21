@@ -137,11 +137,11 @@ describe('SettingsModal', () => {
       },
     };
 
-    await user.clear(screen.getByLabelText(/import checkpoint json/i));
-    await user.paste(
-      screen.getByLabelText(/import checkpoint json/i),
-      JSON.stringify(sample),
-    );
+    const importArea = screen.getByLabelText(/import checkpoint json/i);
+
+    await user.clear(importArea);
+    await user.click(importArea);
+    await user.paste(JSON.stringify(sample));
 
     await user.click(screen.getByRole('button', { name: /validate/i }));
 
