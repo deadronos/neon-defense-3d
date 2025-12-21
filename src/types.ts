@@ -18,12 +18,21 @@ export interface GameState {
   lives: number;
   /** Current wave number. */
   wave: number;
+  /** Monotonic marker incremented only when a WaveStarted engine event is applied. */
+  waveStartedNonce: number;
+  /** Last wave number observed in a WaveStarted engine event (diagnostic). */
+  lastWaveStartedWave: number;
   /** Boolean indicating if the game loop is currently running (enemies moving, etc). */
   isPlaying: boolean;
   /** Whether the game has reached a terminal game over state. */
   isGameOver?: boolean;
   /** Current status of the game session. */
   gameStatus: 'idle' | 'playing' | 'gameover' | 'victory'; // Added 'victory'
+
+  /** Currently selected entity id for inspectors or null. */
+  selectedEntityId: string | null;
+  /** Currently selected tower type when placing; null otherwise. */
+  selectedTower: TowerType | null;
 
   /** Graphics quality preset (affects postprocessing, trails, etc.). */
   graphicsQuality: GraphicsQuality;
