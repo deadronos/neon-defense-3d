@@ -125,12 +125,19 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
             );
           })()}
 
-          <button
-            onClick={() => onSell(selectedTowerEntity.id)}
-            className="mt-1 text-xs text-red-400 hover:text-red-300 border border-red-900/30 hover:border-red-500/50 px-2 py-1 transition-colors uppercase tracking-wider"
-          >
-            Sell Unit
-          </button>
+          {(() => {
+            const config = TOWER_CONFIGS[selectedTowerEntity.type];
+            const refund = Math.floor((config?.cost ?? 0) * 0.7);
+            return (
+              <button
+                onClick={() => onSell(selectedTowerEntity.id)}
+                className="mt-1 text-xs text-red-400 hover:text-red-300 border border-red-900/30 hover:border-red-500/50 px-2 py-1 transition-colors uppercase tracking-wider"
+                aria-label={`Sell unit for $${refund}`}
+              >
+                Sell Unit (+${refund})
+              </button>
+            );
+          })()}
         </div>
       </div>
     </div>
