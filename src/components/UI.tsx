@@ -27,6 +27,7 @@ export const UI = () => {
     sellTower,
     setSelectedEntityId,
     waveState,
+    skipWave,
   } = useGame();
 
   const [showTechTree, setShowTechTree] = useState(false);
@@ -74,6 +75,7 @@ export const UI = () => {
         wave={gameState.wave}
         waveState={waveState}
         onOpenSettings={() => setShowSettings(true)}
+        onSkipWave={skipWave}
       />
 
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />

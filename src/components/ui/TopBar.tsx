@@ -8,6 +8,7 @@ interface TopBarProps {
   wave: number;
   waveState: WaveState | null;
   onOpenSettings: () => void;
+  onSkipWave: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -16,6 +17,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   wave,
   waveState,
   onOpenSettings,
+  onSkipWave,
 }) => {
   return (
     <div className="absolute top-0 w-full p-6 flex justify-between items-start pointer-events-auto">
@@ -55,15 +57,31 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onOpenSettings}
-        className="bg-black/40 border border-fuchsia-500/40 hover:border-fuchsia-400/70 text-fuchsia-200 px-4 py-2 rounded-md font-mono text-xs uppercase tracking-wider flex items-center gap-2"
-        aria-label="Open settings"
-      >
-        <span aria-hidden="true">🔧</span>
-        Settings
-      </button>
+      <div className="flex gap-4">
+        {waveState?.phase === 'preparing' && (
+          <button
+            type="button"
+            onClick={onSkipWave}
+            className="bg-black/40 border border-cyan-500/40 hover:border-cyan-400/70 text-cyan-200 px-4 py-2 rounded-md font-mono text-xs uppercase tracking-wider flex items-center gap-2 group"
+            aria-label="Skip to next wave"
+          >
+            <span aria-hidden="true" className="group-hover:translate-x-1 transition-transform">
+              ⏩
+            </span>
+            Skip
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="bg-black/40 border border-fuchsia-500/40 hover:border-fuchsia-400/70 text-fuchsia-200 px-4 py-2 rounded-md font-mono text-xs uppercase tracking-wider flex items-center gap-2"
+          aria-label="Open settings"
+        >
+          <span aria-hidden="true">🔧</span>
+          Settings
+        </button>
+      </div>
     </div>
   );
 };
