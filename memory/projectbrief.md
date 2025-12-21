@@ -18,3 +18,7 @@ Neon Defense 3D is a compact, extendable 3D Tower Defense playground implemented
 - Map, tile sizing and pathfinding are defined in `src/constants.ts` (tile size `TILE_SIZE`, `MAP_LAYOUTS`, `generatePath` using BFS).
 - Rendering uses `InstancedMesh` for enemies and projectiles (see `src/game/components/Enemies.tsx` and `src/game/components/Projectiles.tsx`).
 - The repo contains a `/memory` folder with high-level project context and tracked tasks.
+
+## Requirements
+
+Reference and update `/memory/requirements.md` as needed to track evolving requirements.
