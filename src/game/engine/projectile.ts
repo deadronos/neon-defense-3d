@@ -10,7 +10,11 @@ import type {
   EngineTickContext,
   EngineTickResult,
   EngineVector2,
+  EngineVector3,
 } from './types';
+
+const distance = (a: EngineVector3, b: EngineVector3) =>
+  Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
 
 export interface StepProjectilesOptions {
   greedMultiplier?: number;
@@ -43,10 +47,15 @@ export const stepProjectiles = (
   const hits = cache ? cache.projectileHits : new Map<string, number>();
   if (cache) hits.clear();
 
+  const freezeHits = cache ? cache.projectileFreeze : new Map<string, number>();
+  if (cache) freezeHits.clear();
+
   const activeProjectiles = cache ? cache.activeProjectiles : [];
   if (cache) activeProjectiles.length = 0; // Clear array
 
   let frameTotalDamage = 0;
+  let nextEffectCounter = state.idCounters.effect;
+  const addedEffects: EngineEffectIntent[] = [];
 
   const enemiesById = cache ? cache.enemiesById : new Map<string, EngineEnemy>();
   if (cache) enemiesById.clear();
@@ -61,8 +70,40 @@ export const stepProjectiles = (
 
     const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;
     if (nextProgress >= 1) {
-      hits.set(projectile.targetId, (hits.get(projectile.targetId) ?? 0) + projectile.damage);
-      frameTotalDamage += projectile.damage;
+      if (projectile.splashRadius) {
+        const impactPos = selectEnemyWorldPosition(target, pathWaypoints, tileSize);
+
+        // Visual Effect for AOE Impact
+        nextEffectCounter += 1;
+        addedEffects.push({
+          id: `effect-${nextEffectCounter}`,
+          type: 'explosion',
+          position: impactPos,
+          color: projectile.color,
+          scale: projectile.splashRadius,
+          createdAt: context.nowMs / 1000,
+          duration: 0.5,
+        });
+
+        for (const enemy of state.enemies) {
+          const enemyPos = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
+          if (distance(impactPos, enemyPos) <= projectile.splashRadius) {
+            hits.set(enemy.id, (hits.get(enemy.id) ?? 0) + projectile.damage);
+            if (projectile.freezeDuration) {
+              const current = freezeHits.get(enemy.id) ?? 0;
+              freezeHits.set(enemy.id, Math.max(current, projectile.freezeDuration));
+            }
+            frameTotalDamage += projectile.damage;
+          }
+        }
+      } else {
+        hits.set(projectile.targetId, (hits.get(projectile.targetId) ?? 0) + projectile.damage);
+        if (projectile.freezeDuration) {
+          const current = freezeHits.get(projectile.targetId) ?? 0;
+          freezeHits.set(projectile.targetId, Math.max(current, projectile.freezeDuration));
+        }
+        frameTotalDamage += projectile.damage;
+      }
       continue;
     }
 
@@ -71,11 +112,9 @@ export const stepProjectiles = (
 
   let nextEnemies: EngineEnemy[] = state.enemies;
   let nextEffects: EngineEffectIntent[] = state.effects;
-  let nextEffectCounter = state.idCounters.effect;
 
   if (hits.size > 0) {
     const survivors: EngineEnemy[] = [];
-    const newEffects: EngineEffectIntent[] = [];
 
     for (const enemy of state.enemies) {
       const damage = hits.get(enemy.id) ?? 0;
@@ -91,6 +130,11 @@ export const stepProjectiles = (
       const remainingShield = currentShield - shieldDamage;
       const remainingHp = enemy.hp - hpDamage;
 
+      const addedFreeze = freezeHits.get(enemy.id);
+      const nextFrozen = addedFreeze
+        ? Math.max(enemy.frozen ?? 0, addedFreeze)
+        : enemy.frozen ?? 0;
+
       if (remainingHp <= 0) {
         const reward = Math.floor((enemy.reward ?? 0) * greedMultiplier);
         const killedEvent: EngineEvent = {
@@ -104,7 +148,7 @@ export const stepProjectiles = (
         const effectId = `effect-${nextEffectCounter}`;
         const position = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
 
-        newEffects.push({
+        addedEffects.push({
           id: effectId,
           type: 'explosion',
           position,
@@ -116,13 +160,14 @@ export const stepProjectiles = (
         continue;
       }
 
-      survivors.push({ ...enemy, hp: remainingHp, shield: remainingShield });
+      survivors.push({ ...enemy, hp: remainingHp, shield: remainingShield, frozen: nextFrozen });
     }
 
     nextEnemies = survivors;
-    if (newEffects.length > 0) {
-      nextEffects = [...state.effects, ...newEffects];
-    }
+  }
+
+  if (addedEffects.length > 0) {
+    nextEffects = [...state.effects, ...addedEffects];
   }
 
   const patch: EnginePatch = {

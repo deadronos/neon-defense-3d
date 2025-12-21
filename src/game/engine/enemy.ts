@@ -34,6 +34,13 @@ export const stepEnemies = (
 
   for (const enemy of state.enemies) {
     let currentSpeed = enemy.speed ?? 0;
+
+    let nextFrozen = enemy.frozen ?? 0;
+    if (nextFrozen > 0) {
+      currentSpeed *= 0.5;
+      nextFrozen = Math.max(0, nextFrozen - deltaSeconds);
+    }
+
     const hasDashAbility =
       enemy.abilityCooldown !== undefined || enemy.abilityActiveTimer !== undefined;
     const abilityActiveTimer = enemy.abilityActiveTimer ?? 0;
@@ -80,6 +87,7 @@ export const stepEnemies = (
       ...enemy,
       pathIndex: nextPathIndex,
       progress: nextProgress,
+      frozen: nextFrozen,
       abilityActiveTimer: hasDashAbility ? nextActiveTimer : undefined,
       abilityCooldown: hasDashAbility ? nextCooldown : undefined,
     });

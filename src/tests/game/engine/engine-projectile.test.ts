@@ -60,4 +60,54 @@ describe('engine stepProjectiles', () => {
       { type: 'DamageDealt', amount: 50 },
     ]);
   });
+
+  it('applies splash damage to nearby enemies', () => {
+    const enemy1 = {
+      id: 'enemy-1',
+      type: 'Drone',
+      pathIndex: 0,
+      progress: 0, // Pos [0,0,0]
+      hp: 100,
+      shield: 0,
+      reward: 10,
+    };
+    const enemy2 = {
+      id: 'enemy-2',
+      type: 'Drone',
+      pathIndex: 0,
+      progress: 0.1, // Pos near [0,0,0]. dist = 0.1 * 2 = 0.2
+      hp: 100,
+      shield: 0,
+      reward: 10,
+    };
+
+    const state = {
+      ...createInitialEngineState(),
+      enemies: [enemy1, enemy2],
+      projectiles: [
+        {
+          id: 'proj-1',
+          origin: [0, 2, 0] as [number, number, number],
+          targetId: 'enemy-1',
+          speed: 20,
+          progress: 0.99,
+          damage: 50,
+          color: '#fff',
+          splashRadius: 1.0,
+        },
+      ],
+    };
+
+    const result = stepProjectiles(
+      state,
+      path,
+      { deltaMs: 100, nowMs: 2000, rng: () => 0.5 },
+      { tileSize: 2 },
+    );
+
+    expect(result.patch.enemies).toHaveLength(2);
+    expect(result.patch.enemies?.[0].hp).toBe(50);
+    expect(result.patch.enemies?.[1].hp).toBe(50);
+    expect(result.events.deferred).toContainEqual({ type: 'DamageDealt', amount: 100 });
+  });
 });
