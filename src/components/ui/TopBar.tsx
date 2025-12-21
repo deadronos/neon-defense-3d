@@ -1,15 +1,13 @@
 import React from 'react';
 
 import type { WaveState } from '../../types';
-import type { GraphicsQuality } from '../../types';
 
 interface TopBarProps {
   lives: number;
   money: number;
   wave: number;
   waveState: WaveState | null;
-  graphicsQuality: GraphicsQuality;
-  onToggleGraphicsQuality: () => void;
+  onOpenSettings: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -17,14 +15,13 @@ export const TopBar: React.FC<TopBarProps> = ({
   money,
   wave,
   waveState,
-  graphicsQuality,
-  onToggleGraphicsQuality,
+  onOpenSettings,
 }) => {
   return (
     <div className="absolute top-0 w-full p-6 flex justify-between items-start pointer-events-auto">
       <div className="flex gap-6">
         <div className="relative bg-black/40 border-l-4 border-b border-r border-t border-t-transparent border-r-transparent border-b-transparent border-l-red-500 pl-4 pr-6 py-2 skew-x-[-10deg]">
-          <div className="skew-x-[10deg] flex flex-col">
+          <div className="skew-x-10 flex flex-col">
             <span className="text-[10px] text-red-400 uppercase tracking-wider">Sys.Integrity</span>
             <span
               className={`text-2xl font-bold font-mono ${lives < 10 ? 'text-red-500 animate-pulse' : 'text-white'}`}
@@ -35,14 +32,14 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
 
         <div className="relative bg-black/40 border-l-4 border-b border-r border-t border-t-transparent border-r-transparent border-b-transparent border-l-yellow-400 pl-4 pr-6 py-2 skew-x-[-10deg]">
-          <div className="skew-x-[10deg] flex flex-col">
+          <div className="skew-x-10 flex flex-col">
             <span className="text-[10px] text-yellow-500 uppercase tracking-wider">Resources</span>
             <span className="text-2xl font-bold font-mono text-yellow-300">${money}</span>
           </div>
         </div>
 
         <div className="relative bg-black/40 border-l-4 border-b border-r border-t border-t-transparent border-r-transparent border-b-transparent border-l-cyan-400 pl-4 pr-6 py-2 skew-x-[-10deg]">
-          <div className="skew-x-[10deg] flex flex-col">
+          <div className="skew-x-10 flex flex-col">
             <span className="text-[10px] text-cyan-500 uppercase tracking-wider">
               {waveState?.phase === 'preparing' ? 'NEXT WAVE' : 'WAVE INDEX'}
             </span>
@@ -60,11 +57,12 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       <button
         type="button"
-        onClick={onToggleGraphicsQuality}
-        className="bg-black/40 border border-fuchsia-500/40 hover:border-fuchsia-400/70 text-fuchsia-200 px-4 py-2 rounded-md font-mono text-xs uppercase tracking-wider"
-        aria-label="Toggle graphics quality"
+        onClick={onOpenSettings}
+        className="bg-black/40 border border-fuchsia-500/40 hover:border-fuchsia-400/70 text-fuchsia-200 px-4 py-2 rounded-md font-mono text-xs uppercase tracking-wider flex items-center gap-2"
+        aria-label="Open settings"
       >
-        Quality: {graphicsQuality === 'high' ? 'High' : 'Low'}
+        <span aria-hidden="true">🔧</span>
+        Settings
       </button>
     </div>
   );

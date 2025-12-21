@@ -129,6 +129,25 @@ export enum TowerType {
   Rapid = 'Rapid',
   /** Long range, high damage tower. */
   Sniper = 'Sniper',
+  /** Slows enemies down. */
+  Cryo = 'Cryo',
+  /** Deals splash damage. */
+  Missile = 'Missile',
+}
+
+/**
+ * Configuration settings for a tower type.
+ */
+export interface TowerConfig {
+  name: string;
+  cost: number;
+  range: number;
+  damage: number;
+  cooldown: number;
+  color: string;
+  description: string;
+  freezeDuration?: number;
+  splashRadius?: number;
 }
 
 /**

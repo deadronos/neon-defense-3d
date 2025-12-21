@@ -25,7 +25,15 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
 
       // Color logic
       const isDashing = enemy.abilityActiveTimer > 0;
-      const baseColor = isDashing ? '#ffffff' : enemy.config.color;
+      const isFrozen = (enemy.frozen ?? 0) > 0;
+
+      let baseColor = enemy.config.color;
+      if (isDashing) {
+        baseColor = '#ffffff';
+      } else if (isFrozen) {
+        baseColor = '#00ffff';
+      }
+
       TEMP_COLOR.set(baseColor).multiplyScalar(2);
       mesh.setColorAt(i, TEMP_COLOR);
     },

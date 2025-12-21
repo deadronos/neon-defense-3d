@@ -37,6 +37,8 @@ export interface EngineProjectile {
   progress: number;
   damage: number;
   color: string;
+  freezeDuration?: number;
+  splashRadius?: number;
 }
 
 export interface EngineEffectIntent {

@@ -6,6 +6,7 @@ import { TechTreeModal } from './TechTreeModal';
 import { BuildMenu } from './ui/BuildMenu';
 import { GameOverScreen } from './ui/GameOverScreen';
 import { IdleScreen } from './ui/IdleScreen';
+import { SettingsModal } from './ui/SettingsModal';
 import { TopBar } from './ui/TopBar';
 import { UpgradeInspector } from './ui/UpgradeInspector';
 import { VictoryPopup } from './VictoryPopup';
@@ -18,7 +19,6 @@ export const UI = () => {
     gameState,
     startGame,
     resetGame,
-    setGraphicsQuality,
     selectedTower,
     setSelectedTower,
     selectedEntityId,
@@ -30,12 +30,18 @@ export const UI = () => {
   } = useGame();
 
   const [showTechTree, setShowTechTree] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   // Reset tech tree visibility when game status changes to playing or idle
   useEffect(() => {
     if (gameState.gameStatus === 'playing' || gameState.gameStatus === 'idle') {
       setShowTechTree(false);
     }
+  }, [gameState.gameStatus]);
+
+  // Close settings on major state transitions.
+  useEffect(() => {
+    setShowSettings(false);
   }, [gameState.gameStatus]);
 
   if (gameState.gameStatus === 'idle') {
@@ -67,11 +73,10 @@ export const UI = () => {
         money={gameState.money}
         wave={gameState.wave}
         waveState={waveState}
-        graphicsQuality={gameState.graphicsQuality}
-        onToggleGraphicsQuality={() =>
-          setGraphicsQuality(gameState.graphicsQuality === 'high' ? 'low' : 'high')
-        }
+        onOpenSettings={() => setShowSettings(true)}
       />
+
+      <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
 
       {showBuildMenu && (
         <BuildMenu

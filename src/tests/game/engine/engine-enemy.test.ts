@@ -66,4 +66,22 @@ describe('engine stepEnemies', () => {
     expect(dashed?.progress).toBeGreaterThan(0.2);
     expect(dashed?.abilityActiveTimer).toBeCloseTo(0, 3);
   });
+
+  it('reduces speed when frozen', () => {
+    const state = {
+      ...createInitialEngineState(),
+      enemies: [baseEnemy({ speed: 4, frozen: 1.0 })],
+    };
+
+    // speed 4, delta 0.5s. Normal dist = 2.
+    // Frozen 50% => speed 2. dist = 1.
+    // path is [0,0]->[1,0], dist 2.
+    // progress should be 1/2 = 0.5.
+
+    const result = stepEnemies(state, path, context, { tileSize: 2 });
+    const moved = result.patch.enemies?.[0];
+
+    expect(moved?.progress).toBeCloseTo(0.5, 3);
+    expect(moved?.frozen).toBeCloseTo(0.5, 3); // 1.0 - 0.5
+  });
 });

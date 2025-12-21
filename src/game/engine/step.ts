@@ -18,6 +18,7 @@ import { stepWave } from './wave';
 export interface EngineCache {
   // Reusable structures for projectiles
   projectileHits: Map<string, number>;
+  projectileFreeze: Map<string, number>;
   activeProjectiles: EngineProjectile[];
   enemiesById: Map<string, EngineEnemy>;
 

@@ -1,4 +1,4 @@
-import type { TileType, Vector2 } from './types';
+import type { TileType, TowerConfig, Vector2 } from './types';
 import { TowerType } from './types';
 
 /**
@@ -175,7 +175,7 @@ export const ENEMY_TYPES = {
  * Configuration definitions for different tower types.
  * Keys are TowerType enum values.
  */
-export const TOWER_CONFIGS = {
+export const TOWER_CONFIGS: Record<TowerType, TowerConfig> = {
   [TowerType.Basic]: {
     name: 'Pulse Cannon',
     cost: 50,
@@ -202,6 +202,26 @@ export const TOWER_CONFIGS = {
     cooldown: 2.5,
     color: '#f9f871',
     description: 'Long-range quantum destabilizer.',
+  },
+  [TowerType.Cryo]: {
+    name: 'Cryo Projector',
+    cost: 80,
+    range: 4,
+    damage: 5,
+    cooldown: 0.5,
+    color: '#00ffff',
+    description: 'Freezes enemies, slowing them down.',
+    freezeDuration: 2.0,
+  },
+  [TowerType.Missile]: {
+    name: 'Missile Launcher',
+    cost: 150,
+    range: 7,
+    damage: 40,
+    cooldown: 2.0,
+    color: '#ff4500',
+    description: 'Deals splash damage to clustered enemies.',
+    splashRadius: 3.0,
   },
 };
 

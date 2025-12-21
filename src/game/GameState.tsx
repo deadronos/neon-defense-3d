@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useReducer, useRef } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { Vector3 } from 'three';
 
@@ -32,6 +32,14 @@ import { stepEngine } from './engine/step';
 import type { EngineCache } from './engine/step';
 import type { EngineEnemy, EngineState, EngineVector2 } from './engine/types';
 import { createInitialUiState, uiReducer } from './engine/uiReducer';
+import type { SaveV1 } from './persistence';
+import {
+  buildRuntimeFromCheckpoint,
+  clearCheckpoint,
+  loadCheckpoint,
+  saveCheckpoint,
+  serializeCheckpoint,
+} from './persistence';
 import { getTowerStats } from './utils';
 
 type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
@@ -137,6 +145,7 @@ type RuntimeAction =
   | Parameters<typeof applyEngineRuntimeAction>[1]
   | { type: 'resetEngine' }
   | { type: 'engineSetState'; engine: EngineState }
+  | { type: 'setRuntimeState'; engine: EngineState; ui: ReturnType<typeof createInitialUiState> }
   | { type: 'placeTower'; x: number; z: number; towerType: TowerType }
   | { type: 'upgradeTower'; id: string }
   | { type: 'sellTower'; id: string };
@@ -147,6 +156,8 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
       return { ...state, engine: createInitialEngineState() };
     case 'engineSetState':
       return { ...state, engine: action.engine };
+    case 'setRuntimeState':
+      return { engine: action.engine, ui: action.ui };
     case 'placeTower': {
       const config = TOWER_CONFIGS[action.towerType];
       if (!config || state.ui.money < config.cost) return state;
@@ -215,8 +226,37 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const runtimeRef = useRef(runtime);
   runtimeRef.current = runtime;
 
+  const lastAutosavedNonceRef = useRef<number>(-1);
+
+  // Autosave a Tier-B checkpoint once per WaveStarted event.
+  useEffect(() => {
+    const nonce = runtime.ui.waveStartedNonce;
+    if (nonce === lastAutosavedNonceRef.current) return;
+    lastAutosavedNonceRef.current = nonce;
+
+    // Only autosave on WaveStarted events (nonce > 0) during active play.
+    if (nonce <= 0) return;
+    if (runtime.ui.gameStatus !== 'playing') return;
+
+    const snapshot = runtimeRef.current;
+    const nextSave = serializeCheckpoint(snapshot.ui, snapshot.engine);
+
+    // Dev StrictMode can double-run effects; skip duplicate writes for the same wave.
+    const existing = loadCheckpoint();
+    if (
+      existing &&
+      existing.checkpoint.waveToStart === nextSave.checkpoint.waveToStart &&
+      existing.ui.currentMapIndex === nextSave.ui.currentMapIndex
+    ) {
+      return;
+    }
+
+    saveCheckpoint(nextSave);
+  }, [runtime.ui.waveStartedNonce, runtime.ui.gameStatus]);
+
   const engineCacheRef = useRef<EngineCache>({
     projectileHits: new Map(),
+    projectileFreeze: new Map(),
     activeProjectiles: [],
     enemiesById: new Map(),
     nextEnemies: [],
@@ -292,6 +332,34 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const resetGame = useCallback(() => {
     dispatch({ type: 'uiAction', action: { type: 'resetGame' } });
     dispatch({ type: 'resetEngine' });
+  }, []);
+
+  const applyCheckpointSave = useCallback((save: SaveV1) => {
+    const snapshot = runtimeRef.current;
+    const next = buildRuntimeFromCheckpoint(save, snapshot.ui);
+    // Reset autosave tracking so wave 1 (or any future wave) can autosave again after restore.
+    lastAutosavedNonceRef.current = -1;
+    dispatch({ type: 'setRuntimeState', engine: next.engine, ui: next.ui });
+  }, []);
+
+  const resetCheckpoint = useCallback((): { ok: boolean; error?: string } => {
+    const checkpoint = loadCheckpoint();
+    if (!checkpoint) return { ok: false, error: 'No checkpoint found.' };
+    applyCheckpointSave(checkpoint);
+    return { ok: true };
+  }, [applyCheckpointSave]);
+
+  const factoryReset = useCallback(() => {
+    clearCheckpoint();
+    resetGame();
+  }, [resetGame]);
+
+  const exportCheckpointJson = useCallback((): { json: string; hasCheckpoint: boolean } => {
+    const checkpoint = loadCheckpoint();
+    if (checkpoint) return { json: JSON.stringify(checkpoint, null, 2), hasCheckpoint: true };
+    const snapshot = runtimeRef.current;
+    const live = serializeCheckpoint(snapshot.ui, snapshot.engine);
+    return { json: JSON.stringify(live, null, 2), hasCheckpoint: false };
   }, []);
 
   const startNextSector = useCallback(() => {
@@ -374,6 +442,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         startNextSector,
         purchaseUpgrade,
         setGraphicsQuality,
+        resetCheckpoint,
+        factoryReset,
+        applyCheckpointSave,
+        exportCheckpointJson,
       }}
     >
       {children}
