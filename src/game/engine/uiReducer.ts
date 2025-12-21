@@ -7,6 +7,10 @@ export interface UiState {
   money: number;
   lives: number;
   wave: number;
+  /** Monotonic marker incremented only when a WaveStarted engine event is applied. */
+  waveStartedNonce: number;
+  /** Last wave number observed in a WaveStarted engine event (diagnostic). */
+  lastWaveStartedWave: number;
   gameStatus: 'idle' | 'playing' | 'gameover' | 'victory';
   selectedEntityId: string | null;
   selectedTower: TowerType | null;
@@ -36,6 +40,8 @@ export const createInitialUiState = (): UiState => ({
   money: 150,
   lives: 20,
   wave: 1,
+  waveStartedNonce: 0,
+  lastWaveStartedWave: 0,
   gameStatus: 'idle',
   selectedEntityId: null,
   selectedTower: null,
@@ -62,7 +68,12 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
     case 'DamageDealt':
       return { ...state, totalDamageDealt: state.totalDamageDealt + event.amount };
     case 'WaveStarted':
-      return { ...state, wave: event.wave };
+      return {
+        ...state,
+        wave: event.wave,
+        lastWaveStartedWave: event.wave,
+        waveStartedNonce: state.waveStartedNonce + 1,
+      };
     case 'WaveCompleted': {
       if (event.wave > 0 && event.wave % 10 === 0 && state.gameStatus === 'playing') {
         const earnedRP = Math.floor(state.totalDamageDealt / 200 + state.totalCurrencyEarned / 100);
@@ -94,6 +105,8 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         lives: 20,
         money: 150,
         wave: 1,
+        waveStartedNonce: 0,
+        lastWaveStartedWave: 0,
         currentMapIndex: 0,
         researchPoints: 0,
         totalDamageDealt: 0,
@@ -109,6 +122,8 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         lives: 20,
         money: 150,
         wave: 1,
+        waveStartedNonce: 0,
+        lastWaveStartedWave: 0,
         currentMapIndex: 0,
         researchPoints: 0,
         totalDamageDealt: 0,
@@ -125,6 +140,8 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         currentMapIndex: state.currentMapIndex + 1,
         money: startMoney,
         wave: 1,
+        waveStartedNonce: 0,
+        lastWaveStartedWave: 0,
         gameStatus: 'playing',
         totalDamageDealt: 0,
         totalCurrencyEarned: 0,

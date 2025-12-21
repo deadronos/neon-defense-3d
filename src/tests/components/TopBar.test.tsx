@@ -14,17 +14,16 @@ describe('TopBar', () => {
         money={0}
         wave={1}
         waveState={null}
-        graphicsQuality="high"
-        onToggleGraphicsQuality={() => {}}
+        onOpenSettings={() => {}}
       />,
     );
 
     expect(screen.getByText('9%')).toHaveClass('animate-pulse');
   });
 
-  it('renders lives, money, wave and toggles graphics quality', async () => {
+  it('renders lives, money, wave and opens settings', async () => {
     const user = userEvent.setup();
-    const onToggle = vi.fn();
+    const onOpenSettings = vi.fn();
 
     render(
       <TopBar
@@ -32,8 +31,7 @@ describe('TopBar', () => {
         money={123}
         wave={3}
         waveState={null}
-        graphicsQuality="high"
-        onToggleGraphicsQuality={onToggle}
+        onOpenSettings={onOpenSettings}
       />,
     );
 
@@ -41,11 +39,11 @@ describe('TopBar', () => {
     expect(screen.getByText('$123')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
 
-    const toggle = screen.getByRole('button', { name: /toggle graphics quality/i });
-    expect(toggle).toHaveTextContent(/quality:\s*high/i);
+    const settings = screen.getByRole('button', { name: /open settings/i });
+    expect(settings).toBeInTheDocument();
 
-    await user.click(toggle);
-    expect(onToggle).toHaveBeenCalledTimes(1);
+    await user.click(settings);
+    expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
 
   it('shows NEXT WAVE label and countdown timer when preparing with time remaining', () => {
@@ -64,8 +62,7 @@ describe('TopBar', () => {
         money={0}
         wave={5}
         waveState={waveState}
-        graphicsQuality="low"
-        onToggleGraphicsQuality={() => {}}
+        onOpenSettings={() => {}}
       />,
     );
 
@@ -89,8 +86,7 @@ describe('TopBar', () => {
         money={0}
         wave={5}
         waveState={waveState}
-        graphicsQuality="low"
-        onToggleGraphicsQuality={() => {}}
+        onOpenSettings={() => {}}
       />,
     );
 

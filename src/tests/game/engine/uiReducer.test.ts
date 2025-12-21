@@ -123,7 +123,7 @@ describe('engine uiReducer', () => {
       events: [
         { type: 'MoneyAwarded', amount: 10 },
         { type: 'DamageDealt', amount: 123 },
-        { type: 'EnemyKilled', reward: 7 },
+        { type: 'EnemyKilled', enemyId: 'enemy-1', reward: 7 },
         { type: 'WaveStarted', wave: 2 },
         // not a victory wave
         { type: 'WaveCompleted', wave: 2 },

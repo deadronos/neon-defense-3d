@@ -12,6 +12,8 @@ import type {
   UpgradeType,
 } from '../types';
 
+import type { SaveV1 } from './persistence';
+
 /**
  * Interface defining the properties and methods available in the GameContext.
  */
@@ -80,4 +82,16 @@ export interface GameContextProps {
 
   /** Sets renderer quality preset (High/Low). */
   setGraphicsQuality: (quality: GraphicsQuality) => void;
+
+  /** Reloads the most recent autosaved checkpoint (disabled when none exists). */
+  resetCheckpoint: () => { ok: boolean; error?: string };
+
+  /** Wipes all progress/meta and resets the engine, preserving the current quality setting. */
+  factoryReset: () => void;
+
+  /** Applies a validated checkpoint save payload to the current runtime. */
+  applyCheckpointSave: (save: SaveV1) => void;
+
+  /** Returns JSON for export (latest checkpoint if present; otherwise a live snapshot). */
+  exportCheckpointJson: () => { json: string; hasCheckpoint: boolean };
 }
