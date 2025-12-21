@@ -131,9 +131,8 @@ export const stepProjectiles = (
       const remainingHp = enemy.hp - hpDamage;
 
       const addedFreeze = freezeHits.get(enemy.id);
-      const nextFrozen = addedFreeze
-        ? Math.max((enemy.frozen ?? 0), addedFreeze)
-        : enemy.frozen ?? 0;
+      const frozenValue = enemy.frozen ?? 0;
+      const nextFrozen = addedFreeze ? Math.max(frozenValue, addedFreeze) : frozenValue;
 
       if (remainingHp <= 0) {
         const reward = Math.floor((enemy.reward ?? 0) * greedMultiplier);
