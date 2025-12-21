@@ -1,20 +1,23 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeEach, vi } from 'vitest';
 
 import { applyEnginePatch, createInitialEngineState } from '../../game/engine/state';
 import { createInitialUiState } from '../../game/engine/uiReducer';
 import { GameProvider, useGame } from '../../game/GameState';
 import {
   CHECKPOINT_STORAGE_KEY_V1,
+  buildRuntimeFromCheckpoint,
   migrateSave,
   loadCheckpoint,
+  saveCheckpoint,
   serializeCheckpoint,
 } from '../../game/persistence';
-import { TileType, TowerType } from '../../types';
+import { TileType, TowerType, UpgradeType } from '../../types';
 
 describe('persistence (Tier-B checkpoint)', () => {
   beforeEach(() => {
     localStorage.clear();
+    vi.restoreAllMocks();
   });
 
   it('migrateSave rejects non-object payloads', () => {
@@ -50,6 +53,136 @@ describe('persistence (Tier-B checkpoint)', () => {
     expect(result.ok).toBe(true);
     expect(result.save?.checkpoint.towers).toHaveLength(1);
     expect(result.warnings.length).toBeGreaterThan(0);
+  });
+
+  it('migrateSave clamps negative economy and drops unknown upgrades', () => {
+    const result = migrateSave({
+      schemaVersion: 1,
+      timestamp: new Date().toISOString(),
+      ui: {
+        currentMapIndex: 0,
+        money: -5,
+        lives: -1,
+        totalEarned: -10,
+        totalSpent: -99,
+        researchPoints: -2,
+        upgrades: {
+          [UpgradeType.GLOBAL_GREED]: -3,
+          NOT_A_REAL_UPGRADE: 123,
+        },
+      },
+      checkpoint: {
+        waveToStart: 1,
+        towers: [],
+      },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.save?.ui.money).toBe(0);
+    expect(result.save?.ui.lives).toBe(0);
+    expect(result.save?.ui.totalEarned).toBe(0);
+    expect(result.save?.ui.totalSpent).toBe(0);
+    expect(result.save?.ui.researchPoints).toBe(0);
+    expect(result.save?.ui.upgrades[UpgradeType.GLOBAL_GREED]).toBe(0);
+    expect('NOT_A_REAL_UPGRADE' in (result.save?.ui.upgrades ?? {})).toBe(false);
+    expect(result.warnings.length).toBeGreaterThan(0);
+  });
+
+  it('migrateSave drops duplicate tower positions', () => {
+    const result = migrateSave({
+      schemaVersion: 1,
+      timestamp: new Date().toISOString(),
+      ui: {
+        currentMapIndex: 0,
+        money: 100,
+        lives: 20,
+        totalEarned: 0,
+        totalSpent: 0,
+        researchPoints: 0,
+        upgrades: {},
+      },
+      checkpoint: {
+        waveToStart: 1,
+        towers: [
+          { type: TowerType.Basic, level: 1, x: 0, z: 0 },
+          { type: TowerType.Basic, level: 1, x: 0, z: 0 },
+        ],
+      },
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.save?.checkpoint.towers).toHaveLength(1);
+    expect(result.warnings.join('\n')).toMatch(/duplicate tower position/i);
+  });
+
+  it('saveCheckpoint returns ok=false when localStorage.setItem throws', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('Quota exceeded');
+    });
+
+    const ui = createInitialUiState();
+    const engine = createInitialEngineState();
+    const save = serializeCheckpoint(ui, engine);
+
+    const res = saveCheckpoint(save);
+    expect(res.ok).toBe(false);
+    expect(res.error).toMatch(/quota/i);
+
+    setItem.mockRestore();
+  });
+
+  it('loadCheckpoint returns null for invalid JSON or invalid payload', () => {
+    localStorage.setItem(CHECKPOINT_STORAGE_KEY_V1, '{');
+    expect(loadCheckpoint()).toBeNull();
+
+    localStorage.setItem(
+      CHECKPOINT_STORAGE_KEY_V1,
+      JSON.stringify({ schemaVersion: 1, timestamp: new Date().toISOString() }),
+    );
+    expect(loadCheckpoint()).toBeNull();
+  });
+
+  it('buildRuntimeFromCheckpoint resets ephemeral UI markers and prepares wave correctly', () => {
+    const previousUi = {
+      ...createInitialUiState(),
+      gameStatus: 'playing' as const,
+      waveStartedNonce: 123,
+      lastWaveStartedWave: 99,
+      selectedEntityId: 'tower-xyz',
+      selectedTower: TowerType.Basic,
+    };
+
+    const migrated = migrateSave({
+      schemaVersion: 1,
+      timestamp: new Date().toISOString(),
+      ui: {
+        currentMapIndex: 0,
+        money: 100,
+        lives: 20,
+        totalEarned: 0,
+        totalSpent: 0,
+        researchPoints: 0,
+        upgrades: {},
+      },
+      checkpoint: {
+        waveToStart: 3,
+        towers: [{ type: TowerType.Basic, level: 2, x: 0, z: 0 }],
+      },
+    });
+
+    expect(migrated.ok).toBe(true);
+    const next = buildRuntimeFromCheckpoint(migrated.save!, previousUi);
+
+    expect(next.ui.waveStartedNonce).toBe(0);
+    expect(next.ui.lastWaveStartedWave).toBe(0);
+    expect(next.ui.selectedEntityId).toBeNull();
+    expect(next.ui.selectedTower).toBeNull();
+
+    expect(next.ui.wave).toBe(3);
+    expect(next.engine.wave?.phase).toBe('preparing');
+    expect(next.engine.wave?.wave).toBe(2);
+    expect(next.engine.towers).toHaveLength(1);
+    expect(next.engine.towers[0]?.level).toBe(2);
   });
 
   it('autosaves once per WaveStarted (wave 1 included)', async () => {

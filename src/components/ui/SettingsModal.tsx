@@ -47,6 +47,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) =
     setCopyStatus(null);
   }, [open, exportCheckpointJson]);
 
+  // If the game autosaves while the modal is open (e.g., WaveStarted), keep the
+  // export panel and Reset Checkpoint button in sync without resetting import UI.
+  useEffect(() => {
+    if (!open) return;
+    const { json, hasCheckpoint: has } = exportCheckpointJson();
+    setExportJson(json);
+    setHasCheckpoint(has);
+  }, [open, gameState.wave, exportCheckpointJson]);
+
   if (!open) return null;
 
   const refreshExport = () => {
