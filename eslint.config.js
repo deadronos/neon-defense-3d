@@ -17,6 +17,7 @@ export default [
       'coverage/**',
       '.cache/**',
       '.git/**',
+      '.github/**',
       '**/*.min.js',
       '**/*.bundle.js',
     ],

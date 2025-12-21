@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+} from 'react';
 import type { ReactNode } from 'react';
 import { Vector3 } from 'three';
 
@@ -323,6 +331,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const upgradeTower = useCallback((id: string) => dispatch({ type: 'upgradeTower', id }), []);
   const sellTower = useCallback((id: string) => dispatch({ type: 'sellTower', id }), []);
+  const skipWave = useCallback(() => dispatch({ type: 'skipWave' }), []);
 
   const startGame = useCallback(() => {
     dispatch({ type: 'uiAction', action: { type: 'startGame' } });
@@ -446,6 +455,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         factoryReset,
         applyCheckpointSave,
         exportCheckpointJson,
+        skipWave,
       }}
     >
       {children}

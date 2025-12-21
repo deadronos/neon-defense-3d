@@ -12,6 +12,7 @@ export interface EngineRuntimeState {
 export type EngineRuntimeAction =
   | { type: 'applyTickResult'; result: EngineTickResult }
   | { type: 'removeEffect'; effectId: string }
+  | { type: 'skipWave' }
   | { type: 'uiAction'; action: UiAction };
 
 export const applyEngineRuntimeAction = (
@@ -27,6 +28,18 @@ export const applyEngineRuntimeAction = (
     case 'removeEffect': {
       const { state: nextEngine } = engineReducer(state.engine, action);
       return { engine: nextEngine, ui: state.ui };
+    }
+    case 'skipWave': {
+      if (state.engine.wave && state.engine.wave.phase === 'preparing') {
+        return {
+          ...state,
+          engine: {
+            ...state.engine,
+            wave: { ...state.engine.wave, timerMs: 0 },
+          },
+        };
+      }
+      return state;
     }
     case 'uiAction':
       return { engine: state.engine, ui: uiReducer(state.ui, action.action) };

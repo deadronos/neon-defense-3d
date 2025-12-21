@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React, { useEffect, useMemo } from 'react';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
+import { UI } from '../../components/UI';
 import { SettingsModal } from '../../components/ui/SettingsModal';
 import { GameProvider, useGame } from '../../game/GameState';
 import type { Vector2 } from '../../types';
@@ -29,34 +30,6 @@ const Harness = ({ open }: { open: boolean }) => {
   );
 };
 
-const AutosaveHarness = () => {
-  const game = useGame();
-
-  const firstSpot = useMemo(() => findFirstBuildableSpot(game.mapGrid), [game.mapGrid]);
-
-  useEffect(() => {
-    game.startGame();
-  }, [game]);
-
-  useEffect(() => {
-    if (game.gameState.gameStatus !== 'playing') return;
-    if (!firstSpot) return;
-
-    // Ensure a tower exists before wave 1 starts so autosave has something to include.
-    game.placeTower(firstSpot[0], firstSpot[1], TowerType.Basic);
-  }, [game, firstSpot, game.gameState.gameStatus]);
-
-  return (
-    <>
-      <div data-testid="status">{game.gameState.gameStatus}</div>
-      <SettingsModal open={true} onClose={() => {}} />
-      <button type="button" onClick={() => game.step(5.1, 5.1)}>
-        Trigger wave start
-      </button>
-    </>
-  );
-};
-
 describe('SettingsModal', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -75,7 +48,11 @@ describe('SettingsModal', () => {
     expect(screen.getByTestId('status')).toHaveTextContent('idle');
     expect(screen.getByTestId('towers')).toHaveTextContent('0');
 
-    await user.type(screen.getByLabelText(/import checkpoint json/i), '{');
+    const importArea = screen.getByLabelText(/import checkpoint json/i);
+    await user.clear(importArea);
+    await user.click(importArea);
+    await user.paste('{');
+
     await user.click(screen.getByRole('button', { name: /validate/i }));
 
     expect(screen.getByText(/import blocked/i)).toBeInTheDocument();
@@ -86,19 +63,60 @@ describe('SettingsModal', () => {
     expect(screen.getByTestId('towers')).toHaveTextContent('0');
   });
 
-  it('enables Reset Checkpoint if an autosave happens while the modal is open', async () => {
+  it('enables Reset Checkpoint if an autosave happens while the modal is open (full UI flow)', async () => {
     const user = userEvent.setup();
+
+    const TestApp = () => {
+      const game = useGame();
+      const firstSpot = useMemo(() => findFirstBuildableSpot(game.mapGrid), [game.mapGrid]);
+
+      useEffect(() => {
+        if (game.gameState.gameStatus !== 'playing') return;
+        if (!firstSpot) return;
+        if (game.towers.length > 0) return;
+
+        // Ensure a tower exists before wave 1 starts so autosave has something to include.
+        game.placeTower(firstSpot[0], firstSpot[1], TowerType.Basic);
+      }, [game, firstSpot, game.gameState.gameStatus, game.towers.length]);
+
+      return (
+        <>
+          <div data-testid="status">{game.gameState.gameStatus}</div>
+          <div data-testid="towers">{game.towers.length}</div>
+          <UI />
+          <button type="button" onClick={() => game.step(5.1, 5.1)}>
+            Trigger wave start
+          </button>
+        </>
+      );
+    };
 
     render(
       <GameProvider>
-        <AutosaveHarness />
+        <TestApp />
       </GameProvider>,
     );
 
+    // Start the game via the IdleScreen's INITIATE button.
+    const initiateBtn = screen.getByRole('button', { name: /initiate/i });
+    await user.click(initiateBtn);
+
+    // Open settings from the TopBar.
+    const openSettings = await screen.findByRole('button', { name: /open settings/i });
+    await user.click(openSettings);
+
+    // Reset should be disabled before autosave
     const resetBtn = screen.getByRole('button', { name: /reset checkpoint/i });
     expect(resetBtn).toBeDisabled();
 
+    // Wait until the tower has been placed by the harness
+    await waitFor(() => expect(screen.getByTestId('towers')).toHaveTextContent('1'));
+
+    // Trigger wave start (this causes autosave in the provider)
     await user.click(screen.getByRole('button', { name: /trigger wave start/i }));
+
+    // Confirm autosave wrote to localStorage
+    await waitFor(() => expect(localStorage.getItem('nd3d.checkpoint.v1')).toBeTruthy());
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /reset checkpoint/i })).not.toBeDisabled();

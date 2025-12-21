@@ -94,4 +94,5 @@ export interface GameContextProps {
 
   /** Returns JSON for export (latest checkpoint if present; otherwise a live snapshot). */
   exportCheckpointJson: () => { json: string; hasCheckpoint: boolean };
+  skipWave: () => void;
 }
