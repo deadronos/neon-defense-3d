@@ -154,6 +154,7 @@ type RuntimeAction =
   | { type: 'resetEngine' }
   | { type: 'engineSetState'; engine: EngineState }
   | { type: 'setRuntimeState'; engine: EngineState; ui: ReturnType<typeof createInitialUiState> }
+  | { type: 'factoryReset' }
   | { type: 'placeTower'; x: number; z: number; towerType: TowerType }
   | { type: 'upgradeTower'; id: string }
   | { type: 'sellTower'; id: string };
@@ -166,6 +167,11 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
       return { ...state, engine: action.engine };
     case 'setRuntimeState':
       return { engine: action.engine, ui: action.ui };
+    case 'factoryReset':
+      return {
+        engine: createInitialEngineState(),
+        ui: uiReducer(state.ui, { type: 'factoryReset' }),
+      };
     case 'placeTower': {
       const config = TOWER_CONFIGS[action.towerType];
       if (!config || state.ui.money < config.cost) return state;
@@ -360,8 +366,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const factoryReset = useCallback(() => {
     clearCheckpoint();
-    resetGame();
-  }, [resetGame]);
+    dispatch({ type: 'factoryReset' });
+  }, []);
 
   const exportCheckpointJson = useCallback((): { json: string; hasCheckpoint: boolean } => {
     const checkpoint = loadCheckpoint();

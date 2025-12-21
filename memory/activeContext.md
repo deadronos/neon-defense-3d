@@ -2,19 +2,19 @@
 
 ## Current focus
 
-- Implementing new gameplay features: Cryo Tower and Missile Tower.
-- Validating engine logic for status effects and AOE damage.
+- Implementing Tech Tree UI and Meta-Progression.
 
 ## Recent changes (code highlights)
 
+- **Meta-Progression:** Updated `uiReducer.ts` to persist `researchPoints` and `upgrades` across runs.
+- **UI:**
+  - Implemented reusable `TechTreeModal` component.
+  - Integrated Tech Tree access into `IdleScreen` and `UI.tsx`.
+  - Added `factoryReset` to handle full state wipes.
 - **New Towers:** Implemented **Cryo Tower** (Status Effects) and **Missile Tower** (AOE Damage).
 - **Engine Logic:**
   - Updated `src/game/engine/projectile.ts` to support `splashRadius` (AOE) and `freezeDuration`.
   - Updated `src/game/engine/enemy.ts` to process `frozen` state (speed reduction).
-  - Added impact visual effects for AOE projectiles.
-- **Type Safety:** Defined `TowerConfig` interface in `src/types.ts` and applied it to `TOWER_CONFIGS`.
-- **Docs:** Created Design and Task documents for the new features in `/memory`.
-- **Tests:** Added unit tests for projectile AOE and enemy status effects.
 
 ## Next steps
 
