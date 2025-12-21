@@ -49,12 +49,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) =
 
   // If the game autosaves while the modal is open (e.g., WaveStarted), keep the
   // export panel and Reset Checkpoint button in sync without resetting import UI.
+  // Use `waveStartedNonce` to detect WaveStarted events (wave number may be the
+  // same for wave 1 but the nonce increments each time a WaveStarted is emitted).
   useEffect(() => {
     if (!open) return;
-    const { json, hasCheckpoint: has } = exportCheckpointJson();
-    setExportJson(json);
-    setHasCheckpoint(has);
-  }, [open, gameState.wave, exportCheckpointJson]);
+
+    // Schedule the export check on the next microtask to give parent effects (like
+    // the GameProvider autosave) a chance to complete and write the checkpoint.
+    let cancelled = false;
+    Promise.resolve().then(() => {
+      if (cancelled) return;
+      const { json, hasCheckpoint: has } = exportCheckpointJson();
+      setExportJson(json);
+      setHasCheckpoint(has);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, gameState.waveStartedNonce, exportCheckpointJson]);
 
   if (!open) return null;
 

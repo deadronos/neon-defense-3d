@@ -15,6 +15,7 @@ describe('TopBar', () => {
         wave={1}
         waveState={null}
         onOpenSettings={() => {}}
+        onSkipWave={() => {}}
       />,
     );
 
@@ -32,6 +33,7 @@ describe('TopBar', () => {
         wave={3}
         waveState={null}
         onOpenSettings={onOpenSettings}
+        onSkipWave={() => {}}
       />,
     );
 
@@ -63,11 +65,42 @@ describe('TopBar', () => {
         wave={5}
         waveState={waveState}
         onOpenSettings={() => {}}
+        onSkipWave={() => {}}
       />,
     );
 
     expect(screen.getByText(/next wave/i)).toBeInTheDocument();
     expect(screen.getByText('1.2s')).toBeInTheDocument();
+  });
+
+  it('shows skip button when preparing and calls onSkipWave when clicked', async () => {
+    const user = userEvent.setup();
+    const onSkipWave = vi.fn();
+    const waveState: WaveState = {
+      wave: 5,
+      phase: 'preparing',
+      nextWaveTime: 0,
+      enemiesAlive: 0,
+      enemiesRemainingToSpawn: 0,
+      timer: 5,
+    };
+
+    render(
+      <TopBar
+        lives={20}
+        money={0}
+        wave={5}
+        waveState={waveState}
+        onOpenSettings={() => {}}
+        onSkipWave={onSkipWave}
+      />,
+    );
+
+    const skipButton = screen.getByRole('button', { name: /skip to next wave/i });
+    expect(skipButton).toBeInTheDocument();
+
+    await user.click(skipButton);
+    expect(onSkipWave).toHaveBeenCalledTimes(1);
   });
 
   it('does not show countdown timer when not preparing', () => {
@@ -87,6 +120,7 @@ describe('TopBar', () => {
         wave={5}
         waveState={waveState}
         onOpenSettings={() => {}}
+        onSkipWave={() => {}}
       />,
     );
 
