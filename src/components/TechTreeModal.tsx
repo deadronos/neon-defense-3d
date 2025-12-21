@@ -3,8 +3,14 @@ import React from 'react';
 import { useGame } from '../game/GameState';
 import { UpgradeType } from '../types';
 
-export const TechTreeModal: React.FC = () => {
-  const { gameState, purchaseUpgrade, startNextSector } = useGame();
+interface TechTreeModalProps {
+  onClose?: () => void;
+  actionLabel?: string;
+  onAction?: () => void;
+}
+
+export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLabel, onAction }) => {
+  const { gameState, purchaseUpgrade } = useGame();
 
   const UPGRADES = [
     {
@@ -38,7 +44,7 @@ export const TechTreeModal: React.FC = () => {
   };
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 backdrop-blur-sm">
+    <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-[#16213e] border-2 border-[#00f2ff] w-3/4 max-w-4xl h-3/4 flex flex-col rounded-lg shadow-[0_0_40px_rgba(0,242,255,0.2)]">
         {/* Header */}
         <div className="p-6 border-b border-[#0f3460] flex justify-between items-center bg-[#1a1a2e]">
@@ -46,11 +52,35 @@ export const TechTreeModal: React.FC = () => {
             <h2 className="text-3xl font-bold text-[#00f2ff] font-orbitron">TECH LAB</h2>
             <p className="text-gray-400 text-sm">Enhance systems for the next sector</p>
           </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-400">Available RP</div>
-            <div className="text-3xl font-bold text-[#f9f871]">
-              {Math.floor(gameState.researchPoints)}
+          <div className="flex items-center gap-6">
+            <div className="text-right">
+              <div className="text-sm text-gray-400">Available RP</div>
+              <div className="text-3xl font-bold text-[#f9f871]">
+                {Math.floor(gameState.researchPoints)}
+              </div>
             </div>
+            {onClose && (
+              <button
+                onClick={onClose}
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Close"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-8 w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
@@ -92,27 +122,37 @@ export const TechTreeModal: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-[#0f3460] flex justify-end bg-[#1a1a2e]">
-          <button
-            onClick={startNextSector}
-            className="group relative px-8 py-3 bg-[#e94560] hover:bg-[#ff5777] text-white font-bold rounded overflow-hidden shadow-[0_0_20px_rgba(233,69,96,0.3)] transition-all"
-          >
-            <span className="relative z-10 flex items-center gap-2">
-              WARP TO NEXT SECTOR
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 transform group-hover:translate-x-1 transition-transform"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </span>
-          </button>
+        <div className="p-6 border-t border-[#0f3460] flex justify-end bg-[#1a1a2e] gap-4">
+          {onClose && !onAction && (
+            <button
+              onClick={onClose}
+              className="px-6 py-3 text-[#00f2ff] hover:text-white hover:bg-[#00f2ff]/10 rounded transition-colors font-bold"
+            >
+              CLOSE
+            </button>
+          )}
+          {onAction && (
+            <button
+              onClick={onAction}
+              className="group relative px-8 py-3 bg-[#e94560] hover:bg-[#ff5777] text-white font-bold rounded overflow-hidden shadow-[0_0_20px_rgba(233,69,96,0.3)] transition-all"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                {actionLabel || 'CONTINUE'}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 transform group-hover:translate-x-1 transition-transform"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+            </button>
+          )}
         </div>
       </div>
     </div>

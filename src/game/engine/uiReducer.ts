@@ -27,6 +27,7 @@ export interface UiState {
 export type UiAction =
   | { type: 'startGame' }
   | { type: 'resetGame' }
+  | { type: 'factoryReset' }
   | { type: 'startNextSector' }
   | { type: 'purchaseUpgrade'; upgrade: UpgradeType; cost: number }
   | { type: 'spendMoney'; amount: number }
@@ -108,10 +109,8 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         waveStartedNonce: 0,
         lastWaveStartedWave: 0,
         currentMapIndex: 0,
-        researchPoints: 0,
         totalDamageDealt: 0,
         totalCurrencyEarned: 0,
-        upgrades: {},
         selectedEntityId: null,
         selectedTower: null,
       };
@@ -125,12 +124,15 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         waveStartedNonce: 0,
         lastWaveStartedWave: 0,
         currentMapIndex: 0,
-        researchPoints: 0,
         totalDamageDealt: 0,
         totalCurrencyEarned: 0,
-        upgrades: {},
         selectedEntityId: null,
         selectedTower: null,
+      };
+    case 'factoryReset':
+      return {
+        ...createInitialUiState(),
+        graphicsQuality: state.graphicsQuality,
       };
     case 'startNextSector': {
       const greedLevel = state.upgrades?.[UpgradeType.GLOBAL_GREED] || 0;
