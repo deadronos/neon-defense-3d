@@ -13,13 +13,13 @@ export const InstancedProjectiles: React.FC<{
     entities: projectiles,
     count: 2000,
     updateEntity: (proj, dummy, i, mesh) => {
-      dummy.position.copy(proj.position);
+      dummy.position.set(proj.position[0], proj.position[1], proj.position[2]);
 
       // Look at target if possible
       if (proj.targetId) {
         const target = enemies.find((e) => e.id === proj.targetId);
         if (target) {
-          dummy.lookAt(target.position);
+          dummy.lookAt(target.position[0], target.position[1], target.position[2]);
         }
       }
 

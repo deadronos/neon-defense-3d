@@ -50,9 +50,9 @@ export const InstancedTrails: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies 
       const oz = (Math.random() - 0.5) * 0.2;
 
       pool.activateParticle(
-        enemy.position.x + ox,
-        enemy.position.y + 0.5 + oy, // Center vertically roughly
-        enemy.position.z + oz,
+        enemy.position[0] + ox,
+        enemy.position[1] + 0.5 + oy, // Center vertically roughly
+        enemy.position[2] + oz,
         0,
         0,
         0, // Static particles (footprints)
