@@ -14,7 +14,7 @@ import type { ParticlePool } from '../instancing/ParticlePool';
  */
 export function spawnExplosion(
   pool: ParticlePool,
-  position: { x: number; y: number; z: number },
+  position: readonly [number, number, number],
   colorHex: string,
   effectId: string,
   duration: number = 0.8,
@@ -33,9 +33,9 @@ export function spawnExplosion(
     const vz = Math.cos(phi) * speed;
 
     pool.activateParticle(
-      position.x,
-      position.y,
-      position.z,
+      position[0],
+      position[1],
+      position[2],
       vx,
       vy,
       vz,
