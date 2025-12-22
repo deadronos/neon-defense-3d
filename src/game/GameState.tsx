@@ -8,7 +8,6 @@ import {
   useRef,
 } from 'react';
 import type { ReactNode } from 'react';
-import { Vector3 } from 'three';
 
 import {
   ENEMY_TYPES,
@@ -88,14 +87,14 @@ const toEnemyEntity = (
     abilities: baseConfig?.abilities,
   };
 
-  const [x, y, z] = selectEnemyWorldPosition(enemy, pathWaypoints, TILE_SIZE);
+  const pos = selectEnemyWorldPosition(enemy, pathWaypoints, TILE_SIZE);
 
   return {
     id: enemy.id,
     config,
     pathIndex: enemy.pathIndex,
     progress: enemy.progress,
-    position: new Vector3(x, y, z),
+    position: pos,
     hp: enemy.hp,
     shield: enemy.shield ?? 0,
     maxShield: enemy.maxShield ?? enemy.shield ?? 0,
@@ -111,11 +110,11 @@ const toProjectileEntity = (
   pathWaypoints: readonly EngineVector2[],
 ): ProjectileEntity => {
   const target = enemies.find((e) => e.id === projectile.targetId);
-  const [x, y, z] = selectProjectileWorldPosition(projectile, target, pathWaypoints, TILE_SIZE);
+  const pos = selectProjectileWorldPosition(projectile, target, pathWaypoints, TILE_SIZE);
   return {
     id: projectile.id,
-    startPos: new Vector3(projectile.origin[0], projectile.origin[1], projectile.origin[2]),
-    position: new Vector3(x, y, z),
+    startPos: projectile.origin,
+    position: pos,
     targetId: projectile.targetId,
     speed: projectile.speed,
     progress: projectile.progress,
@@ -127,7 +126,7 @@ const toProjectileEntity = (
 const toEffectEntity = (effect: EngineState['effects'][number]): EffectEntity => ({
   id: effect.id,
   type: effect.type,
-  position: new Vector3(effect.position[0], effect.position[1], effect.position[2]),
+  position: effect.position,
   color: effect.color,
   scale: effect.scale,
   duration: effect.duration,
@@ -138,7 +137,7 @@ const toTowerEntity = (tower: EngineState['towers'][number]): TowerEntity => ({
   id: tower.id,
   type: tower.type as TowerType,
   gridPos: [tower.gridPosition[0], tower.gridPosition[1]],
-  position: new Vector3(tower.gridPosition[0] * TILE_SIZE, 0.5, tower.gridPosition[1] * TILE_SIZE),
+  position: [tower.gridPosition[0] * TILE_SIZE, 0.5, tower.gridPosition[1] * TILE_SIZE],
   lastFired: tower.lastFired,
   targetId: tower.targetId ?? null,
   level: tower.level,

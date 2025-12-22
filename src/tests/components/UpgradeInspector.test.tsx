@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { Vector3 } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 
 import { UpgradeInspector } from '../../components/ui/UpgradeInspector';
@@ -13,7 +12,7 @@ describe('UpgradeInspector', () => {
     id: 'tower-1',
     type: TowerType.Basic,
     gridPos: [0, 0] as [number, number],
-    position: new Vector3(0, 0.5, 0),
+    position: [0, 0.5, 0] as const,
     lastFired: 0,
     targetId: null,
     level: 1,

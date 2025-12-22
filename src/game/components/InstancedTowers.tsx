@@ -39,7 +39,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
     entities: towers,
     count: 100,
     updateEntity: (tower, dummy, i, mesh) => {
-      dummy.position.copy(tower.position);
+      dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
       dummy.scale.set(1, 1, 1);
       dummy.updateMatrix();
       mesh.setMatrixAt(i, dummy.matrix);
@@ -62,7 +62,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
     entities: towers,
     count: 100,
     updateEntity: (tower, dummy, i, mesh) => {
-      dummy.position.copy(tower.position);
+      dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
       dummy.position.y += 0.8; // Floating above base
 
       // Scale with level
@@ -87,7 +87,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
     entities: towers,
     count: 100,
     updateEntity: (tower, dummy, i, mesh) => {
-      dummy.position.copy(tower.position);
+      dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
       dummy.position.y += 0.8; // Same height as turret center
 
       // Oscillate and rotate
@@ -124,7 +124,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
         gameState.upgrades as { [key in UpgradeType]?: number },
       );
 
-      dummy.position.copy(tower.position);
+      dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
       dummy.position.y += 0.1;
 
       // Torus is XY plane. Rotate 90deg on X to lay flat XZ.

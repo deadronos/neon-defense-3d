@@ -16,7 +16,7 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
     updateEntity: (enemy, dummy, i, mesh) => {
       const scale = enemy.config.scale || 0.4;
 
-      dummy.position.copy(enemy.position);
+      dummy.position.set(enemy.position[0], enemy.position[1], enemy.position[2]);
       dummy.position.y += scale + 0.1;
       dummy.rotation.set(0, 0, 0);
       dummy.scale.set(scale, scale, scale);
@@ -47,7 +47,7 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
       if (enemy.shield > 0) {
         const scale = enemy.config.scale || 0.4;
 
-        dummy.position.copy(enemy.position);
+        dummy.position.set(enemy.position[0], enemy.position[1], enemy.position[2]);
         dummy.position.y += scale + 0.1; // Match body height
         dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
         dummy.rotation.set(0, 0, 0);
@@ -74,7 +74,7 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
       // The original code used `clock.getElapsedTime()`.
       // Let's stick to Date.now() / 1000 for simplicity as it's visual only.
 
-      dummy.position.copy(enemy.position);
+      dummy.position.set(enemy.position[0], enemy.position[1], enemy.position[2]);
       dummy.position.y += scale + 0.1; // Match body height
 
       dummy.scale.set(scale * 2.0, scale * 2.0, scale * 2.0);
