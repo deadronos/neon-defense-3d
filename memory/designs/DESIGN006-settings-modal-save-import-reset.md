@@ -97,19 +97,19 @@ export function applyCheckpoint(save: SaveV1, ctx: GameContext): void;
 
 ## Error Handling Matrix
 
-| Condition | Handling | UX |
-| ----------- | ---------- | ---- |
-| Invalid JSON | Block import | Show error banner |
-| Missing/unknown `schemaVersion` | Treat as v0 → migrate | Warning |
-| Unknown `tower.type` | Drop tower | Warning |
-| Invalid `x/z` or unbuildable tile | Drop tower | Warning |
-| Unknown upgrade key | Drop key | Warning |
-| Negative/non-integer upgrade values | Coerce to ≥0 int | Warning |
-| `currentMapIndex` out-of-range | Normalize via modulo | Warning |
-| `waveToStart` invalid | Coerce/clamp ≥1 | Warning |
-| Import while playing | Pause or guard during apply | Info |
-| Autosave immediately after import | Suppress via `isImporting/isRestoring` | None |
-| localStorage quota | Fallback to memory-only; notify | Error |
+| Condition                           | Handling                               | UX                |
+| ----------------------------------- | -------------------------------------- | ----------------- |
+| Invalid JSON                        | Block import                           | Show error banner |
+| Missing/unknown `schemaVersion`     | Treat as v0 → migrate                  | Warning           |
+| Unknown `tower.type`                | Drop tower                             | Warning           |
+| Invalid `x/z` or unbuildable tile   | Drop tower                             | Warning           |
+| Unknown upgrade key                 | Drop key                               | Warning           |
+| Negative/non-integer upgrade values | Coerce to ≥0 int                       | Warning           |
+| `currentMapIndex` out-of-range      | Normalize via modulo                   | Warning           |
+| `waveToStart` invalid               | Coerce/clamp ≥1                        | Warning           |
+| Import while playing                | Pause or guard during apply            | Info              |
+| Autosave immediately after import   | Suppress via `isImporting/isRestoring` | None              |
+| localStorage quota                  | Fallback to memory-only; notify        | Error             |
 
 ## Testing Strategy
 
