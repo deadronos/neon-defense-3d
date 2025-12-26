@@ -30,19 +30,19 @@ Add a wrench Settings modal (moving Quality inside) and implement Export/Import/
 
 ### Subtasks
 
-| ID | Description | Status | Updated | Notes |
-| --- | --- | --- | --- | --- |
-| 1.1 | Replace Quality button with wrench Settings entrypoint | Pending | 2025-12-21 | TopBar integration |
-| 1.2 | Implement `SettingsModal` with three sections | Pending | 2025-12-21 | Pattern after TechTreeModal |
-| 2.1 | Implement `persistence.ts` serialize/migrate/validate/save/load | Pending | 2025-12-21 | Tier‑B schema |
-| 3.1 | Record `WaveStarted` marker in reducer/runtime | Pending | 2025-12-21 | Pure marker only |
-| 3.2 | Add autosave `useEffect` with guards in `GameState` | Pending | 2025-12-21 | Suppress during import/reset |
-| 4.1 | Implement `resetCheckpoint()` | Pending | 2025-12-21 | Disabled if none exists |
-| 4.2 | Wire Factory Reset via existing `resetGame()` | Pending | 2025-12-21 | Quality unchanged |
-| 5.1 | Export UI: copy clipboard + download file | Pending | 2025-12-21 | - |
-| 5.2 | Import UI: paste/upload, warnings list, confirm apply | Pending | 2025-12-21 | - |
-| 6.1 | Unit tests for migration/validation/autosave/reset | Pending | 2025-12-21 | Vitest |
-| 6.2 | Optional Playwright tests for modal interactions | Pending | 2025-12-21 | - |
+| ID  | Description                                                     | Status  | Updated    | Notes                        |
+| --- | --------------------------------------------------------------- | ------- | ---------- | ---------------------------- |
+| 1.1 | Replace Quality button with wrench Settings entrypoint          | Pending | 2025-12-21 | TopBar integration           |
+| 1.2 | Implement `SettingsModal` with three sections                   | Pending | 2025-12-21 | Pattern after TechTreeModal  |
+| 2.1 | Implement `persistence.ts` serialize/migrate/validate/save/load | Pending | 2025-12-21 | Tier‑B schema                |
+| 3.1 | Record `WaveStarted` marker in reducer/runtime                  | Pending | 2025-12-21 | Pure marker only             |
+| 3.2 | Add autosave `useEffect` with guards in `GameState`             | Pending | 2025-12-21 | Suppress during import/reset |
+| 4.1 | Implement `resetCheckpoint()`                                   | Pending | 2025-12-21 | Disabled if none exists      |
+| 4.2 | Wire Factory Reset via existing `resetGame()`                   | Pending | 2025-12-21 | Quality unchanged            |
+| 5.1 | Export UI: copy clipboard + download file                       | Pending | 2025-12-21 | -                            |
+| 5.2 | Import UI: paste/upload, warnings list, confirm apply           | Pending | 2025-12-21 | -                            |
+| 6.1 | Unit tests for migration/validation/autosave/reset              | Pending | 2025-12-21 | Vitest                       |
+| 6.2 | Optional Playwright tests for modal interactions                | Pending | 2025-12-21 | -                            |
 
 ## Progress Log
 

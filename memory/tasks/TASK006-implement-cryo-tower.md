@@ -1,6 +1,7 @@
 # TASK006 - Implement Cryo Tower and Status Effects
 
 ## Context
+
 Based on [DESIGN004](../designs/DESIGN004-cryo-tower-status-effects.md), we are implementing a status effect system to allow towers to slow down enemies.
 
 ## Requirements
@@ -27,6 +28,7 @@ Based on [DESIGN004](../designs/DESIGN004-cryo-tower-status-effects.md), we are 
 6. [ ] **Verify:** Run game, build Cryo tower, verify enemies slow down.
 
 ## Acceptance Criteria
+
 - [ ] Cryo Tower can be built.
 - [ ] Enemies hit by Cryo projectiles move at reduced speed (e.g. 50%) for the duration.
 - [ ] Frozen enemies have a visual indicator (color change).

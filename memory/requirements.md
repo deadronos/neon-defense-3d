@@ -177,7 +177,7 @@ Graphics quality persistence:
    - Quality
    - Export/Import
    - Reset
-   
+
    **Acceptance:** all sections are visible and usable with pointer events enabled.
 
 3. WHEN the player toggles Quality in Settings, THE SYSTEM SHALL update the `graphicsQuality` preset immediately.  
@@ -208,32 +208,32 @@ Graphics quality persistence:
    **Acceptance:** invalid JSON does not change game state; errors are shown.
 
 2. WHEN migration drops or normalizes fields, THE SYSTEM SHALL surface non-blocking warnings to the player.  
-    **Acceptance:** the import completes (if valid) and warnings are listed in Settings.
+   **Acceptance:** the import completes (if valid) and warnings are listed in Settings.
 
 3. WHEN the player confirms an import, THE SYSTEM SHALL replace the current checkpoint-relevant state with the imported checkpoint.  
-    **Acceptance:** towers/economy/meta/map index reflect the save; enemies/projectiles/effects are cleared.
+   **Acceptance:** towers/economy/meta/map index reflect the save; enemies/projectiles/effects are cleared.
 
 #### Reset behaviors
 
 1. WHEN the player chooses Reset Checkpoint, THE SYSTEM SHALL reload the latest autosaved checkpoint.  
-    **Acceptance:** run state matches the latest checkpoint; no partial rewinds.
+   **Acceptance:** run state matches the latest checkpoint; no partial rewinds.
 
 2. WHEN the player chooses Factory Reset and confirms, THE SYSTEM SHALL wipe progression and return to a fresh idle state while keeping Quality.  
-    **Acceptance:** research points/upgrades reset; map index resets; `graphicsQuality` remains unchanged.
+   **Acceptance:** research points/upgrades reset; map index resets; `graphicsQuality` remains unchanged.
 
 ### Data validation requirements (Tier‑B)
 
 1. WHEN importing towers, THE SYSTEM SHALL drop towers with unknown types and report a warning.  
-    **Acceptance:** import succeeds (if otherwise valid) and towers list omits unknown types.
+   **Acceptance:** import succeeds (if otherwise valid) and towers list omits unknown types.
 
 2. WHEN importing tower placements, THE SYSTEM SHALL drop towers on non-buildable tiles or out-of-bounds coordinates and report a warning.  
-    **Acceptance:** no imported tower appears on invalid tiles.
+   **Acceptance:** no imported tower appears on invalid tiles.
 
 3. WHEN importing upgrades, THE SYSTEM SHALL drop unknown upgrade keys and coerce upgrade levels to integers ≥ 0.  
-    **Acceptance:** upgrade map contains only known keys and non-negative integer values.
+   **Acceptance:** upgrade map contains only known keys and non-negative integer values.
 
 4. WHEN importing `currentMapIndex`, THE SYSTEM SHALL normalize out-of-range indexes to a valid map index and report a warning.  
-    **Acceptance:** game loads with a valid map and warns if normalization occurred.
+   **Acceptance:** game loads with a valid map and warns if normalization occurred.
 
 ## Traceability
 

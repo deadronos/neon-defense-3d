@@ -93,7 +93,9 @@ export const stepProjectiles = (
         ensureEnemyPositions();
 
         // We can look up the target position directly if it exists, otherwise compute it.
-        const impactPos = enemyPositions.get(target.id) ?? selectEnemyWorldPosition(target, pathWaypoints, tileSize);
+        const impactPos =
+          enemyPositions.get(target.id) ??
+          selectEnemyWorldPosition(target, pathWaypoints, tileSize);
 
         // Visual Effect for AOE Impact
         nextEffectCounter += 1;
@@ -175,7 +177,7 @@ export const stepProjectiles = (
         // Optimization: use cached position if available
         let position = enemyPositions.get(enemy.id);
         if (!position) {
-           position = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
+          position = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
         }
 
         addedEffects.push({

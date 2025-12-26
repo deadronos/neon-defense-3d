@@ -1,14 +1,17 @@
 # DESIGN005 - Missile Tower (AOE Damage)
 
 ## Goal
+
 Implement Area of Effect (AOE) damage mechanics and a new "Missile" tower. This allows projectiles to damage multiple enemies within a radius, providing a counter to high-density enemy waves.
 
 ## Architecture
 
 ### 1. Engine State Updates
+
 - Add `splashRadius` to `EngineProjectile`.
 
 ### 2. Physics / Collision Logic
+
 - Currently, collision is single-target based on `progress >= 1`.
 - New logic:
   - When `progress >= 1` (impact):
@@ -20,6 +23,7 @@ Implement Area of Effect (AOE) damage mechanics and a new "Missile" tower. This 
       - Damage only the primary target.
 
 ### 3. Tower Configuration
+
 - Add `TowerType.Missile`.
 - Add config to `TOWER_CONFIGS`:
   - Name: "Missile Launcher"
@@ -28,6 +32,7 @@ Implement Area of Effect (AOE) damage mechanics and a new "Missile" tower. This 
   - High cost, slow fire rate.
 
 ### 4. Visuals
+
 - Trigger a larger explosion effect (already have `EffectEntity`, just need to scale it up or add a new type).
 
 ## Detailed Design
@@ -58,6 +63,7 @@ export interface EngineProjectile {
    - Spawn an explosion effect with scale proportional to `splashRadius`.
 
 ## Risks & Considerations
+
 - **Performance:** Iterating all enemies on every AOE impact could be slow if many missiles hit simultaneously with many enemies.
-  - *Mitigation:* We can pre-calculate enemy positions into a simple grid if needed, but for now linear scan is likely fine.
+  - _Mitigation:_ We can pre-calculate enemy positions into a simple grid if needed, but for now linear scan is likely fine.
 - **Friendly Fire:** Not applicable (towers don't take damage).
