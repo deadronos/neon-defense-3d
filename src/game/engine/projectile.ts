@@ -13,8 +13,8 @@ import type {
   EngineVector3,
 } from './types';
 
-const distance = (a: EngineVector3, b: EngineVector3) =>
-  Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+const distanceSquared = (a: EngineVector3, b: EngineVector3) =>
+  (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
 
 export interface StepProjectilesOptions {
   greedMultiplier?: number;
@@ -60,6 +60,24 @@ export const stepProjectiles = (
   const enemiesById = cache ? cache.enemiesById : new Map<string, EngineEnemy>();
   if (cache) enemiesById.clear();
 
+  // Optimization: Pre-calculate enemy positions if needed for splash checks.
+  // We only really need this if there are splash projectiles, but calculating it once is safer for hot paths than checking every time.
+  // Actually, we can check if there are any splash projectiles first, but looping projectiles twice might be worse if N is large.
+  // Let's iterate projectiles first. If we encounter a splash one, we compute all positions if not already computed.
+  // But for simplicity and consistent performance, let's just use the map.
+
+  // Wait, I can't modify the state.enemies array items, but I can store computed positions.
+  const enemyPositions = new Map<string, EngineVector3>();
+  let enemyPositionsComputed = false;
+
+  const ensureEnemyPositions = () => {
+    if (enemyPositionsComputed) return;
+    for (const enemy of state.enemies) {
+      enemyPositions.set(enemy.id, selectEnemyWorldPosition(enemy, pathWaypoints, tileSize));
+    }
+    enemyPositionsComputed = true;
+  };
+
   for (const enemy of state.enemies) {
     enemiesById.set(enemy.id, enemy);
   }
@@ -71,7 +89,13 @@ export const stepProjectiles = (
     const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;
     if (nextProgress >= 1) {
       if (projectile.splashRadius) {
-        const impactPos = selectEnemyWorldPosition(target, pathWaypoints, tileSize);
+        // If we haven't computed enemy positions yet, do it now.
+        ensureEnemyPositions();
+
+        // We can look up the target position directly if it exists, otherwise compute it.
+        const impactPos =
+          enemyPositions.get(target.id) ??
+          selectEnemyWorldPosition(target, pathWaypoints, tileSize);
 
         // Visual Effect for AOE Impact
         nextEffectCounter += 1;
@@ -85,9 +109,14 @@ export const stepProjectiles = (
           duration: 0.5,
         });
 
+        const splashRadiusSquared = projectile.splashRadius ** 2;
+
         for (const enemy of state.enemies) {
-          const enemyPos = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
-          if (distance(impactPos, enemyPos) <= projectile.splashRadius) {
+          const enemyPos = enemyPositions.get(enemy.id);
+          // Should always be there since we called ensureEnemyPositions, but fallback to compute just in case.
+          const pos = enemyPos ?? selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
+
+          if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
             hits.set(enemy.id, (hits.get(enemy.id) ?? 0) + projectile.damage);
             if (projectile.freezeDuration) {
               const current = freezeHits.get(enemy.id) ?? 0;
@@ -145,7 +174,11 @@ export const stepProjectiles = (
 
         nextEffectCounter += 1;
         const effectId = `effect-${nextEffectCounter}`;
-        const position = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
+        // Optimization: use cached position if available
+        let position = enemyPositions.get(enemy.id);
+        if (!position) {
+          position = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
+        }
 
         addedEffects.push({
           id: effectId,

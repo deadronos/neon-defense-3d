@@ -1,11 +1,13 @@
 # DESIGN004 - Cryo Tower (Status Effects)
 
 ## Goal
+
 Implement a status effect system, specifically a "Slow/Freeze" effect, and a new "Cryo" tower that utilizes it. This will add strategic depth by allowing players to control enemy crowd flow.
 
 ## Architecture
 
 ### 1. Engine State Updates
+
 The `EngineEnemy` interface already contains a `frozen?: number` property. We will utilize this to track the duration of the slow effect.
 
 - **Status Logic:**
@@ -13,11 +15,14 @@ The `EngineEnemy` interface already contains a `frozen?: number` property. We wi
   - `frozen` is a timer that decrements by `deltaSeconds` each tick.
 
 ### 2. Projectile Updates
+
 We need a way for projectiles to apply this effect.
+
 - Add `statusEffect?: { type: 'freeze', duration: number }` to `EngineProjectile` (or similar mechanism).
 - Or, since we only have one effect for now, we can add `freezeDuration?: number` to `EngineProjectile`.
 
 ### 3. Tower Configuration
+
 - Add `TowerType.Cryo`.
 - Add config to `TOWER_CONFIGS`:
   - Name: "Cryo Projector"
@@ -25,10 +30,12 @@ We need a way for projectiles to apply this effect.
   - Effect: Applies 2s slow on hit.
 
 ### 4. Engine Logic (`stepEnemies`, `stepProjectiles`)
+
 - **`stepEnemies`:** Check `frozen` timer. If active, multiply speed by `0.5`. Decrement timer.
 - **`stepProjectiles`:** When a projectile hits, if it has `freezeDuration`, set `enemy.frozen = Math.max(enemy.frozen, duration)`.
 
 ### 5. Visuals
+
 - Enemies with `frozen > 0` should be tinted blue.
 
 ## Detailed Design
@@ -68,5 +75,6 @@ export interface EngineProjectile {
      ```
 
 ## Risks & Considerations
+
 - **Balancing:** Perma-freeze might be too strong. 50% slow is a good start.
 - **Performance:** Minimal impact. Just a few float operations.
