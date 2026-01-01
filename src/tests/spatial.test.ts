@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+
 import { buildSpatialGrid, getNearbyEnemies } from '../game/engine/spatial';
 import type { EngineEnemy, EngineVector2 } from '../game/engine/types';
 
@@ -58,7 +59,10 @@ describe('Spatial Grid', () => {
 
   it('retrieves nearby enemies', () => {
     // Diagonal Path: (0,0) -> (10,10) tiles.
-    const diagonalPath: EngineVector2[] = [[0,0], [10,10]];
+    const diagonalPath: EngineVector2[] = [
+      [0, 0],
+      [10, 10],
+    ];
 
     // e1: Progress 0.4 -> (4,4) tiles.
     const e1 = createEnemy('e1', 0, 0.4);

@@ -1,4 +1,5 @@
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
+
 import { selectEnemyWorldPosition } from './selectors';
 import type { EngineEnemy, EngineVector2, EngineVector3 } from './types';
 
@@ -22,7 +23,7 @@ export const buildSpatialGrid = (
   pathWaypoints: readonly EngineVector2[],
   tileSize: number = TILE_SIZE,
   width: number = MAP_WIDTH,
-  height: number = MAP_HEIGHT
+  height: number = MAP_HEIGHT,
 ): SpatialGrid => {
   const size = width * height;
   // Pre-allocate the array with empty arrays
@@ -65,7 +66,7 @@ export const getNearbyEnemies = (
   radius: number,
   tileSize: number = TILE_SIZE,
   width: number = MAP_WIDTH,
-  height: number = MAP_HEIGHT
+  height: number = MAP_HEIGHT,
 ): EngineEnemy[] => {
   const centerX = position[0] / tileSize;
   const centerZ = position[2] / tileSize;

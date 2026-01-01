@@ -63,9 +63,7 @@ export const stepTowers = (
 
   // Build spatial grid once per tick
   const spatialGrid =
-    state.enemies.length > 0
-      ? buildSpatialGrid(state.enemies, pathWaypoints, tileSize)
-      : undefined;
+    state.enemies.length > 0 ? buildSpatialGrid(state.enemies, pathWaypoints, tileSize) : undefined;
 
   for (let index = 0; index < state.towers.length; index += 1) {
     const tower = state.towers[index];
