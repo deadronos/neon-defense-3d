@@ -1,0 +1,96 @@
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
+
+import { selectEnemyWorldPosition } from './selectors';
+import type { EngineEnemy, EngineVector2, EngineVector3 } from './types';
+
+/**
+ * A spatial grid represented as a flat array of lists.
+ * Index = z * width + x
+ */
+export type SpatialGrid = EngineEnemy[][];
+
+/**
+ * Builds a spatial grid from the current list of enemies.
+ *
+ * @param enemies List of active enemies.
+ * @param pathWaypoints The path waypoints for position calculation.
+ * @param tileSize Size of a tile in world units.
+ * @param width Map width in tiles.
+ * @param height Map height in tiles.
+ */
+export const buildSpatialGrid = (
+  enemies: EngineEnemy[],
+  pathWaypoints: readonly EngineVector2[],
+  tileSize: number = TILE_SIZE,
+  width: number = MAP_WIDTH,
+  height: number = MAP_HEIGHT,
+): SpatialGrid => {
+  const size = width * height;
+  // Pre-allocate the array with empty arrays
+  const grid: SpatialGrid = new Array(size);
+  for (let i = 0; i < size; i++) {
+    grid[i] = [];
+  }
+
+  for (const enemy of enemies) {
+    const pos = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
+    const x = Math.floor(pos[0] / tileSize);
+    const z = Math.floor(pos[2] / tileSize);
+
+    // Clamp coordinates to ensure they stay within bounds
+    // (Enemies might slightly overshoot or be spawned just outside)
+    const clampedX = Math.max(0, Math.min(width - 1, x));
+    const clampedZ = Math.max(0, Math.min(height - 1, z));
+
+    const index = clampedZ * width + clampedX;
+    grid[index].push(enemy);
+  }
+
+  return grid;
+};
+
+/**
+ * Retrieves a list of candidate enemies within a square area around the position.
+ * The area covers all tiles that could possibly contain an enemy within the given radius.
+ *
+ * @param grid The spatial grid.
+ * @param position Center position (e.g., tower position).
+ * @param radius Radius of interest (e.g., tower range).
+ * @param tileSize Size of a tile in world units.
+ * @param width Map width in tiles.
+ * @param height Map height in tiles.
+ */
+export const getNearbyEnemies = (
+  grid: SpatialGrid,
+  position: EngineVector3,
+  radius: number,
+  tileSize: number = TILE_SIZE,
+  width: number = MAP_WIDTH,
+  height: number = MAP_HEIGHT,
+): EngineEnemy[] => {
+  const centerX = position[0] / tileSize;
+  const centerZ = position[2] / tileSize;
+  const radiusInTiles = radius / tileSize;
+
+  // Calculate integer bounds of tiles to check
+  // We floor/ceil to ensure we cover any tile that partially intersects the radius
+  const minX = Math.max(0, Math.floor(centerX - radiusInTiles));
+  const maxX = Math.min(width - 1, Math.ceil(centerX + radiusInTiles));
+  const minZ = Math.max(0, Math.floor(centerZ - radiusInTiles));
+  const maxZ = Math.min(height - 1, Math.ceil(centerZ + radiusInTiles));
+
+  const candidates: EngineEnemy[] = [];
+
+  for (let z = minZ; z <= maxZ; z++) {
+    for (let x = minX; x <= maxX; x++) {
+      const index = z * width + x;
+      const cellEnemies = grid[index];
+      // Micro-optimization: standard for loop is often faster than spread or concat for small arrays
+      for (let i = 0; i < cellEnemies.length; i++) {
+        candidates.push(cellEnemies[i]);
+      }
+    }
+  }
+
+  return candidates;
+};

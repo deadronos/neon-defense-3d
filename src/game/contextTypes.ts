@@ -95,4 +95,8 @@ export interface GameContextProps {
   /** Returns JSON for export (latest checkpoint if present; otherwise a live snapshot). */
   exportCheckpointJson: () => { json: string; hasCheckpoint: boolean };
   skipWave: () => void;
+  /** Current game speed multiplier (1x, 2x, 4x). */
+  gameSpeed: number;
+  /** Sets the game speed multiplier. */
+  setGameSpeed: (speed: number) => void;
 }

@@ -16,6 +16,8 @@ describe('TopBar', () => {
         waveState={null}
         onOpenSettings={() => {}}
         onSkipWave={() => {}}
+        gameSpeed={1}
+        onSetGameSpeed={() => {}}
       />,
     );
 
@@ -34,6 +36,8 @@ describe('TopBar', () => {
         waveState={null}
         onOpenSettings={onOpenSettings}
         onSkipWave={() => {}}
+        gameSpeed={1}
+        onSetGameSpeed={() => {}}
       />,
     );
 
@@ -66,6 +70,8 @@ describe('TopBar', () => {
         waveState={waveState}
         onOpenSettings={() => {}}
         onSkipWave={() => {}}
+        gameSpeed={1}
+        onSetGameSpeed={() => {}}
       />,
     );
 
@@ -93,6 +99,8 @@ describe('TopBar', () => {
         waveState={waveState}
         onOpenSettings={() => {}}
         onSkipWave={onSkipWave}
+        gameSpeed={1}
+        onSetGameSpeed={() => {}}
       />,
     );
 
@@ -121,11 +129,45 @@ describe('TopBar', () => {
         waveState={waveState}
         onOpenSettings={() => {}}
         onSkipWave={() => {}}
+        gameSpeed={1}
+        onSetGameSpeed={() => {}}
       />,
     );
 
     expect(screen.getByText(/wave index/i)).toBeInTheDocument();
     // Only preparing renders a "Xs" countdown (e.g. 1.2s)
     expect(screen.queryByText(/\d+\.\ds$/)).not.toBeInTheDocument();
+  });
+
+  it('renders speed controls and handles clicks', async () => {
+    const user = userEvent.setup();
+    const onSetGameSpeed = vi.fn();
+
+    render(
+      <TopBar
+        lives={20}
+        money={0}
+        wave={1}
+        waveState={null}
+        onOpenSettings={() => {}}
+        onSkipWave={() => {}}
+        gameSpeed={1}
+        onSetGameSpeed={onSetGameSpeed}
+      />,
+    );
+
+    const speed1x = screen.getByRole('button', { name: /1x/i });
+    const speed2x = screen.getByRole('button', { name: /2x/i });
+    const speed4x = screen.getByRole('button', { name: /4x/i });
+
+    expect(speed1x).toBeInTheDocument();
+    expect(speed2x).toBeInTheDocument();
+    expect(speed4x).toBeInTheDocument();
+
+    await user.click(speed2x);
+    expect(onSetGameSpeed).toHaveBeenCalledWith(2);
+
+    await user.click(speed4x);
+    expect(onSetGameSpeed).toHaveBeenCalledWith(4);
   });
 });
