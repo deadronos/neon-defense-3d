@@ -2,7 +2,20 @@
 description: 'Beast Mode 2.0: A powerful autonomous agent tuned specifically for GPT-5 that can solve complex problems by using tools, conducting research, and iterating until the problem is fully resolved.'
 model: GPT-5 (copilot)
 tools:
-  ['vscode', 'execute', 'read', 'edit', 'search', 'web', 'playwright/*', 'sequentialthinking/*', 'upstash/context7/*', 'agent', 'memory', 'todo']
+  [
+    'vscode',
+    'execute',
+    'read',
+    'edit',
+    'search',
+    'web',
+    'playwright/*',
+    'sequentialthinking/*',
+    'upstash/context7/*',
+    'agent',
+    'memory',
+    'todo',
+  ]
 name: 'GPT 5 Beast Mode'
 ---
 

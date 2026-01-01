@@ -1,6 +1,7 @@
 # TASK007 - Implement Missile Tower (AOE)
 
 ## Context
+
 Based on [DESIGN005](../designs/DESIGN005-missile-tower-aoe-damage.md), we are implementing AOE damage logic to support a new Missile Tower.
 
 ## Requirements
@@ -26,6 +27,7 @@ Based on [DESIGN005](../designs/DESIGN005-missile-tower-aoe-damage.md), we are i
 4. [ ] **Verify:** Run game, build Missile tower, verify multiple enemies take damage from single shot.
 
 ## Acceptance Criteria
+
 - [ ] Missile Tower can be built.
 - [ ] Projectiles deal damage to multiple enemies when hitting a cluster.
 - [ ] Visual explosion scale matches (roughly) the blast radius.

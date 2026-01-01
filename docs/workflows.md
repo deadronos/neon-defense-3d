@@ -11,6 +11,7 @@
 ---
 
 ## Contents
+
 1. Build Tower (placement flow) 🔧
 2. Start Game & Wave lifecycle (engine loop + autosave) ⏱️
 3. Export / Import / Reset (persistence and migration) 💾
@@ -22,6 +23,7 @@ Each workflow includes: overview, entry point, service/engine details, data mapp
 ## 1) Build Tower (Placement) 🔧
 
 ### Overview
+
 - **Purpose:** User selects a tower and places it on a valid grid tile; cost is deducted and a tower entity is created in the engine state.
 - **Trigger:** User selects a tower in the `BuildMenu` then clicks a `Tile` in the `World`.
 - **Key files & components:**
@@ -34,6 +36,7 @@ Each workflow includes: overview, entry point, service/engine details, data mapp
   - Tests: `src/tests/components/BuildMenu.test.tsx`, `src/tests/game/gameState.test.ts`
 
 ### Entry point (frontend)
+
 - User selects a tower via `BuildMenu`. Key snippet (simplified):
 
 ```tsx
@@ -61,6 +64,7 @@ onClick={() => {
 ```
 
 ### Service / Engine implementation
+
 - Public API (from `GameProvider`):
   - `placeTower(x: number, z: number, type: TowerType): void`
   - `setSelectedTower(tower: TowerType | null): void`
@@ -72,6 +76,7 @@ onClick={() => {
   - Update UI `money` via `uiReducer({ type: 'spendMoney', amount })`.
 
 Snippet (essential):
+
 ```ts
 // runtimeReducer (excerpt)
 case 'placeTower': {
@@ -87,20 +92,24 @@ case 'placeTower': {
 ```
 
 ### Data mapping
+
 - Engine towers -> UI entities via `toTowerEntity` (position mapping using `TILE_SIZE`).
 - Config-driven stats from `TOWER_CONFIGS` (cost, color, name, description) and stat computation via `getTowerStats`.
 
 ### Validation & Error handling
+
 - Placement validation: `isValidPlacement(x,z)` checks bounds, tile type (must be `TileType.Grass`), and occupancy.
 - Affordability is enforced both in UI (button disabled & visual) and in reducer (defensive check).
 - Tests assert invalid placements, unaffordable placements, and clearing `selectedTower` after placement.
 
 ### Testing approach
+
 - Unit: `renderHook` / `GameProvider` tests to assert `placeTower()` behaviors (`src/tests/game/gameState.test.ts`).
 - Component: `BuildMenu` rendering and affordance tests (`src/tests/components/BuildMenu.test.tsx`).
 - E2E: Playwright `tests/e2e/verify_build_menu.spec.ts` verifies the flow in-browser.
 
 ### Sequence Diagram
+
 ```mermaid
 sequenceDiagram
   participant Player
@@ -119,6 +128,7 @@ sequenceDiagram
 ```
 
 ### Implementation template (quick)
+
 - Add enum in `src/types.ts` for new tower.
 - Add config entry in `src/constants.ts` in `TOWER_CONFIGS` (cost, color, stats baseline).
 - Add visuals in rendering layer (`game/components/InstancedTowers.tsx` or similar).
@@ -129,6 +139,7 @@ sequenceDiagram
 ## 2) Start Game & Wave lifecycle ⏱️
 
 ### Overview
+
 - **Purpose:** Transition from idle to active play; engine steps forward each rendered frame; waves are prepared, spawn enemies, progress, and complete.
 - **Trigger:** `IdleScreen` `INITIATE` button → `GameProvider.startGame()` → engine reset then `GameLoopBridge` executes `step` each frame.
 - **Files:**
@@ -140,10 +151,12 @@ sequenceDiagram
   - `src/game/engine/step.ts` (step pipeline: wave -> enemies -> towers -> projectiles)
 
 ### Entry points & core loop
+
 - Start game (UI):
+
 ```tsx
 // src/components/ui/IdleScreen.tsx
-<button onClick={onStart}>INITIATE</button>
+<button onClick={onStart}>INITIATE</button>;
 
 // GameState.startGame:
 const startGame = useCallback(() => {
@@ -153,19 +166,23 @@ const startGame = useCallback(() => {
 ```
 
 - Loop integration: `GameLoopBridge`:
+
 ```tsx
 useFrame((state, delta) => {
   if (gameState.gameStatus !== 'playing') return;
   step(delta, state.clock.elapsedTime);
 });
 ```
+
 - `step()` delegates to `stepEngine`, which executes a pipeline of sub-steps (wave -> enemies -> towers -> projectiles). See `src/game/engine/step.ts`.
 
 ### Wave scheduling & autosave
+
 - Wave logic: `stepWave` manages prep, spawning, active, completed phases and emits `WaveStarted` / `WaveCompleted` events.
 - Autosave: `GameState` has an effect that listens for `waveStartedNonce` and serializes + saves a checkpoint to `localStorage` once per wave start (Tier-B checkpoint). This is how Save/Import interacts with engine progress.
 
 Snippet (autosave):
+
 ```ts
 useEffect(() => {
   const nonce = runtime.ui.waveStartedNonce;
@@ -177,21 +194,24 @@ useEffect(() => {
 ```
 
 ### Testing patterns
+
 - Simulate time advances with `result.current.step(deltaSeconds, nowSeconds)` in unit tests and assert wave state changes and autosave (see `src/tests/game/persistence.test.ts`).
 
 ### Sequence Diagram
+
 ```mermaid
 sequenceDiagram
   Player->>IdleScreen: Click INITIATE
   IdleScreen->>GameProvider: startGame()
   GameLoopBridge->>GameProvider: frame tick -> step(delta)
-  GameProvider->>Engine: stepEngine(...)  
+  GameProvider->>Engine: stepEngine(...)
   Engine->>Engine: stepWave (spawn enemies)
   Engine->>GameProvider: patches + events
   GameProvider->>Persistence: serializeCheckpoint + save (on WaveStarted)
 ```
 
 ### Implementation hints
+
 - To add a new enemy: update `ENEMY_TYPES` in `src/constants.ts`, add appropriate attributes (hpBase, speed, abilities), and add unit tests for `stepWave`/`spawnEnemy` behaviors.
 - Keep timers deterministic in tests by controlling `delta` in `step()` calls.
 
@@ -200,6 +220,7 @@ sequenceDiagram
 ## 3) Export / Import / Reset (Persistence & Migration) 💾
 
 ### Overview
+
 - **Purpose:** Export a checkpoint, import a checkpoint (with validation/migration), reset to last save, or factory reset game progress.
 - **Trigger:** `SettingsModal` UI actions (Copy, Download, Validate/Apply import, Reset Checkpoint, Factory Reset).
 - **Files:**
@@ -209,6 +230,7 @@ sequenceDiagram
   - Tests: `src/tests/game/persistence.test.ts`
 
 ### Persistence model
+
 - `SaveV1` shape (primary fields):
   - `schemaVersion: 1`
   - `timestamp: ISO string`
@@ -217,31 +239,39 @@ sequenceDiagram
   - `checkpoint: { waveToStart, towers: [{ type, level, x, z }] }`
 
 Example interface excerpt (from `src/game/persistence.ts`):
+
 ```ts
 export interface SaveV1 {
   schemaVersion: 1;
   timestamp: string;
   settings?: { quality?: 'high' | 'low' };
   ui: { currentMapIndex: number; money: number; lives: number; upgrades: Record<string, number> };
-  checkpoint: { waveToStart: number; towers: Array<{ type: string; level: number; x: number; z: number }>; };
+  checkpoint: {
+    waveToStart: number;
+    towers: Array<{ type: string; level: number; x: number; z: number }>;
+  };
 }
 ```
 
 ### Migration & Validation
+
 - `migrateSave(input)` performs robust sanitization: clamps numeric values, drops unknown upgrade keys/tower types, removes towers placed on unbuildable tiles, yields `warnings` and `errors`.
 - `validateSave` confirms schema correctness; `SettingsModal` shows errors/warnings and blocks `Apply` until the save is `ready`.
 
 ### Storage & error handling
+
 - `saveCheckpoint(save)` writes JSON to `localStorage` under key `nd3d.checkpoint.v1` and returns `{ok:false, error}` on exceptions (quota issues).
 - `loadCheckpoint()` returns `null` for invalid JSON or failed migrations.
 - `clearCheckpoint()` removes the key; `factoryReset()` clears and resets game state.
 
 ### Testing approach
+
 - Unit tests for `migrateSave` to validate detection/dropping of invalid items and to verify warnings (`src/tests/game/persistence.test.ts`).
 - Test `saveCheckpoint` failure by mocking `localStorage.setItem` to throw.
 - Integrate import flow in component tests for `SettingsModal` (validate UI error/warning rendering).
 
 ### Sequence Diagram
+
 ```mermaid
 sequenceDiagram
   SettingsModal->>Persistence:migrateSave(rawJson)
@@ -268,6 +298,7 @@ sequenceDiagram
 ---
 
 ## Quick Implementation Checklist (How to add a new, similar feature)
+
 1. Write 2–3 EARS-style requirements: WHEN <event>, THE SYSTEM SHALL <behavior> [Acceptance].
 2. Add domain types (`src/types.ts`) and config entries (`src/constants.ts`).
 3. Add engine changes under `src/game/engine` with tests for correctness.
@@ -278,6 +309,7 @@ sequenceDiagram
 ---
 
 ## Where I saved this & next steps ✅
+
 - File created at: `docs/workflows.md` (this file).
 - Suggested follow-ups:
   - Add a short checklist and link to this doc in the PR template.
@@ -286,6 +318,7 @@ sequenceDiagram
 ---
 
 If you'd like, I can now:
+
 - Open a PR with this doc + a summary and tests to validate the documentation's examples, or
 - Generate additional diagrams or a condensed README section for `docs/`.
 

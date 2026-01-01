@@ -1,9 +1,12 @@
-import type { Vector3 } from 'three';
-
 /**
  * Represents a 2D vector as a tuple of [x, y] coordinates.
  */
 export type Vector2 = [number, number];
+
+/**
+ * Represents a 3D vector as a tuple of [x, y, z] coordinates.
+ */
+export type Position3 = readonly [number, number, number];
 
 /** Renderer quality preset for performance tuning. */
 export type GraphicsQuality = 'high' | 'low';
@@ -91,7 +94,7 @@ export interface EnemyEntity {
   /** Progress towards the next waypoint (0 to 1). */
   progress: number;
   /** Current 3D position of the enemy. */
-  position: Vector3;
+  position: Position3;
   /** Current hit points remaining. */
   hp: number;
   /** Current shield points remaining. */
@@ -113,9 +116,9 @@ export interface ProjectileEntity {
   /** Unique identifier for the projectile. */
   id: string;
   /** Starting position of the projectile. */
-  startPos: Vector3;
+  startPos: Position3;
   /** Current world position of the projectile. */
-  position: Vector3;
+  position: Position3;
   /** ID of the target enemy. */
   targetId: string | null;
   /** Speed of the projectile. */
@@ -170,7 +173,7 @@ export interface TowerEntity {
   /** Grid coordinates [x, z] where the tower is placed. */
   gridPos: Vector2;
   /** World position of the tower. */
-  position: Vector3;
+  position: Position3;
   /** Timestamp of the last shot fired. */
   lastFired: number;
   /** ID of the current target enemy. */
@@ -188,7 +191,7 @@ export interface EffectEntity {
   /** Type of the effect (optional). */
   type?: string;
   /** World position of the effect. */
-  position: Vector3;
+  position: Position3;
   /** Color of the effect. */
   color?: string;
   /** Visual scale of the effect. */
