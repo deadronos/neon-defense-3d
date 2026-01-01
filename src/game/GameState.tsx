@@ -6,6 +6,7 @@ import {
   useMemo,
   useReducer,
   useRef,
+  useState,
 } from 'react';
 import type { ReactNode } from 'react';
 
@@ -402,12 +403,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [],
   );
 
+  const [gameSpeed, setGameSpeed] = useState(1);
+
   const step = useCallback(
     (deltaSeconds: number, nowSeconds: number) => {
       const snapshot = runtimeRef.current;
       if (snapshot.ui.gameStatus !== 'playing') return;
 
-      const deltaMs = deltaSeconds * 1000;
+      const deltaMs = deltaSeconds * 1000 * gameSpeed;
       const nowMs = nowSeconds * 1000;
       const greedLevel = snapshot.ui.upgrades?.[UpgradeType.GLOBAL_GREED] || 0;
       const greedMultiplier = 1 + greedLevel * 0.05;
@@ -422,7 +425,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
       dispatch({ type: 'applyTickResult', result });
     },
-    [enginePathWaypoints],
+    [enginePathWaypoints, gameSpeed],
   );
 
   const gameState: GameState = {
@@ -461,6 +464,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         applyCheckpointSave,
         exportCheckpointJson,
         skipWave,
+        gameSpeed,
+        setGameSpeed,
       }}
     >
       {children}

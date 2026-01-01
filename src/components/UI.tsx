@@ -29,6 +29,8 @@ export const UI = () => {
     waveState,
     skipWave,
     startNextSector,
+    gameSpeed,
+    setGameSpeed,
   } = useGame();
 
   const [showTechTree, setShowTechTree] = useState(false);
@@ -86,6 +88,8 @@ export const UI = () => {
         waveState={waveState}
         onOpenSettings={() => setShowSettings(true)}
         onSkipWave={skipWave}
+        gameSpeed={gameSpeed}
+        onSetGameSpeed={setGameSpeed}
       />
 
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
