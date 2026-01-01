@@ -9,6 +9,8 @@ interface TopBarProps {
   waveState: WaveState | null;
   onOpenSettings: () => void;
   onSkipWave: () => void;
+  gameSpeed: number;
+  onSetGameSpeed: (speed: number) => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -18,6 +20,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   waveState,
   onOpenSettings,
   onSkipWave,
+  gameSpeed,
+  onSetGameSpeed,
 }) => {
   return (
     <div className="absolute top-0 w-full p-6 flex justify-between items-start pointer-events-auto">
@@ -57,7 +61,27 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 items-center">
+        {/* Speed Controls */}
+        <div className="flex rounded-md overflow-hidden border border-fuchsia-500/40 bg-black/40">
+          {[1, 2, 4].map((speed) => (
+            <button
+              key={speed}
+              type="button"
+              onClick={() => onSetGameSpeed(speed)}
+              className={`px-3 py-2 font-mono text-xs uppercase tracking-wider transition-colors ${
+                gameSpeed === speed
+                  ? 'bg-fuchsia-500/40 text-white'
+                  : 'text-fuchsia-200/60 hover:text-fuchsia-200 hover:bg-white/5'
+              } ${speed !== 4 ? 'border-r border-fuchsia-500/20' : ''}`}
+              aria-label={`Set speed to ${speed}x`}
+              aria-pressed={gameSpeed === speed}
+            >
+              {speed}x
+            </button>
+          ))}
+        </div>
+
         {waveState?.phase === 'preparing' && (
           <button
             type="button"
