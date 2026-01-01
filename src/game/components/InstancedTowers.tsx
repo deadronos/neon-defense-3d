@@ -77,7 +77,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
 
       const baseColor = TOWER_CONFIGS[tower.type]?.color || '#00ff00';
       const colorObj = getCachedColor(baseColor);
-      TEMP_COLOR.copy(colorObj).multiplyScalar(2.0); // Bright neon
+      TEMP_COLOR.copy(colorObj).multiplyScalar(10.0); // Extremely bright for bloom
       mesh.setColorAt(i, TEMP_COLOR);
     },
   });
@@ -161,7 +161,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
         onPointerDown={handlePointerDown}
         frustumCulled={false}
       >
-        <meshStandardMaterial toneMapped={false} />
+        <meshStandardMaterial toneMapped={false} emissive="gray" emissiveIntensity={0.5} />
       </instancedMesh>
 
       {/* Turret */}
@@ -172,7 +172,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
         frustumCulled={false}
       >
         <octahedronGeometry args={[0.5, 0]} />
-        <meshStandardMaterial toneMapped={false} />
+        <meshStandardMaterial toneMapped={false} emissive="white" emissiveIntensity={2} />
       </instancedMesh>
 
       {/* Floating Ring */}
@@ -183,7 +183,7 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
         frustumCulled={false}
       >
         <torusGeometry args={[0.6, 0.05, 8, 32]} />
-        <meshStandardMaterial toneMapped={false} />
+        <meshStandardMaterial toneMapped={false} emissive="white" emissiveIntensity={1} />
       </instancedMesh>
 
       {/* Range Ring */}

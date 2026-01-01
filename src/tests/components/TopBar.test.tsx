@@ -6,6 +6,13 @@ import { describe, expect, it, vi } from 'vitest';
 import { TopBar } from '../../components/ui/TopBar';
 import type { WaveState } from '../../types';
 
+vi.mock('../../game/audio/AudioManager', () => ({
+  useAudio: () => ({
+    toggleMusic: vi.fn(),
+    isMusicPlaying: false,
+  }),
+}));
+
 describe('TopBar', () => {
   it('highlights low integrity (lives < 10) with pulse styling', () => {
     render(

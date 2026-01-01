@@ -2,6 +2,7 @@ import React from 'react';
 
 import { UI } from './components/UI';
 import { GameCanvas } from './game/GameCanvas';
+import { AudioProvider } from './game/audio/AudioManager';
 import { GameProvider } from './game/GameState';
 
 /**
@@ -25,9 +26,11 @@ const AppContent = () => {
  */
 const App = () => {
   return (
-    <GameProvider>
-      <AppContent />
-    </GameProvider>
+    <AudioProvider>
+      <GameProvider>
+        <AppContent />
+      </GameProvider>
+    </AudioProvider>
   );
 };
 

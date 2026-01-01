@@ -4,6 +4,12 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { applyEnginePatch, createInitialEngineState } from '../../game/engine/state';
 import { createInitialUiState } from '../../game/engine/uiReducer';
 import { GameProvider, useGame } from '../../game/GameState';
+
+vi.mock('../../game/audio/AudioManager', () => ({
+  useAudio: () => ({
+    playSFX: vi.fn(),
+  }),
+}));
 import {
   CHECKPOINT_STORAGE_KEY_V1,
   buildRuntimeFromCheckpoint,

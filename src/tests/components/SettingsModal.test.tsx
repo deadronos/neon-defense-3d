@@ -6,6 +6,14 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { UI } from '../../components/UI';
 import { SettingsModal } from '../../components/ui/SettingsModal';
 import { GameProvider, useGame } from '../../game/GameState';
+import { useAudio } from '../../game/audio/AudioManager';
+
+vi.mock('../../game/audio/AudioManager', () => ({
+  useAudio: vi.fn(),
+  AudioProvider: ({ children }: any) => <>{children}</>,
+}));
+
+const mockUseAudio = useAudio as any;
 import type { Vector2 } from '../../types';
 import { TileType, TowerType } from '../../types';
 
@@ -34,6 +42,15 @@ describe('SettingsModal', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    mockUseAudio.mockReturnValue({
+      masterVolume: 0.5,
+      sfxVolume: 1,
+      musicVolume: 1,
+      setMasterVolume: vi.fn(),
+      setSFXVolume: vi.fn(),
+      setMusicVolume: vi.fn(),
+      playSFX: vi.fn(),
+    });
   });
 
   it('blocks invalid JSON import and does not change the current run', async () => {

@@ -1,8 +1,15 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
 import { GameProvider, useGame } from '../../game/GameState';
 import { TowerType } from '../../types';
+
+vi.mock('../../game/audio/AudioManager', () => ({
+  useAudio: () => ({
+    playSFX: vi.fn(),
+  }),
+}));
 
 describe('GameProvider (engine-backed)', () => {
   it('throws if useGame is used outside of GameProvider', () => {
