@@ -1,6 +1,7 @@
 import { TOWER_CONFIGS } from '../../constants';
 
 import { selectEnemyWorldPosition } from './selectors';
+import { buildSpatialGrid, getNearbyEnemies } from './spatial';
 import type {
   EngineEvents,
   EnginePatch,
@@ -60,6 +61,12 @@ export const stepTowers = (
   const newProjectiles: EngineProjectile[] = [];
   let nextTowers: EngineTower[] | undefined;
 
+  // Build spatial grid once per tick
+  const spatialGrid =
+    state.enemies.length > 0
+      ? buildSpatialGrid(state.enemies, pathWaypoints, tileSize)
+      : undefined;
+
   for (let index = 0; index < state.towers.length; index += 1) {
     const tower = state.towers[index];
     if (!tower) continue;
@@ -72,7 +79,11 @@ export const stepTowers = (
     let targetId: string | undefined;
     let minDistance = Infinity;
 
-    for (const enemy of state.enemies) {
+    const candidates = spatialGrid
+      ? getNearbyEnemies(spatialGrid, towerPos, stats.range, tileSize)
+      : state.enemies;
+
+    for (const enemy of candidates) {
       const enemyPos = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
       const d = distance(towerPos, enemyPos);
       if (d <= stats.range && d < minDistance) {
