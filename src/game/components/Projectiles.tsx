@@ -20,6 +20,7 @@ export const InstancedProjectiles: React.FC = () => {
 
   useFrame(() => {
     if (!meshRef.current) return;
+    ensureInstanceColor(meshRef.current, count);
     const renderState = renderStateRef.current;
     const projectiles = renderState.projectiles;
     const alpha = renderState.renderAlpha;

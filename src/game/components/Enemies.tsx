@@ -21,10 +21,17 @@ export const InstancedEnemies: React.FC = () => {
 
   useLayoutEffect(() => {
     if (bodyMeshRef.current) ensureInstanceColor(bodyMeshRef.current, count);
+    if (shieldMeshRef.current) ensureInstanceColor(shieldMeshRef.current, count);
     if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, count);
   }, [count]);
 
   useFrame(({ clock }) => {
+    // Defensive: the geometry child can mount after our first layout effect.
+    // Re-ensuring here guarantees instance colors are attached to the current geometry.
+    if (bodyMeshRef.current) ensureInstanceColor(bodyMeshRef.current, count);
+    if (shieldMeshRef.current) ensureInstanceColor(shieldMeshRef.current, count);
+    if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, count);
+
     const renderState = renderStateRef.current;
     const enemies = renderState.enemies;
     const time = clock.getElapsedTime();
@@ -112,13 +119,14 @@ export const InstancedEnemies: React.FC = () => {
     <group>
       <instancedMesh ref={bodyMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <dodecahedronGeometry args={[1, 0]} />
-        <meshBasicMaterial color="#ff0055" toneMapped={false} />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
 
       <instancedMesh ref={shieldMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <sphereGeometry args={[1, 16, 16]} />
         <meshBasicMaterial
-          color="#00ffff"
+          vertexColors
+          toneMapped={false}
           transparent
           opacity={0.3}
           depthWrite={false}
@@ -128,7 +136,7 @@ export const InstancedEnemies: React.FC = () => {
 
       <instancedMesh ref={ringMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <torusGeometry args={[0.7, 0.05, 8, 32]} />
-        <meshBasicMaterial color="#ff6699" toneMapped={false} />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
     </group>
   );

@@ -46,6 +46,11 @@ export const InstancedTowers: React.FC = () => {
   useFrame(({ clock }) => {
     const towers = renderStateRef.current.towers;
     const count = 100;
+
+    if (baseMeshRef.current) ensureInstanceColor(baseMeshRef.current, count);
+    if (turretMeshRef.current) ensureInstanceColor(turretMeshRef.current, count);
+    if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, count);
+
     const renderCount = Math.min(towers.length, count);
     const time = clock.getElapsedTime();
 
