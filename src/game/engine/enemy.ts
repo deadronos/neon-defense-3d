@@ -30,6 +30,28 @@ export const stepEnemies = (
   const nextEnemies: EngineEnemy[] = cache ? cache.nextEnemies : [];
   if (cache) nextEnemies.length = 0;
 
+  let segmentLengths: number[] | undefined;
+  if (cache) {
+    const needsRefresh =
+      cache.pathWaypointsRef !== pathWaypoints ||
+      cache.pathTileSize !== tileSize ||
+      cache.pathSegmentLengths.length !== Math.max(0, pathWaypoints.length - 1);
+
+    if (needsRefresh) {
+      cache.pathSegmentLengths.length = 0;
+      for (let i = 0; i < pathWaypoints.length - 1; i += 1) {
+        const p1 = pathWaypoints[i];
+        const p2 = pathWaypoints[i + 1];
+        const segmentLength = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * tileSize;
+        cache.pathSegmentLengths.push(segmentLength);
+      }
+      cache.pathWaypointsRef = pathWaypoints;
+      cache.pathTileSize = tileSize;
+    }
+
+    segmentLengths = cache.pathSegmentLengths;
+  }
+
   let livesLost = 0;
 
   for (const enemy of state.enemies) {
@@ -69,7 +91,8 @@ export const stepEnemies = (
       continue;
     }
 
-    const segmentLength = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * tileSize;
+    const segmentLength =
+      segmentLengths?.[enemy.pathIndex] ?? Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * tileSize;
     const progressDelta = segmentLength > 0 ? (currentSpeed * deltaSeconds) / segmentLength : 0;
     let nextProgress = enemy.progress + progressDelta;
     let nextPathIndex = enemy.pathIndex;

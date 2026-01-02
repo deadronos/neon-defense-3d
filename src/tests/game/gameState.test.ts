@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { GameProvider, useGame } from '../../game/GameState';
@@ -48,10 +48,27 @@ describe('GameProvider (engine-backed)', () => {
     act(() => {
       result.current.placeTower(0, 0, TowerType.Basic);
     });
+
+    // NOTE: Because isValidPlacement now relies on `renderStateRef` which is updated
+    // during `step()`, we must simulate a step to propagate the engine change to the render ref.
+    // However, placeTower updates UI via reducer AND updates Engine via applyPatch immediately?
+    // Let's check: placeTower -> dispatch({type: 'placeTower'}) -> reducer.
+    // Reducer returns { engine: applyEnginePatch(...), ui: ... }
+    // This updates `runtime` state.
+    // BUT `renderStateRef` is only synced when `step()` is called.
+    // So we need to manually trigger a sync or a step for the validity check to see the tower.
+
+    act(() => {
+      // Simulate a small step to sync render state
+      result.current.step(0.016, 1);
+    });
+
     expect(result.current.towers).toHaveLength(1);
 
     // now occupied
     expect(result.current.isValidPlacement(0, 0)).toBe(false);
+
+    // Attempt to place again should fail
     act(() => {
       result.current.placeTower(0, 0, TowerType.Basic);
     });
@@ -118,6 +135,8 @@ describe('GameProvider (engine-backed)', () => {
 
     act(() => {
       result.current.placeTower(0, 0, TowerType.Basic);
+      // Sync render state for occupancy
+      result.current.step(0.016, 1);
     });
     expect(result.current.selectedTower).toBeNull();
   });
@@ -211,5 +230,49 @@ describe('GameProvider (engine-backed)', () => {
     expect(result.current.gameState.currentMapIndex).toBe(1);
     expect(result.current.towers).toHaveLength(0);
     expect(result.current.gameState.gameStatus).toBe('playing');
+  });
+
+  it('resetCheckpoint returns an error when no checkpoint exists', () => {
+    localStorage.clear();
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
+
+    act(() => {
+      const res = result.current.resetCheckpoint();
+      expect(res.ok).toBe(false);
+      expect(res.error).toMatch(/checkpoint/i);
+    });
+  });
+
+  it('exportCheckpointJson falls back to live state when no checkpoint exists', () => {
+    localStorage.clear();
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
+
+    const exportResult = result.current.exportCheckpointJson();
+    expect(exportResult.hasCheckpoint).toBe(false);
+    const parsed = JSON.parse(exportResult.json) as { schemaVersion: number };
+    expect(parsed.schemaVersion).toBe(1);
+  });
+
+  it('skipWave zeroes the wave timer during the preparing phase', async () => {
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
+
+    act(() => {
+      result.current.startGame();
+    });
+
+    // Ensure state is synced
+    act(() => {
+      result.current.step(0.1, 0.1);
+    });
+
+    await waitFor(() => {
+      expect(result.current.waveState?.phase).toBe('preparing');
+    });
+
+    act(() => {
+      result.current.skipWave();
+    });
+
+    expect(result.current.waveState?.timer).toBe(0);
   });
 });

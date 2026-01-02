@@ -3,6 +3,7 @@
 ## In Progress
 
 - [TASK003] Separate game engine and rendering — Extract pure engine layer + adapters, then migrate context/actions (2025-12-12)
+- [TASK013] Performance hot paths (targeted optimizations) (2026-01-02)
 
 ## Pending
 
@@ -10,6 +11,8 @@
 
 ## Completed
 
+- [TASK015] Test coverage expansion — Dynamic DPR + engine/runtime edge cases (2026-01-02)
+- [TASK014] Dynamic resolution scaling — Adaptive DPR scaler for R3F Canvas (2026-01-02)
 - [TASK006] Implement Cryo Tower — Status effects and slow mechanics (2025-12-12)
 - [TASK007] Implement Missile Tower — AOE damage mechanics (2025-12-12)
 - [TASK001] Initialize memory bank — Created core memory files and initial documentation (2025-12-06)

@@ -4,7 +4,7 @@ import React from 'react';
 import * as THREE from 'three';
 
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
-import { useGame } from '../GameState';
+import { useGameUi } from '../GameState';
 import { StarField } from '../StarField';
 
 import { InstancedExplosions } from './Effects';
@@ -17,9 +17,8 @@ import { InstancedTrails } from './Trails';
 import { World } from './World';
 
 export const SceneContent = () => {
-  const { enemies, towers, projectiles, effects, removeEffect, gameState } = useGame();
+  const { removeEffect, gameState } = useGameUi();
   const isHigh = gameState.graphicsQuality === 'high';
-
   const chromaticOffset = React.useMemo(() => new THREE.Vector2(0.002, 0.002), []);
 
   const offsetX = (-MAP_WIDTH * TILE_SIZE) / 2 + TILE_SIZE / 2;
@@ -39,11 +38,11 @@ export const SceneContent = () => {
       <World />
 
       <group position={[offsetX, 0, offsetZ]}>
-        <InstancedTowers towers={towers} />
-        {isHigh && <InstancedTrails enemies={enemies} />}
-        <InstancedEnemies enemies={enemies} />
-        <InstancedProjectiles projectiles={projectiles} enemies={enemies} />
-        {effects.length > 0 && <InstancedExplosions effects={effects} remove={removeEffect} />}
+        <InstancedTowers />
+        {isHigh && <InstancedTrails />}
+        <InstancedEnemies />
+        <InstancedProjectiles />
+        <InstancedExplosions remove={removeEffect} />
       </group>
 
       <OrbitControls

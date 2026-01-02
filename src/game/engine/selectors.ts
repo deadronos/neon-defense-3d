@@ -1,17 +1,33 @@
-import type { EngineEnemy, EngineProjectile, EngineVector2, EngineVector3 } from './types';
+import type {
+  EngineEnemy,
+  EngineMutableVector3,
+  EngineProjectile,
+  EngineVector2,
+  EngineVector3,
+} from './types';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+export const writeEnemyWorldPosition = (
+  out: EngineMutableVector3,
+  enemy: EngineEnemy,
+  pathWaypoints: readonly EngineVector2[],
+  tileSize: number,
+): EngineMutableVector3 => {
+  const p1 = pathWaypoints[enemy.pathIndex] ?? [0, 0];
+  const p2 = pathWaypoints[enemy.pathIndex + 1] ?? p1;
+  out[0] = lerp(p1[0], p2[0], enemy.progress) * tileSize;
+  out[1] = 1;
+  out[2] = lerp(p1[1], p2[1], enemy.progress) * tileSize;
+  return out;
+};
 
 export const selectEnemyWorldPosition = (
   enemy: EngineEnemy,
   pathWaypoints: readonly EngineVector2[],
   tileSize: number,
 ): EngineVector3 => {
-  const p1 = pathWaypoints[enemy.pathIndex] ?? [0, 0];
-  const p2 = pathWaypoints[enemy.pathIndex + 1] ?? p1;
-  const x = lerp(p1[0], p2[0], enemy.progress) * tileSize;
-  const z = lerp(p1[1], p2[1], enemy.progress) * tileSize;
-  return [x, 1, z];
+  return writeEnemyWorldPosition([0, 0, 0], enemy, pathWaypoints, tileSize);
 };
 
 export const selectProjectileWorldPosition = (

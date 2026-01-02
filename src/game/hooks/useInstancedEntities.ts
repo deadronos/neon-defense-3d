@@ -1,8 +1,6 @@
 import { useFrame } from '@react-three/fiber';
-import { useRef, useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-
-import { hideUnusedInstances } from '../components/instancing/instancedUtils';
 
 export interface UseInstancedEntitiesOptions<T> {
   entities: T[];
@@ -30,12 +28,14 @@ export function useInstancedEntities<T>({
   useFrame(() => {
     if (!meshRef.current) return;
 
-    entities.forEach((entity, i) => {
-      if (i >= count) return;
-      updateEntity(entity, dummy, i, meshRef.current!);
-    });
+    const renderCount = Math.min(entities.length, count);
+    if (meshRef.current.count !== renderCount) {
+      meshRef.current.count = renderCount;
+    }
 
-    hideUnusedInstances(meshRef.current, entities.length, count);
+    for (let i = 0; i < renderCount; i += 1) {
+      updateEntity(entities[i], dummy, i, meshRef.current);
+    }
 
     meshRef.current.instanceMatrix.needsUpdate = true;
     if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;

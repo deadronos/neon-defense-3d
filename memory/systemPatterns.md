@@ -20,6 +20,7 @@ This file documents the recurring architectural patterns and conventions used ac
 ## Hot path & performance patterns
 
 - Prefer `InstancedMesh` for high-count entities to minimize draw calls and per-object overhead.
+- When using per-instance colors (`setColorAt` / `instanceColor`), ensure the underlying geometry has a vertex `color` attribute as well; Three.js gates the shader color path behind `USE_COLOR`, and `instanceColor` piggybacks on that varying in this codebase.
 - Compute world coordinates from grid coordinates centrally via `TILE_SIZE` (defined in `src/constants.ts`).
 - Keep per-frame allocations low — reuse objects where practical inside hooks or move expensive calculations out of the hot loop.
 

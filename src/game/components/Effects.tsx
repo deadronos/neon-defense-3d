@@ -1,31 +1,28 @@
 import { useFrame } from '@react-three/fiber';
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import type { EffectEntity } from '../../types';
+import { useRenderState } from '../GameState';
 
 import { spawnExplosion } from './effects/spawners';
-import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 import { ParticlePool } from './instancing/ParticlePool';
 
 export const InstancedExplosions: React.FC<{
-  effects: EffectEntity[];
   remove: (id: string) => void;
-}> = ({ effects, remove }) => {
+}> = ({ remove }) => {
+  const renderStateRef = useRenderState();
   const meshRef = useRef<THREE.InstancedMesh>(null);
-  const count = 2000; // Max particles
+  const count = 2000;
   const dummy = useMemo(() => new THREE.Object3D(), []);
-
-  // Track processed effects to avoid re-spawning
   const processedRef = useRef<Set<string>>(new Set());
   const activeEffectIdsRef = useRef<Set<string>>(new Set());
-
-  // Particle system pool
   const [pool] = React.useState(() => new ParticlePool(count));
 
-  // Hide all instances on mount (otherwise InstancedMesh starts as identity matrices).
   React.useLayoutEffect(() => {
     if (!meshRef.current) return;
+    ensureInstanceColor(meshRef.current, count);
     for (let i = 0; i < count; i++) {
       meshRef.current.setMatrixAt(i, ZERO_MATRIX);
     }
@@ -35,8 +32,9 @@ export const InstancedExplosions: React.FC<{
   useFrame((state, delta) => {
     if (!meshRef.current) return;
 
-    // 1. Spawn new particles from new effects
-    effects.forEach((effect) => {
+    const effects = renderStateRef.current.effects;
+
+    effects.forEach((effect: EffectEntity) => {
       if (!processedRef.current.has(effect.id)) {
         processedRef.current.add(effect.id);
         spawnExplosion(
@@ -50,7 +48,6 @@ export const InstancedExplosions: React.FC<{
       }
     });
 
-    // 2. Update and Render active particles (iterate only active indices)
     const activeEffectIds = activeEffectIdsRef.current;
     activeEffectIds.clear();
 
@@ -65,21 +62,17 @@ export const InstancedExplosions: React.FC<{
         continue;
       }
 
-      // Physics
       pool.position[i * 3] += pool.velocity[i * 3] * delta;
       pool.position[i * 3 + 1] += pool.velocity[i * 3 + 1] * delta;
       pool.position[i * 3 + 2] += pool.velocity[i * 3 + 2] * delta;
 
-      // Update Instance
       dummy.position.set(pool.position[i * 3], pool.position[i * 3 + 1], pool.position[i * 3 + 2]);
 
-      // Scale down logic
       const s = Math.max(0, pool.scale[i] * (pool.life[i] / pool.maxLife[i]));
       dummy.scale.set(s, s, s);
       dummy.updateMatrix();
 
       meshRef.current.setMatrixAt(i, dummy.matrix);
-      // Optimization: Reuse shared TEMP_COLOR to avoid creating new THREE.Color per particle per frame
       TEMP_COLOR.setRGB(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]);
       meshRef.current.setColorAt(i, TEMP_COLOR);
 
@@ -90,10 +83,11 @@ export const InstancedExplosions: React.FC<{
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true;
-    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true;
+    }
 
-    // 3. Cleanup Effect States
-    effects.forEach((e) => {
+    effects.forEach((e: EffectEntity) => {
       if (processedRef.current.has(e.id) && !activeEffectIds.has(e.id)) {
         remove(e.id);
         processedRef.current.delete(e.id);
@@ -104,7 +98,8 @@ export const InstancedExplosions: React.FC<{
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
       <boxGeometry args={[0.5, 0.5, 0.5]} />
-      <meshBasicMaterial toneMapped={false} />
+      <meshBasicMaterial toneMapped={false} vertexColors />
     </instancedMesh>
   );
 };
+

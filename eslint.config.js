@@ -18,6 +18,7 @@ export default [
       '.cache/**',
       '.git/**',
       '.github/**',
+      '.codex/**',
       '**/*.min.js',
       '**/*.bundle.js',
     ],
