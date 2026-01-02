@@ -13,6 +13,7 @@ import type {
   Vector2,
   WaveState,
 } from '../types';
+
 import type { SaveV1 } from './persistence';
 import type { RenderState } from './renderStateUtils';
 

@@ -6,8 +6,8 @@ import type { EffectEntity } from '../../types';
 import { useRenderState } from '../GameState';
 
 import { spawnExplosion } from './effects/spawners';
-import { ParticlePool } from './instancing/ParticlePool';
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { ParticlePool } from './instancing/ParticlePool';
 
 export const InstancedExplosions: React.FC<{
   remove: (id: string) => void;
@@ -16,10 +16,8 @@ export const InstancedExplosions: React.FC<{
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const count = 2000;
   const dummy = useMemo(() => new THREE.Object3D(), []);
-
   const processedRef = useRef<Set<string>>(new Set());
   const activeEffectIdsRef = useRef<Set<string>>(new Set());
-
   const [pool] = React.useState(() => new ParticlePool(count));
 
   React.useLayoutEffect(() => {
@@ -84,7 +82,9 @@ export const InstancedExplosions: React.FC<{
     }
 
     meshRef.current.instanceMatrix.needsUpdate = true;
-    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true;
+    }
 
     effects.forEach((e: EffectEntity) => {
       if (processedRef.current.has(e.id) && !activeEffectIds.has(e.id)) {

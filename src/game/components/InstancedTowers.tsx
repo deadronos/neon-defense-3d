@@ -7,6 +7,7 @@ import { TOWER_CONFIGS } from '../../constants';
 import type { UpgradeType } from '../../types';
 import { useGameUi, useRenderState } from '../GameState';
 import { getTowerStats } from '../utils';
+
 import { createComplexTowerBase } from './instancing/geometryUtils';
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
@@ -18,7 +19,6 @@ export const InstancedTowers: React.FC = () => {
   const turretMeshRef = useRef<THREE.InstancedMesh>(null);
   const ringMeshRef = useRef<THREE.InstancedMesh>(null);
   const rangeMeshRef = useRef<THREE.InstancedMesh>(null);
-
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const colorCache = useRef<Map<string, THREE.Color>>(new Map());
 
@@ -50,7 +50,7 @@ export const InstancedTowers: React.FC = () => {
 
     for (let i = 0; i < renderCount; i++) {
       const tower = towers[i];
-      const baseColor = TOWER_CONFIGS[tower.type as keyof typeof TOWER_CONFIGS]?.color || '#00ff00';
+      const baseColor = TOWER_CONFIGS[tower.type as keyof typeof TOWER_CONFIGS]?.color ?? '#00ff00';
       const colorObj = getCachedColor(baseColor);
 
       if (baseMeshRef.current) {
@@ -120,19 +120,27 @@ export const InstancedTowers: React.FC = () => {
 
     if (baseMeshRef.current) {
       baseMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (baseMeshRef.current.instanceColor) baseMeshRef.current.instanceColor.needsUpdate = true;
+      if (baseMeshRef.current.instanceColor) {
+        baseMeshRef.current.instanceColor.needsUpdate = true;
+      }
     }
     if (turretMeshRef.current) {
       turretMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (turretMeshRef.current.instanceColor) turretMeshRef.current.instanceColor.needsUpdate = true;
+      if (turretMeshRef.current.instanceColor) {
+        turretMeshRef.current.instanceColor.needsUpdate = true;
+      }
     }
     if (ringMeshRef.current) {
       ringMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (ringMeshRef.current.instanceColor) ringMeshRef.current.instanceColor.needsUpdate = true;
+      if (ringMeshRef.current.instanceColor) {
+        ringMeshRef.current.instanceColor.needsUpdate = true;
+      }
     }
     if (rangeMeshRef.current) {
       rangeMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (rangeMeshRef.current.instanceColor) rangeMeshRef.current.instanceColor.needsUpdate = true;
+      if (rangeMeshRef.current.instanceColor) {
+        rangeMeshRef.current.instanceColor.needsUpdate = true;
+      }
     }
   });
 
