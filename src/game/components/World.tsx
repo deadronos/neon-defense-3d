@@ -7,8 +7,8 @@ import { useGame } from '../GameState';
 
 const GRID_PLANE_GEO = new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE);
 
-export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z, type }) => {
-  const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId, towers } =
+const Tile = React.memo(({ x, z, type }: { x: number; z: number; type: TileType }) => {
+  const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId, renderStateRef } =
     useGame();
   const [hovered, setHovered] = useState(false);
 
@@ -33,6 +33,7 @@ export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z,
     color = '#050510';
   }
 
+  // Only check placement validity if we are hovering and interacting
   if (hovered && selectedTower && type === TileType.Grass && gameState.gameStatus === 'playing') {
     const valid = isValidPlacement(x, z);
     color = valid ? '#003300' : '#330000';
@@ -48,8 +49,9 @@ export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z,
           e.stopPropagation();
           if (gameState.gameStatus !== 'playing') return;
 
-          // Check if there's a tower here
-          const existingTower = towers.find((t) => t.gridPos[0] === x && t.gridPos[1] === z);
+          // Check if there's a tower here using the efficient O(1) map
+          const key = `${x},${z}`;
+          const existingTower = renderStateRef.current.gridOccupancy.get(key);
 
           if (existingTower) {
             setSelectedEntityId(existingTower.id);
@@ -84,9 +86,9 @@ export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z,
       </lineSegments>
     </group>
   );
-};
+});
 
-export const World = () => {
+export const World = React.memo(() => {
   const { mapGrid } = useGame();
   return (
     <group
@@ -101,4 +103,4 @@ export const World = () => {
       )}
     </group>
   );
-};
+});

@@ -1,3 +1,6 @@
+import type { ReactNode } from 'react';
+import type { RenderState } from './renderStateUtils';
+
 import type {
   EnemyEntity,
   GameState,
@@ -99,4 +102,7 @@ export interface GameContextProps {
   gameSpeed: number;
   /** Sets the game speed multiplier. */
   setGameSpeed: (speed: number) => void;
+
+  /** Mutable ref to the latest render-ready state (enemies, towers, etc). */
+  renderStateRef: React.MutableRefObject<RenderState>;
 }

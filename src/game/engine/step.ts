@@ -52,7 +52,7 @@ export const stepEngine = (
   context: EngineTickContext,
   options: StepEngineOptions = {},
   cache?: EngineCache,
-): EngineTickResult => {
+): EngineTickResult & { state: EngineState } => {
   const tileSize = options.tileSize;
   const waveResult = stepWave(state, pathWaypoints, context, { prepTimeMs: options.prepTimeMs });
   let workingState = applyEnginePatch(state, waveResult.patch);
@@ -107,7 +107,7 @@ export const stepEngine = (
     patch.wave = { ...workingState.wave, enemiesAlive: workingState.enemies.length };
   }
 
-  return { patch, events };
+  return { patch, events, state: workingState };
 };
 
 // Explicit re-exports to aid test readability without widening public API surface elsewhere.

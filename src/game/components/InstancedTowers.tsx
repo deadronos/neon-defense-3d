@@ -1,25 +1,30 @@
 import type { ThreeEvent } from '@react-three/fiber';
-import React, { useState, useEffect, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { TOWER_CONFIGS } from '../../constants';
-import type { TowerEntity, UpgradeType } from '../../types';
+import type { UpgradeType } from '../../types';
 import { useGame } from '../GameState';
-import { useInstancedEntities } from '../hooks/useInstancedEntities';
 import { getTowerStats } from '../utils';
 
 import { createComplexTowerBase } from './instancing/geometryUtils';
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
-export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers }) => {
-  const { setSelectedEntityId, selectedEntityId, gameState } = useGame();
+export const InstancedTowers: React.FC = () => {
+  const { setSelectedEntityId, selectedEntityId, gameState, renderStateRef } = useGame();
   const [baseGeometry, setBaseGeometry] = useState<THREE.BufferGeometry | null>(null);
 
-  // Color Cache
+  const baseMeshRef = useRef<THREE.InstancedMesh>(null);
+  const turretMeshRef = useRef<THREE.InstancedMesh>(null);
+  const ringMeshRef = useRef<THREE.InstancedMesh>(null);
+  const rangeMeshRef = useRef<THREE.InstancedMesh>(null);
+
+  const dummy = useMemo(() => new THREE.Object3D(), []);
   const colorCache = useRef<Map<string, THREE.Color>>(new Map());
 
+  // Use shared utility for geometry
   useEffect(() => {
-    // Use shared utility for geometry
     const geo = createComplexTowerBase();
     setBaseGeometry(geo);
     return () => {
@@ -34,117 +39,116 @@ export const InstancedTowers: React.FC<{ towers: TowerEntity[] }> = ({ towers })
     return colorCache.current.get(colorStr)!;
   };
 
-  // --- 1. Base Mesh (Static structure) ---
-  const baseMeshRef = useInstancedEntities({
-    entities: towers,
-    count: 100,
-    updateEntity: (tower, dummy, i, mesh) => {
-      dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
-      dummy.scale.set(1, 1, 1);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
+  useFrame(({ clock }) => {
+    const towers = renderStateRef.current.towers;
+    const count = 100; // Max towers
+    const renderCount = Math.min(towers.length, count);
+    const time = clock.getElapsedTime();
 
+    if (baseMeshRef.current) baseMeshRef.current.count = renderCount;
+    if (turretMeshRef.current) turretMeshRef.current.count = renderCount;
+    if (ringMeshRef.current) ringMeshRef.current.count = renderCount;
+    if (rangeMeshRef.current) rangeMeshRef.current.count = renderCount;
+
+    for (let i = 0; i < renderCount; i++) {
+      const tower = towers[i];
       const baseColor = TOWER_CONFIGS[tower.type]?.color || '#00ff00';
       const colorObj = getCachedColor(baseColor);
 
-      // Highlight logic in shader/color
-      if (tower.id === selectedEntityId) {
-        TEMP_COLOR.set('#ffffff'); // Selected highlight
-      } else {
-        TEMP_COLOR.copy(colorObj).multiplyScalar(1.0);
-      }
-      mesh.setColorAt(i, TEMP_COLOR);
-    },
-  });
+      // --- 1. Base Mesh ---
+      if (baseMeshRef.current) {
+        dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
+        dummy.rotation.set(0, 0, 0);
+        dummy.scale.set(1, 1, 1);
+        dummy.updateMatrix();
+        baseMeshRef.current.setMatrixAt(i, dummy.matrix);
 
-  // --- 2. Turret Mesh (Rotates, Scales with level) ---
-  const turretMeshRef = useInstancedEntities({
-    entities: towers,
-    count: 100,
-    updateEntity: (tower, dummy, i, mesh) => {
-      dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
-      dummy.position.y += 0.8; // Floating above base
-
-      // Scale with level
-      const scale = 0.5 + tower.level * 0.1;
-      dummy.scale.set(scale, scale, scale);
-
-      // Idle spin
-      dummy.rotation.y += 0.01;
-
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-
-      const baseColor = TOWER_CONFIGS[tower.type]?.color || '#00ff00';
-      const colorObj = getCachedColor(baseColor);
-      TEMP_COLOR.copy(colorObj).multiplyScalar(10.0); // Extremely bright for bloom
-      mesh.setColorAt(i, TEMP_COLOR);
-    },
-  });
-
-  // --- 3. Floating Ring (Decorative) ---
-  const ringMeshRef = useInstancedEntities({
-    entities: towers,
-    count: 100,
-    updateEntity: (tower, dummy, i, mesh) => {
-      dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
-      dummy.position.y += 0.8; // Same height as turret center
-
-      // Oscillate and rotate
-      const time = Date.now() * 0.001;
-      dummy.rotation.x = Math.sin(time + i) * 0.2;
-      dummy.rotation.y = time;
-
-      const scale = 1.0 + Math.sin(time * 2 + i) * 0.1;
-      dummy.scale.set(scale, scale, scale);
-
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-
-      const baseColor = TOWER_CONFIGS[tower.type]?.color || '#00ff00';
-      const colorObj = getCachedColor(baseColor);
-      TEMP_COLOR.copy(colorObj).multiplyScalar(0.8);
-      mesh.setColorAt(i, TEMP_COLOR);
-    },
-  });
-
-  // --- 4. Range Ring (Visible on Selection) ---
-  const rangeMeshRef = useInstancedEntities({
-    entities: towers,
-    count: 100,
-    updateEntity: (tower, dummy, i, mesh) => {
-      if (tower.id !== selectedEntityId) {
-        mesh.setMatrixAt(i, ZERO_MATRIX);
-        return;
+        if (tower.id === selectedEntityId) {
+          TEMP_COLOR.set('#ffffff');
+        } else {
+          TEMP_COLOR.copy(colorObj).multiplyScalar(1.0);
+        }
+        baseMeshRef.current.setColorAt(i, TEMP_COLOR);
       }
 
-      const stats = getTowerStats(
-        tower.type,
-        tower.level,
-        gameState.upgrades as { [key in UpgradeType]?: number },
-      );
+      // --- 2. Turret Mesh ---
+      if (turretMeshRef.current) {
+        dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
+        dummy.position.y += 0.8;
+        const scale = 0.5 + tower.level * 0.1;
+        dummy.scale.set(scale, scale, scale);
 
-      dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
-      dummy.position.y += 0.1;
+        // Fixed: Explicit time-based rotation
+        dummy.rotation.set(0, time, 0);
 
-      // Torus is XY plane. Rotate 90deg on X to lay flat XZ.
-      dummy.rotation.set(Math.PI / 2, 0, 0);
+        dummy.updateMatrix();
+        turretMeshRef.current.setMatrixAt(i, dummy.matrix);
 
-      // Scale: Torus radius=1. We want radius=range.
-      dummy.scale.set(stats.range, stats.range, 1);
+        TEMP_COLOR.copy(colorObj).multiplyScalar(10.0);
+        turretMeshRef.current.setColorAt(i, TEMP_COLOR);
+      }
 
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
+      // --- 3. Floating Ring ---
+      if (ringMeshRef.current) {
+        dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
+        dummy.position.y += 0.8;
 
-      TEMP_COLOR.set('#00ffff');
-      mesh.setColorAt(i, TEMP_COLOR);
-    },
+        dummy.rotation.x = Math.sin(time + i) * 0.2;
+        dummy.rotation.y = time;
+        const ringScale = 1.0 + Math.sin(time * 2 + i) * 0.1;
+        dummy.scale.set(ringScale, ringScale, ringScale);
+
+        dummy.updateMatrix();
+        ringMeshRef.current.setMatrixAt(i, dummy.matrix);
+
+        TEMP_COLOR.copy(colorObj).multiplyScalar(0.8);
+        ringMeshRef.current.setColorAt(i, TEMP_COLOR);
+      }
+
+      // --- 4. Range Ring ---
+      if (rangeMeshRef.current) {
+        if (tower.id === selectedEntityId) {
+          const stats = getTowerStats(
+            tower.type,
+            tower.level,
+            gameState.upgrades as { [key in UpgradeType]?: number },
+          );
+          dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
+          dummy.position.y += 0.1;
+          dummy.rotation.set(Math.PI / 2, 0, 0);
+          dummy.scale.set(stats.range, stats.range, 1);
+          dummy.updateMatrix();
+          rangeMeshRef.current.setMatrixAt(i, dummy.matrix);
+          TEMP_COLOR.set('#00ffff');
+          rangeMeshRef.current.setColorAt(i, TEMP_COLOR);
+        } else {
+          rangeMeshRef.current.setMatrixAt(i, ZERO_MATRIX);
+        }
+      }
+    }
+
+    if (baseMeshRef.current) {
+      baseMeshRef.current.instanceMatrix.needsUpdate = true;
+      if (baseMeshRef.current.instanceColor) baseMeshRef.current.instanceColor.needsUpdate = true;
+    }
+    if (turretMeshRef.current) {
+      turretMeshRef.current.instanceMatrix.needsUpdate = true;
+      if (turretMeshRef.current.instanceColor) turretMeshRef.current.instanceColor.needsUpdate = true;
+    }
+    if (ringMeshRef.current) {
+      ringMeshRef.current.instanceMatrix.needsUpdate = true;
+      if (ringMeshRef.current.instanceColor) ringMeshRef.current.instanceColor.needsUpdate = true;
+    }
+    if (rangeMeshRef.current) {
+      rangeMeshRef.current.instanceMatrix.needsUpdate = true;
+      if (rangeMeshRef.current.instanceColor) rangeMeshRef.current.instanceColor.needsUpdate = true;
+    }
   });
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     if (e.instanceId === undefined) return;
-    const tower = towers[e.instanceId];
+    const tower = renderStateRef.current.towers[e.instanceId];
     if (tower) {
       setSelectedEntityId(tower.id);
     }
