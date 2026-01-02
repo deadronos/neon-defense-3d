@@ -1,4 +1,5 @@
-import type { ThreeEvent } from '@react-three/fiber';\nimport React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import type { ThreeEvent } from '@react-three/fiber';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
@@ -130,7 +131,9 @@ export const World = React.memo(() => {
     applyHover(hoveredIdRef.current);
   }, [applyHover]);
 
-  const handlePointerMove = useCallback(\n    (event: ThreeEvent<PointerEvent>) => {\n      const instanceId = event.instanceId;
+  const handlePointerMove = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      const instanceId = event.instanceId;
       if (instanceId === undefined) return;
       if (hoveredIdRef.current === instanceId) return;
       resetHover();
@@ -144,7 +147,9 @@ export const World = React.memo(() => {
     resetHover();
   }, [resetHover]);
 
-  const handlePointerDown = useCallback(\n    (event: ThreeEvent<PointerEvent>) => {\n      const instanceId = event.instanceId;
+  const handlePointerDown = useCallback(
+    (event: ThreeEvent<PointerEvent>) => {
+      const instanceId = event.instanceId;
       if (instanceId === undefined) return;
       const tile = tiles[instanceId];
       if (!tile) return;
@@ -191,5 +196,6 @@ export const World = React.memo(() => {
     </group>
   );
 });
+
 
 
