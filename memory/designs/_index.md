@@ -10,6 +10,7 @@
 - DESIGN013 - Performance hot paths (targeted optimizations)
 - DESIGN014 - Dynamic resolution scaling
 - DESIGN015 - Test coverage expansion
+- DESIGN018 - Instanced `instanceColor` shader gotcha
 
 ## Completed
 
