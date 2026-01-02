@@ -10,6 +10,7 @@ export class Synth {
   constructor() {
     // We defer initialization until first interaction if possible, but for now we create the context
     // It might be 'suspended' initially.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
 
     this.masterGain = this.ctx.createGain();

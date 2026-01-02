@@ -1,15 +1,16 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
-import { applyEnginePatch, createInitialEngineState } from '../../game/engine/state';
-import { createInitialUiState } from '../../game/engine/uiReducer';
-import { GameProvider, useGame } from '../../game/GameState';
-
+// Move mock to top to ensure it applies before imports that use it resolve
 vi.mock('../../game/audio/AudioManager', () => ({
   useAudio: () => ({
     playSFX: vi.fn(),
   }),
 }));
+
+import { applyEnginePatch, createInitialEngineState } from '../../game/engine/state';
+import { createInitialUiState } from '../../game/engine/uiReducer';
+import { GameProvider, useGame } from '../../game/GameState';
 import {
   CHECKPOINT_STORAGE_KEY_V1,
   buildRuntimeFromCheckpoint,

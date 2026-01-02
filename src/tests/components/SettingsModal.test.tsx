@@ -7,15 +7,17 @@ import { UI } from '../../components/UI';
 import { SettingsModal } from '../../components/ui/SettingsModal';
 import { useAudio } from '../../game/audio/AudioManager';
 import { GameProvider, useGame } from '../../game/GameState';
+import type { Vector2 } from '../../types';
+import { TileType, TowerType } from '../../types';
 
 vi.mock('../../game/audio/AudioManager', () => ({
   useAudio: vi.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   AudioProvider: ({ children }: any) => <>{children}</>,
 }));
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const mockUseAudio = useAudio as any;
-import type { Vector2 } from '../../types';
-import { TileType, TowerType } from '../../types';
 
 const findFirstBuildableSpot = (grid: TileType[][]): Vector2 | null => {
   for (let z = 0; z < grid.length; z++) {

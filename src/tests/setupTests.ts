@@ -53,7 +53,7 @@ if (!global.AudioContext) {
     createBufferSource() {
       return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null };
     }
-    createBuffer(channels: number, length: number, sampleRate: number) {
+    createBuffer(_channels: number, length: number, _sampleRate: number) {
       return { getChannelData: () => new Float32Array(length) };
     }
     resume() {

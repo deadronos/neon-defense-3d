@@ -1,5 +1,4 @@
 import { renderHook, act } from '@testing-library/react';
-import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { GameProvider, useGame } from '../../game/GameState';
