@@ -3,6 +3,7 @@ import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { useGame } from '../../GameState';
+
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedEnemies: React.FC = () => {
@@ -100,7 +101,8 @@ export const InstancedEnemies: React.FC = () => {
     }
     if (shieldMeshRef.current) {
       shieldMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (shieldMeshRef.current.instanceColor) shieldMeshRef.current.instanceColor.needsUpdate = true;
+      if (shieldMeshRef.current.instanceColor)
+        shieldMeshRef.current.instanceColor.needsUpdate = true;
     }
     if (ringMeshRef.current) {
       ringMeshRef.current.instanceMatrix.needsUpdate = true;

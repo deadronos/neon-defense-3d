@@ -8,8 +8,14 @@ import { useGame } from '../GameState';
 const GRID_PLANE_GEO = new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE);
 
 const Tile = React.memo(({ x, z, type }: { x: number; z: number; type: TileType }) => {
-  const { placeTower, selectedTower, isValidPlacement, gameState, setSelectedEntityId, renderStateRef } =
-    useGame();
+  const {
+    placeTower,
+    selectedTower,
+    isValidPlacement,
+    gameState,
+    setSelectedEntityId,
+    renderStateRef,
+  } = useGame();
   const [hovered, setHovered] = useState(false);
 
   let color = '#000000';

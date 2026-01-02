@@ -133,7 +133,8 @@ export const InstancedTowers: React.FC = () => {
     }
     if (turretMeshRef.current) {
       turretMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (turretMeshRef.current.instanceColor) turretMeshRef.current.instanceColor.needsUpdate = true;
+      if (turretMeshRef.current.instanceColor)
+        turretMeshRef.current.instanceColor.needsUpdate = true;
     }
     if (ringMeshRef.current) {
       ringMeshRef.current.instanceMatrix.needsUpdate = true;

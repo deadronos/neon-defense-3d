@@ -38,7 +38,6 @@ import { applyEngineRuntimeAction } from './engine/runtime';
 import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
 import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
 import { stepEngine } from './engine/step';
-import { createInitialRenderState, syncRenderState } from './renderStateUtils';
 import type { EngineCache } from './engine/step';
 import type { EngineEnemy, EngineState, EngineVector2 } from './engine/types';
 import { createInitialUiState, uiReducer } from './engine/uiReducer';
@@ -50,6 +49,7 @@ import {
   saveCheckpoint,
   serializeCheckpoint,
 } from './persistence';
+import { createInitialRenderState, syncRenderState } from './renderStateUtils';
 import { getTowerStats } from './utils';
 
 type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];

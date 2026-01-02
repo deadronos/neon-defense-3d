@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import type { RenderState } from './renderStateUtils';
 
 import type {
   EnemyEntity,
@@ -16,6 +15,7 @@ import type {
 } from '../types';
 
 import type { SaveV1 } from './persistence';
+import type { RenderState } from './renderStateUtils';
 
 /**
  * Interface defining the properties and methods available in the GameContext.

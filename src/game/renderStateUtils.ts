@@ -6,8 +6,9 @@ import type {
   TowerEntity,
   Vector2,
 } from '../types';
-import type { EngineState, EngineVector2 } from './engine/types';
+
 import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
+import type { EngineState, EngineVector2 } from './engine/types';
 
 /**
  * Mutable container for the latest render-ready state.
@@ -46,7 +47,7 @@ export const syncRenderState = (
     enemyTypeMap: Map<string, any>; // Using any to avoid importing huge types here, or we can import EnemyTypeConfig
     pathWaypoints: readonly EngineVector2[];
     tileSize: number;
-  }
+  },
 ) => {
   const { enemyTypeMap, pathWaypoints, tileSize } = context;
 
@@ -147,7 +148,6 @@ export const syncRenderState = (
   // We are reusing the Entity objects inside, so GC is low.
   renderState.enemies = nextEnemies;
 
-
   // --- 2. Sync Towers (and Occupancy) ---
   const nextTowers: TowerEntity[] = [];
   // Towers change less frequently, but we need to update `lastFired` and `level` and `targetId`.
@@ -189,7 +189,6 @@ export const syncRenderState = (
     renderState.gridOccupancy.set(key, tower);
   }
   renderState.towers = nextTowers;
-
 
   // --- 3. Sync Projectiles ---
   // Projectiles are high churn. Reusing objects is good.
@@ -235,9 +234,8 @@ export const syncRenderState = (
   }
   renderState.projectiles = nextProjectiles;
 
-
   // --- 4. Sync Effects ---
-  renderState.effects = engine.effects.map(e => ({
+  renderState.effects = engine.effects.map((e) => ({
     id: e.id,
     type: e.type,
     position: e.position,
