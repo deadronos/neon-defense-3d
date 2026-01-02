@@ -115,6 +115,8 @@ export const stepTowers = (
       splashRadius: stats.splashRadius,
     });
 
+    events.immediate.push({ type: 'ProjectileFired', projectileId, towerId: tower.id });
+
     const nextTower: EngineTower = { ...tower, lastFired: context.nowMs, targetId };
     if (!nextTowers) nextTowers = state.towers.slice();
     nextTowers[index] = nextTower;

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useAudio } from '../../game/audio/AudioManager';
 import type { WaveState } from '../../types';
 
 interface TopBarProps {
@@ -62,6 +63,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       <div className="flex gap-4 items-center">
+        <MusicToggle />
         {/* Speed Controls */}
         <div className="flex rounded-md overflow-hidden border border-fuchsia-500/40 bg-black/40">
           {[1, 2, 4].map((speed) => (
@@ -107,5 +109,19 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
       </div>
     </div>
+  );
+};
+
+const MusicToggle = () => {
+  const { toggleMusic, isMusicPlaying } = useAudio();
+  return (
+    <button
+      type="button"
+      onClick={toggleMusic}
+      className={`bg-black/40 border ${isMusicPlaying ? 'border-fuchsia-500/80 text-fuchsia-300' : 'border-gray-600 text-gray-400'} px-3 py-2 rounded-md font-mono text-xs uppercase tracking-wider transition-colors hover:bg-white/5`}
+      aria-label="Toggle Music"
+    >
+      {isMusicPlaying ? '♫ ON' : '♫ OFF'}
+    </button>
   );
 };

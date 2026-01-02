@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { UI } from './components/UI';
+import { AudioProvider } from './game/audio/AudioManager';
 import { GameCanvas } from './game/GameCanvas';
 import { GameProvider } from './game/GameState';
 
@@ -25,9 +26,11 @@ const AppContent = () => {
  */
 const App = () => {
   return (
-    <GameProvider>
-      <AppContent />
-    </GameProvider>
+    <AudioProvider>
+      <GameProvider>
+        <AppContent />
+      </GameProvider>
+    </AudioProvider>
   );
 };
 

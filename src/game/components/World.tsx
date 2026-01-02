@@ -80,7 +80,7 @@ export const Tile: React.FC<{ x: number; z: number; type: TileType }> = ({ x, z,
       {/* Grid Floor Overlay */}
       <lineSegments position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <edgesGeometry args={[GRID_PLANE_GEO]} />
-        <lineBasicMaterial color="#4444ff" opacity={0.3} transparent />
+        <lineBasicMaterial color="#00f2ff" opacity={0.5} transparent />
       </lineSegments>
     </group>
   );

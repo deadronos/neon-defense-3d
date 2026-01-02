@@ -29,7 +29,8 @@ export const InstancedProjectiles: React.FC<{
 
       // Use projectile color
       const color = proj.color || '#ff00ff';
-      TEMP_COLOR.set(color).multiplyScalar(5);
+      // Increase intensity for bloom
+      TEMP_COLOR.set(color).multiplyScalar(10);
       mesh.setColorAt(i, TEMP_COLOR);
     },
   });
@@ -37,7 +38,7 @@ export const InstancedProjectiles: React.FC<{
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, 2000]} frustumCulled={false}>
       <icosahedronGeometry args={[0.5, 0]} />
-      <meshBasicMaterial toneMapped={false} />
+      <meshStandardMaterial toneMapped={false} emissive="white" emissiveIntensity={2} />
     </instancedMesh>
   );
 };
