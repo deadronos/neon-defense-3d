@@ -3,6 +3,7 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import React from 'react';
 import * as THREE from 'three';
 
+import { DynamicResScaler } from './components/DynamicResScaler';
 import { SceneContent } from './components/Scene';
 import { useGame } from './GameState';
 
@@ -32,6 +33,7 @@ export const GameCanvas = () => {
           // Let's keep defaults but be aware.
         }}
       >
+        <DynamicResScaler />
         <SceneContent />
         <PostProcessing />
       </Canvas>

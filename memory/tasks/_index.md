@@ -11,6 +11,7 @@
 
 ## Completed
 
+- [TASK014] Dynamic resolution scaling — Adaptive DPR scaler for R3F Canvas (2026-01-02)
 - [TASK006] Implement Cryo Tower — Status effects and slow mechanics (2025-12-12)
 - [TASK007] Implement Missile Tower — AOE damage mechanics (2025-12-12)
 - [TASK001] Initialize memory bank — Created core memory files and initial documentation (2025-12-06)

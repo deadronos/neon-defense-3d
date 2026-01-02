@@ -29,7 +29,7 @@ GameLoopBridge -> GameState.step() -> stepEngine()
 ## Interfaces & Contracts
 
 - `selectors.ts`
-  - `writeEnemyWorldPosition(out, enemy, pathWaypoints, tileSize): EngineVector3`
+  - `writeEnemyWorldPosition(out, enemy, pathWaypoints, tileSize): EngineMutableVector3`
   - Existing selectors remain for compatibility.
 
 - `spatial.ts`
@@ -37,12 +37,12 @@ GameLoopBridge -> GameState.step() -> stepEngine()
 
 - `engine/step.ts`
   - `EngineCache` extended with:
-    - `enemyPositions: Map<string, EngineVector3>`
+    - `enemyPositions: Map<string, EngineMutableVector3>`
     - `pathSegmentLengths: number[]`
     - `pathWaypointsRef?: readonly EngineVector2[]`
     - `pathTileSize?: number`
     - `spatialGrid?: SpatialGrid`
-    - `scratchEnemyPos: EngineVector3`
+    - `scratchEnemyPos: EngineMutableVector3`
 
 - `GameState.tsx`
   - Build `enemiesById` map for projectile rendering.

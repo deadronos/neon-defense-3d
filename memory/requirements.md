@@ -261,3 +261,24 @@ Graphics quality persistence:
 
 4. WHEN projectiles are derived for rendering, THE SYSTEM SHALL use an enemy ID lookup table instead of scanning the enemy array per projectile.  
    **Acceptance:** rendered projectile positions match prior behavior for identical inputs.
+
+---
+
+# Requirements — Dynamic Resolution Scaling
+
+**Status:** Draft (living document)  
+**Updated:** 2026-01-02
+
+## Functional requirements (EARS)
+
+1. WHEN the frame rate drops below the target range, THE SYSTEM SHALL reduce DPR in small steps within configured bounds.  
+   **Acceptance:** DPR decreases when FPS stays below the target for at least one check interval.
+
+2. WHEN the frame rate rises above the target range, THE SYSTEM SHALL increase DPR in small steps within configured bounds.  
+   **Acceptance:** DPR increases when FPS stays above the target for at least one check interval.
+
+3. WHEN DPR changes, THE SYSTEM SHALL clamp the value between `MIN_DPR` and `MAX_DPR`.  
+   **Acceptance:** DPR never falls below `MIN_DPR` or exceeds `MAX_DPR`.
+
+4. WHEN the game starts, THE SYSTEM SHALL initialize DPR to `MAX_DPR` and adjust dynamically thereafter.  
+   **Acceptance:** initial DPR matches `MAX_DPR` and subsequent changes occur via the scaler.

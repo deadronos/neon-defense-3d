@@ -9,6 +9,7 @@ import type {
   EngineState,
   EngineTickContext,
   EngineTickResult,
+  EngineMutableVector3,
   EngineVector2,
   EngineVector3,
 } from './types';
@@ -61,7 +62,7 @@ export const stepProjectiles = (
   if (cache) enemiesById.clear();
 
   // Cache enemy positions for splash checks and effects.
-  const enemyPositions = cache ? cache.enemyPositions : new Map<string, EngineVector3>();
+  const enemyPositions = cache ? cache.enemyPositions : new Map<string, EngineMutableVector3>();
   const enemyPositionPool = cache ? cache.enemyPositionPool : [];
   if (cache) {
     for (const position of enemyPositions.values()) {

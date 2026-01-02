@@ -1,7 +1,7 @@
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
 
 import { writeEnemyWorldPosition } from './selectors';
-import type { EngineEnemy, EngineVector2, EngineVector3 } from './types';
+import type { EngineEnemy, EngineMutableVector3, EngineVector2, EngineVector3 } from './types';
 
 /**
  * A spatial grid represented as a flat array of lists.
@@ -25,7 +25,7 @@ export const buildSpatialGrid = (
   width: number = MAP_WIDTH,
   height: number = MAP_HEIGHT,
   reuseGrid?: SpatialGrid,
-  scratchPosition: EngineVector3 = [0, 0, 0],
+  scratchPosition: EngineMutableVector3 = [0, 0, 0],
 ): SpatialGrid => {
   const size = width * height;
   const grid: SpatialGrid =

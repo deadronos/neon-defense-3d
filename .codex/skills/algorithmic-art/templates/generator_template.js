@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * ═══════════════════════════════════════════════════════════════════════════
  *                  P5.JS GENERATIVE ART - BEST PRACTICES
@@ -203,6 +204,8 @@ function vectorFromAngle(angle, magnitude = 1) {
 function exportImage() {
   saveCanvas('generative-art-' + params.seed, 'png');
 }
+
+/* eslint-enable @typescript-eslint/no-unused-vars */
 
 // ============================================================================
 // REMEMBER

@@ -22,7 +22,7 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 
 ## Progress Tracking
 
-**Overall Status:** In Progress - 85%
+**Overall Status:** In Progress - 90%
 
 ### Subtasks
 
@@ -31,7 +31,7 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 | 1.1 | Draft requirements/design/task docs                           | Complete    | 2026-01-02 |       |
 | 1.2 | Implement engine hot-path cache optimizations                  | Complete    | 2026-01-02 |       |
 | 1.3 | Implement render-side projectile target lookup optimization    | Complete    | 2026-01-02 |       |
-| 1.4 | Validate behavior parity + update memory/progress              | In Progress | 2026-01-02 | Pending tests |
+| 1.4 | Validate behavior parity + update memory/progress              | In Progress | 2026-01-02 | Typecheck fixed; tests pending |
 
 ## Progress Log
 
@@ -41,3 +41,8 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 - Implemented cached enemy positions, spatial grid reuse, squared distance checks, and path segment length caching.
 - Added render-side enemy ID lookup for projectile targeting.
 - Updated active context/progress docs; tests pending.
+
+### 2026-01-02
+
+- Fixed engine selector scratch vector mutability typing to unblock typecheck.
+- Silenced unused-vars warnings in the algorithmic art generator template.

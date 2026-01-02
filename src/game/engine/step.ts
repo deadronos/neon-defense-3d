@@ -13,6 +13,7 @@ import type {
   EngineVector2,
   EngineEnemy,
   EngineProjectile,
+  EngineMutableVector3,
   EngineVector3,
 } from './types';
 import { stepWave } from './wave';
@@ -23,8 +24,8 @@ export interface EngineCache {
   projectileFreeze: Map<string, number>;
   activeProjectiles: EngineProjectile[];
   enemiesById: Map<string, EngineEnemy>;
-  enemyPositions: Map<string, EngineVector3>;
-  enemyPositionPool: EngineVector3[];
+  enemyPositions: Map<string, EngineMutableVector3>;
+  enemyPositionPool: EngineMutableVector3[];
 
   // Reusable structures for enemies
   nextEnemies: EngineEnemy[];
@@ -36,7 +37,7 @@ export interface EngineCache {
 
   // Reusable spatial grid + scratch vectors
   spatialGrid?: SpatialGrid;
-  scratchEnemyPos: EngineVector3;
+  scratchEnemyPos: EngineMutableVector3;
 }
 
 export interface StepEngineOptions {
