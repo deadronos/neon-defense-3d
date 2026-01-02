@@ -6,16 +6,16 @@ import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
 import { useWorld } from '../GameState';
 
-import { ensureInstanceColor } from './instancing/instancedUtils';
+type Tile = { x: number; z: number; type: TileType };
 
 const TILE_GEOMETRY = new THREE.PlaneGeometry(TILE_SIZE * 0.95, TILE_SIZE * 0.95);
 const TILE_ROTATION = new THREE.Euler(-Math.PI / 2, 0, 0);
 
-const getTileBaseColor = (type: TileType) => {
-  if (type === TileType.Path) return '#0b3a5a';
-  if (type === TileType.Spawn) return '#5a1b1b';
-  if (type === TileType.Base) return '#3b1b5a';
-  return '#0b1020';
+const TILE_COLORS: Record<TileType, string> = {
+  [TileType.Grass]: '#0b1020',
+  [TileType.Path]: '#0b3a5a',
+  [TileType.Spawn]: '#5a1b1b',
+  [TileType.Base]: '#3b1b5a',
 };
 
 const createGridGeometry = (width: number, height: number, tileSize: number) => {
@@ -48,28 +48,44 @@ export const World = React.memo(() => {
     setSelectedEntityId,
     renderStateRef,
   } = useWorld();
-  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const grassMeshRef = useRef<THREE.InstancedMesh>(null);
+  const pathMeshRef = useRef<THREE.InstancedMesh>(null);
+  const spawnMeshRef = useRef<THREE.InstancedMesh>(null);
+  const baseMeshRef = useRef<THREE.InstancedMesh>(null);
+  const hoverMeshRef = useRef<THREE.Mesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
-  const hoveredIdRef = useRef<number | null>(null);
   const hoverValidColor = useMemo(() => new THREE.Color('#00ff00'), []);
   const hoverInvalidColor = useMemo(() => new THREE.Color('#ff0000'), []);
 
-  const tiles = useMemo(
-    () =>
-      mapGrid.flatMap((row, z) =>
-        row.map((type, x) => ({
-          x,
-          z,
-          type,
-        })),
-      ),
-    [mapGrid],
-  );
+  const tilesByType = useMemo(() => {
+    const grass: Tile[] = [];
+    const path: Tile[] = [];
+    const spawn: Tile[] = [];
+    const base: Tile[] = [];
 
-  const baseColors = useMemo(
-    () => tiles.map((tile) => new THREE.Color(getTileBaseColor(tile.type))),
-    [tiles],
-  );
+    mapGrid.forEach((row, z) => {
+      row.forEach((type, x) => {
+        const tile = { x, z, type };
+        switch (type) {
+          case TileType.Path:
+            path.push(tile);
+            break;
+          case TileType.Spawn:
+            spawn.push(tile);
+            break;
+          case TileType.Base:
+            base.push(tile);
+            break;
+          case TileType.Grass:
+          default:
+            grass.push(tile);
+            break;
+        }
+      });
+    });
+
+    return { grass, path, spawn, base };
+  }, [mapGrid]);
 
   const gridGeometry = useMemo(
     () => createGridGeometry(mapGrid[0].length, mapGrid.length, TILE_SIZE),
@@ -78,86 +94,68 @@ export const World = React.memo(() => {
 
   useEffect(() => () => gridGeometry.dispose(), [gridGeometry]);
 
-  const setInstanceColor = useCallback((index: number, color: THREE.Color) => {
-    if (!meshRef.current) return;
-    meshRef.current.setColorAt(index, color);
-    if (meshRef.current.instanceColor) {
-      meshRef.current.instanceColor.needsUpdate = true;
-    }
-  }, []);
-
-  const resetHover = useCallback(() => {
-    if (hoveredIdRef.current === null) return;
-    setInstanceColor(hoveredIdRef.current, baseColors[hoveredIdRef.current]);
-    hoveredIdRef.current = null;
-  }, [baseColors, setInstanceColor]);
-
-  const applyHover = useCallback(
-    (index: number) => {
-      const tile = tiles[index];
-      if (!tile) return;
-      if (selectedTower && tile.type === TileType.Grass && gameStatus === 'playing') {
-        const valid = isValidPlacement(tile.x, tile.z);
-        setInstanceColor(index, valid ? hoverValidColor : hoverInvalidColor);
-        return;
+  const syncInstances = useCallback(
+    (mesh: THREE.InstancedMesh | null, tiles: Tile[]) => {
+      if (!mesh) return;
+      mesh.count = tiles.length;
+      for (let i = 0; i < tiles.length; i += 1) {
+        const tile = tiles[i];
+        dummy.position.set(tile.x * TILE_SIZE, 0, tile.z * TILE_SIZE);
+        dummy.rotation.copy(TILE_ROTATION);
+        dummy.updateMatrix();
+        mesh.setMatrixAt(i, dummy.matrix);
       }
-      setInstanceColor(index, baseColors[index]);
+      mesh.instanceMatrix.needsUpdate = true;
     },
-    [
-      baseColors,
-      gameStatus,
-      hoverInvalidColor,
-      hoverValidColor,
-      isValidPlacement,
-      selectedTower,
-      setInstanceColor,
-      tiles,
-    ],
+    [dummy],
   );
 
   useLayoutEffect(() => {
-    if (!meshRef.current) return;
-    meshRef.current.count = tiles.length;
-    ensureInstanceColor(meshRef.current, tiles.length);
+    syncInstances(grassMeshRef.current, tilesByType.grass);
+    syncInstances(pathMeshRef.current, tilesByType.path);
+    syncInstances(spawnMeshRef.current, tilesByType.spawn);
+    syncInstances(baseMeshRef.current, tilesByType.base);
+  }, [syncInstances, tilesByType]);
 
-    for (let i = 0; i < tiles.length; i += 1) {
-      const tile = tiles[i];
-      dummy.position.set(tile.x * TILE_SIZE, 0, tile.z * TILE_SIZE);
-      dummy.rotation.copy(TILE_ROTATION);
-      dummy.updateMatrix();
-      meshRef.current.setMatrixAt(i, dummy.matrix);
-      meshRef.current.setColorAt(i, baseColors[i]);
+  const hideHover = useCallback(() => {
+    if (hoverMeshRef.current) {
+      hoverMeshRef.current.visible = false;
     }
+  }, []);
 
-    meshRef.current.instanceMatrix.needsUpdate = true;
-    if (meshRef.current.instanceColor) {
-      meshRef.current.instanceColor.needsUpdate = true;
-    }
-  }, [baseColors, dummy, tiles]);
-
-  useEffect(() => {
-    if (hoveredIdRef.current === null) return;
-    applyHover(hoveredIdRef.current);
-  }, [applyHover]);
+  const showHover = useCallback(
+    (tile: Tile, valid: boolean) => {
+      if (!hoverMeshRef.current) return;
+      hoverMeshRef.current.visible = true;
+      hoverMeshRef.current.position.set(tile.x * TILE_SIZE, 0.01, tile.z * TILE_SIZE);
+      const material = hoverMeshRef.current.material as THREE.MeshBasicMaterial;
+      material.color.copy(valid ? hoverValidColor : hoverInvalidColor);
+    },
+    [hoverInvalidColor, hoverValidColor],
+  );
 
   const handlePointerMove = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
+    (tiles: Tile[]) => (event: ThreeEvent<PointerEvent>) => {
       const instanceId = event.instanceId;
       if (instanceId === undefined) return;
-      if (hoveredIdRef.current === instanceId) return;
-      resetHover();
-      hoveredIdRef.current = instanceId;
-      applyHover(instanceId);
+      const tile = tiles[instanceId];
+      if (!tile) return;
+      if (selectedTower && tile.type === TileType.Grass && gameStatus === 'playing') {
+        const valid = isValidPlacement(tile.x, tile.z);
+        showHover(tile, valid);
+        return;
+      }
+      hideHover();
     },
-    [applyHover, resetHover],
+    [gameStatus, hideHover, isValidPlacement, selectedTower, showHover],
   );
 
   const handlePointerOut = useCallback(() => {
-    resetHover();
-  }, [resetHover]);
+    hideHover();
+  }, [hideHover]);
 
   const handlePointerDown = useCallback(
-    (event: ThreeEvent<PointerEvent>) => {
+    (tiles: Tile[]) => (event: ThreeEvent<PointerEvent>) => {
       const instanceId = event.instanceId;
       if (instanceId === undefined) return;
       const tile = tiles[instanceId];
@@ -178,7 +176,7 @@ export const World = React.memo(() => {
         setSelectedEntityId(null);
       }
     },
-    [gameStatus, placeTower, renderStateRef, selectedTower, setSelectedEntityId, tiles],
+    [gameStatus, placeTower, renderStateRef, selectedTower, setSelectedEntityId],
   );
 
   return (
@@ -190,14 +188,49 @@ export const World = React.memo(() => {
       ]}
     >
       <instancedMesh
-        ref={meshRef}
-        args={[TILE_GEOMETRY, undefined, tiles.length]}
-        onPointerMove={handlePointerMove}
+        ref={grassMeshRef}
+        args={[TILE_GEOMETRY, undefined, tilesByType.grass.length]}
+        onPointerMove={handlePointerMove(tilesByType.grass)}
         onPointerOut={handlePointerOut}
-        onPointerDown={handlePointerDown}
+        onPointerDown={handlePointerDown(tilesByType.grass)}
       >
-        <meshBasicMaterial vertexColors toneMapped={false} />
+        <meshBasicMaterial color={TILE_COLORS[TileType.Grass]} toneMapped={false} />
       </instancedMesh>
+
+      <instancedMesh
+        ref={pathMeshRef}
+        args={[TILE_GEOMETRY, undefined, tilesByType.path.length]}
+        onPointerMove={handlePointerMove(tilesByType.path)}
+        onPointerOut={handlePointerOut}
+        onPointerDown={handlePointerDown(tilesByType.path)}
+      >
+        <meshBasicMaterial color={TILE_COLORS[TileType.Path]} toneMapped={false} />
+      </instancedMesh>
+
+      <instancedMesh
+        ref={spawnMeshRef}
+        args={[TILE_GEOMETRY, undefined, tilesByType.spawn.length]}
+        onPointerMove={handlePointerMove(tilesByType.spawn)}
+        onPointerOut={handlePointerOut}
+        onPointerDown={handlePointerDown(tilesByType.spawn)}
+      >
+        <meshBasicMaterial color={TILE_COLORS[TileType.Spawn]} toneMapped={false} />
+      </instancedMesh>
+
+      <instancedMesh
+        ref={baseMeshRef}
+        args={[TILE_GEOMETRY, undefined, tilesByType.base.length]}
+        onPointerMove={handlePointerMove(tilesByType.base)}
+        onPointerOut={handlePointerOut}
+        onPointerDown={handlePointerDown(tilesByType.base)}
+      >
+        <meshBasicMaterial color={TILE_COLORS[TileType.Base]} toneMapped={false} />
+      </instancedMesh>
+
+      <mesh ref={hoverMeshRef} visible={false} position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[TILE_SIZE * 0.95, TILE_SIZE * 0.95]} />
+        <meshBasicMaterial color={hoverValidColor} transparent opacity={0.35} toneMapped={false} />
+      </mesh>
 
       <lineSegments position={[0, 0.02, 0]} geometry={gridGeometry}>
         <lineBasicMaterial color="#00f2ff" opacity={0.4} transparent />

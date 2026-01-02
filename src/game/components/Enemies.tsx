@@ -112,7 +112,7 @@ export const InstancedEnemies: React.FC = () => {
     <group>
       <instancedMesh ref={bodyMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <dodecahedronGeometry args={[1, 0]} />
-        <meshBasicMaterial vertexColors toneMapped={false} />
+        <meshBasicMaterial color="#ff0055" toneMapped={false} />
       </instancedMesh>
 
       <instancedMesh ref={shieldMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
@@ -128,8 +128,9 @@ export const InstancedEnemies: React.FC = () => {
 
       <instancedMesh ref={ringMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <torusGeometry args={[0.7, 0.05, 8, 32]} />
-        <meshBasicMaterial vertexColors toneMapped={false} />
+        <meshBasicMaterial color="#ff6699" toneMapped={false} />
       </instancedMesh>
     </group>
   );
 };
+

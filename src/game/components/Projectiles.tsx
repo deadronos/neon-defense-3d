@@ -53,8 +53,9 @@ export const InstancedProjectiles: React.FC = () => {
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, count]} frustumCulled={false}>
       <icosahedronGeometry args={[0.5, 0]} />
-      <meshLambertMaterial vertexColors />
+      <meshBasicMaterial vertexColors toneMapped={false} />
     </instancedMesh>
   );
 };
+
 

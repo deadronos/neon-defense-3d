@@ -1,6 +1,6 @@
 import type { ThreeEvent } from '@react-three/fiber';
 import { useFrame } from '@react-three/fiber';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 import { TOWER_CONFIGS } from '../../constants';
@@ -9,7 +9,7 @@ import { useGameUi, useRenderState } from '../GameState';
 import { getTowerStats } from '../utils';
 
 import { createComplexTowerBase } from './instancing/geometryUtils';
-import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedTowers: React.FC = () => {
   const { setSelectedEntityId, selectedEntityId, gameState } = useGameUi();
@@ -21,6 +21,12 @@ export const InstancedTowers: React.FC = () => {
   const rangeMeshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const colorCache = useRef<Map<string, THREE.Color>>(new Map());
+
+  useLayoutEffect(() => {
+    if (baseMeshRef.current) ensureInstanceColor(baseMeshRef.current, 100);
+    if (turretMeshRef.current) ensureInstanceColor(turretMeshRef.current, 100);
+    if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, 100);
+  }, []);
 
   useEffect(() => {
     const geo = createComplexTowerBase();
@@ -163,7 +169,7 @@ export const InstancedTowers: React.FC = () => {
         onPointerDown={handlePointerDown}
         frustumCulled={false}
       >
-        <meshLambertMaterial vertexColors />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
 
       <instancedMesh
@@ -173,7 +179,7 @@ export const InstancedTowers: React.FC = () => {
         frustumCulled={false}
       >
         <octahedronGeometry args={[0.5, 0]} />
-        <meshLambertMaterial vertexColors />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
 
       <instancedMesh
@@ -183,7 +189,7 @@ export const InstancedTowers: React.FC = () => {
         frustumCulled={false}
       >
         <torusGeometry args={[0.6, 0.05, 8, 32]} />
-        <meshLambertMaterial vertexColors />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
 
       <instancedMesh
@@ -198,3 +204,4 @@ export const InstancedTowers: React.FC = () => {
     </group>
   );
 };
+
