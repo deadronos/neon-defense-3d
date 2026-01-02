@@ -5,8 +5,8 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 
 import { UI } from '../../components/UI';
 import { SettingsModal } from '../../components/ui/SettingsModal';
-import { GameProvider, useGame } from '../../game/GameState';
 import { useAudio } from '../../game/audio/AudioManager';
+import { GameProvider, useGame } from '../../game/GameState';
 
 vi.mock('../../game/audio/AudioManager', () => ({
   useAudio: vi.fn(),

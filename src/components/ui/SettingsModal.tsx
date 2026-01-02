@@ -25,14 +25,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) =
     exportCheckpointJson,
   } = useGame();
 
-  const {
-    masterVolume,
-    sfxVolume,
-    musicVolume,
-    setMasterVolume,
-    setSFXVolume,
-    setMusicVolume,
-  } = useAudio();
+  const { masterVolume, sfxVolume, musicVolume, setMasterVolume, setSFXVolume, setMusicVolume } =
+    useAudio();
 
   const [exportJson, setExportJson] = useState('');
   const [hasCheckpoint, setHasCheckpoint] = useState(false);
@@ -215,27 +209,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) =
               <div className="flex items-center gap-4">
                 <label className="text-gray-300 text-sm w-16">Master</label>
                 <input
-                  type="range" min="0" max="1" step="0.05"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
                   value={masterVolume}
-                  onChange={e => setMasterVolume(parseFloat(e.target.value))}
+                  onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
                   className="flex-1"
                 />
               </div>
               <div className="flex items-center gap-4">
                 <label className="text-gray-300 text-sm w-16">SFX</label>
                 <input
-                  type="range" min="0" max="1" step="0.05"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
                   value={sfxVolume}
-                  onChange={e => setSFXVolume(parseFloat(e.target.value))}
+                  onChange={(e) => setSFXVolume(parseFloat(e.target.value))}
                   className="flex-1"
                 />
               </div>
               <div className="flex items-center gap-4">
                 <label className="text-gray-300 text-sm w-16">Music</label>
                 <input
-                  type="range" min="0" max="1" step="0.05"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
                   value={musicVolume}
-                  onChange={e => setMusicVolume(parseFloat(e.target.value))}
+                  onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
                   className="flex-1"
                 />
               </div>

@@ -37,13 +37,34 @@ if (!global.AudioContext) {
   // @ts-ignore
   global.AudioContext = class {
     state = 'suspended';
-    createGain() { return { connect: () => {}, gain: { value: 0 } }; }
-    createOscillator() { return { connect: () => {}, start: () => {}, stop: () => {}, type: 'sine', frequency: { value: 0 }, detune: { value: 0 } }; }
-    createBufferSource() { return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null }; }
-    createBuffer(channels: number, length: number, sampleRate: number) { return { getChannelData: () => new Float32Array(length) }; }
-    resume() { return Promise.resolve(); }
-    get destination() { return {}; }
-    get sampleRate() { return 44100; }
+    createGain() {
+      return { connect: () => {}, gain: { value: 0 } };
+    }
+    createOscillator() {
+      return {
+        connect: () => {},
+        start: () => {},
+        stop: () => {},
+        type: 'sine',
+        frequency: { value: 0 },
+        detune: { value: 0 },
+      };
+    }
+    createBufferSource() {
+      return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null };
+    }
+    createBuffer(channels: number, length: number, sampleRate: number) {
+      return { getChannelData: () => new Float32Array(length) };
+    }
+    resume() {
+      return Promise.resolve();
+    }
+    get destination() {
+      return {};
+    }
+    get sampleRate() {
+      return 44100;
+    }
   };
 }
 

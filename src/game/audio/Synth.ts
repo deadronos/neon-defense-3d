@@ -34,43 +34,67 @@ export class Synth {
     }
   }
 
-  setMasterVolume(val: number) { this.masterGain.gain.value = val; }
-  setSFXVolume(val: number) { this.sfxGain.gain.value = val; }
-  setMusicVolume(val: number) { this.musicGain.gain.value = val; }
+  setMasterVolume(val: number) {
+    this.masterGain.gain.value = val;
+  }
+  setSFXVolume(val: number) {
+    this.sfxGain.gain.value = val;
+  }
+  setMusicVolume(val: number) {
+    this.musicGain.gain.value = val;
+  }
 
   generateBuffers() {
     // SHOOT: High pitch short decay
-    this.buffers.set('shoot', this.createBuffer(0.1, (t) => {
-      const freq = 880 * Math.exp(-t * 10);
-      return Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 20);
-    }));
+    this.buffers.set(
+      'shoot',
+      this.createBuffer(0.1, (t) => {
+        const freq = 880 * Math.exp(-t * 10);
+        return Math.sin(2 * Math.PI * freq * t) * Math.exp(-t * 20);
+      }),
+    );
 
     // IMPACT: Noise burst
-    this.buffers.set('impact', this.createBuffer(0.1, (t) => {
-      return (Math.random() * 2 - 1) * Math.exp(-t * 30);
-    }));
+    this.buffers.set(
+      'impact',
+      this.createBuffer(0.1, (t) => {
+        return (Math.random() * 2 - 1) * Math.exp(-t * 30);
+      }),
+    );
 
     // BUILD: Rising tone
-    this.buffers.set('build', this.createBuffer(0.3, (t) => {
-      const freq = 220 + t * 1000;
-      return Math.sin(2 * Math.PI * freq * t) * (1 - t/0.3);
-    }));
+    this.buffers.set(
+      'build',
+      this.createBuffer(0.3, (t) => {
+        const freq = 220 + t * 1000;
+        return Math.sin(2 * Math.PI * freq * t) * (1 - t / 0.3);
+      }),
+    );
 
     // SELL: Falling tone
-    this.buffers.set('sell', this.createBuffer(0.3, (t) => {
-      const freq = 600 - t * 1000;
-      return Math.sin(2 * Math.PI * freq * t) * (1 - t/0.3);
-    }));
+    this.buffers.set(
+      'sell',
+      this.createBuffer(0.3, (t) => {
+        const freq = 600 - t * 1000;
+        return Math.sin(2 * Math.PI * freq * t) * (1 - t / 0.3);
+      }),
+    );
 
     // UI CLICK: Short high blip
-    this.buffers.set('click', this.createBuffer(0.05, (t) => {
-      return Math.sin(2 * Math.PI * 1200 * t) * Math.exp(-t * 50);
-    }));
+    this.buffers.set(
+      'click',
+      this.createBuffer(0.05, (t) => {
+        return Math.sin(2 * Math.PI * 1200 * t) * Math.exp(-t * 50);
+      }),
+    );
 
     // ERROR: Low buzz
-    this.buffers.set('error', this.createBuffer(0.2, (t) => {
-      return (Math.random() > 0.5 ? 1 : -1) * Math.exp(-t * 10) * 0.5;
-    }));
+    this.buffers.set(
+      'error',
+      this.createBuffer(0.2, (t) => {
+        return (Math.random() > 0.5 ? 1 : -1) * Math.exp(-t * 10) * 0.5;
+      }),
+    );
   }
 
   createBuffer(duration: number, signalFn: (t: number) => number): AudioBuffer {
@@ -132,7 +156,7 @@ export class Synth {
   }
 
   stopMusic() {
-    this.bgmNodes.forEach(n => n.stop());
+    this.bgmNodes.forEach((n) => n.stop());
     this.bgmNodes = [];
     if (this.bgmGain) {
       this.bgmGain.disconnect();

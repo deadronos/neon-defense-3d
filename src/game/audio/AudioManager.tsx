@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
+
 import { synth } from './Synth';
 
 interface AudioContextType {
@@ -61,17 +62,19 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // or we can expose a method to start it.
 
   return (
-    <AudioContext.Provider value={{
-      playSFX,
-      setMasterVolume,
-      setSFXVolume,
-      setMusicVolume,
-      toggleMusic,
-      isMusicPlaying,
-      masterVolume,
-      sfxVolume,
-      musicVolume
-    }}>
+    <AudioContext.Provider
+      value={{
+        playSFX,
+        setMasterVolume,
+        setSFXVolume,
+        setMusicVolume,
+        toggleMusic,
+        isMusicPlaying,
+        masterVolume,
+        sfxVolume,
+        musicVolume,
+      }}
+    >
       {children}
     </AudioContext.Provider>
   );

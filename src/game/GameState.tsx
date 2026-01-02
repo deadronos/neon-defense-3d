@@ -341,26 +341,32 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [isValidPlacement, playSFX],
   );
 
-  const upgradeTower = useCallback((id: string) => {
-    // Check if affordable? Logic is in reducer.
-    // We'll optimistically play sound or check state here.
-    const state = runtimeRef.current;
-    const tower = state.engine.towers.find((t) => t.id === id);
-    if (tower) {
-      const stats = getTowerStats(tower.type as TowerType, tower.level, state.ui.upgrades);
-      if (state.ui.money >= stats.upgradeCost) {
-        playSFX('build'); // Reuse build sound for upgrade
-      } else {
-        playSFX('error');
+  const upgradeTower = useCallback(
+    (id: string) => {
+      // Check if affordable? Logic is in reducer.
+      // We'll optimistically play sound or check state here.
+      const state = runtimeRef.current;
+      const tower = state.engine.towers.find((t) => t.id === id);
+      if (tower) {
+        const stats = getTowerStats(tower.type as TowerType, tower.level, state.ui.upgrades);
+        if (state.ui.money >= stats.upgradeCost) {
+          playSFX('build'); // Reuse build sound for upgrade
+        } else {
+          playSFX('error');
+        }
       }
-    }
-    dispatch({ type: 'upgradeTower', id });
-  }, [playSFX]);
+      dispatch({ type: 'upgradeTower', id });
+    },
+    [playSFX],
+  );
 
-  const sellTower = useCallback((id: string) => {
-    playSFX('sell');
-    dispatch({ type: 'sellTower', id });
-  }, [playSFX]);
+  const sellTower = useCallback(
+    (id: string) => {
+      playSFX('sell');
+      dispatch({ type: 'sellTower', id });
+    },
+    [playSFX],
+  );
   const skipWave = useCallback(() => dispatch({ type: 'skipWave' }), []);
 
   const startGame = useCallback(() => {
@@ -466,13 +472,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         // We should add 'ProjectileFired' event to stepTowers if we want audio for it.
         // For now, let's look at EffectSpawned (explosions/impacts usually create effects or just damage).
 
-        allEvents.forEach(e => {
-           if (e.type === 'EffectSpawned') {
-             // EffectSpawned is used for explosions.
-             playSFX('impact');
-           } else if (e.type === 'ProjectileFired') {
-             playSFX('shoot');
-           }
+        allEvents.forEach((e) => {
+          if (e.type === 'EffectSpawned') {
+            // EffectSpawned is used for explosions.
+            playSFX('impact');
+          } else if (e.type === 'ProjectileFired') {
+            playSFX('shoot');
+          }
         });
       }
 

@@ -3,8 +3,8 @@ import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import React from 'react';
 import * as THREE from 'three';
 
-import { useGame } from './GameState';
 import { SceneContent } from './components/Scene';
+import { useGame } from './GameState';
 
 const PostProcessing = () => {
   const { gameState } = useGame();
@@ -13,12 +13,7 @@ const PostProcessing = () => {
 
   return (
     <EffectComposer enableNormalPass={false}>
-      <Bloom
-        luminanceThreshold={1}
-        mipmapBlur
-        intensity={1.5}
-        radius={0.4}
-      />
+      <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.4} />
     </EffectComposer>
   );
 };

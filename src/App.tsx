@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { UI } from './components/UI';
-import { GameCanvas } from './game/GameCanvas';
 import { AudioProvider } from './game/audio/AudioManager';
+import { GameCanvas } from './game/GameCanvas';
 import { GameProvider } from './game/GameState';
 
 /**
