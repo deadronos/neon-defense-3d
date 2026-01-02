@@ -7,6 +7,7 @@
 - Performance-oriented rendering: enemies and projectiles use instanced meshes to handle many entities efficiently.
 - Engine hot paths reuse cached spatial grids and enemy positions to reduce per-tick allocations.
 - Adaptive rendering: dynamic DPR scaler adjusts resolution based on FPS for stable performance.
+- Expanded unit tests covering DPR scaling, tower targeting/cooldown, projectile shield/freeze, and runtime checkpoint/skip-wave edges.
 - Basic UI overlay, build/upgrade flow, and victory/tech-tree transitions are implemented in `src/components`.
 
 ## What's left / recommended next work

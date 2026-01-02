@@ -10,6 +10,7 @@
 - **Tower targeting:** Switched to squared-distance checks in `stepTowers`.
 - **Rendering:** Added enemy ID lookup map to avoid per-projectile scans.
 - **Rendering:** Added a dynamic resolution scaler that adjusts DPR based on FPS.
+- **Testing:** Added unit coverage for DPR scaling, tower cooldown/targeting, projectile shield/freeze, and runtime checkpoint/skip-wave edges.
 
 ## Next steps
 

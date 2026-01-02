@@ -282,3 +282,24 @@ Graphics quality persistence:
 
 4. WHEN the game starts, THE SYSTEM SHALL initialize DPR to `MAX_DPR` and adjust dynamically thereafter.  
    **Acceptance:** initial DPR matches `MAX_DPR` and subsequent changes occur via the scaler.
+
+---
+
+# Requirements — Test Coverage Expansion
+
+**Status:** Draft (living document)  
+**Updated:** 2026-01-02
+
+## Functional requirements (EARS)
+
+1. WHEN dynamic DPR scaling runs, THE SYSTEM SHALL be covered by unit tests for lowering, raising, and clamping DPR values.  
+   **Acceptance:** unit tests assert DPR adjustments and bounds for low/high FPS scenarios.
+
+2. WHEN tower targeting runs, THE SYSTEM SHALL be covered by unit tests for cooldown handling and nearest-target selection.  
+   **Acceptance:** tests verify no projectile on cooldown and correct target selection when multiple enemies are in range.
+
+3. WHEN projectile resolution runs, THE SYSTEM SHALL be covered by unit tests for shield damage and freeze stacking behavior.  
+   **Acceptance:** tests verify shields absorb damage first and freeze duration uses max across hits.
+
+4. WHEN runtime or GameState actions handle edge cases, THE SYSTEM SHALL be covered by unit tests for skip-wave behavior and checkpoint export/reset paths.  
+   **Acceptance:** tests verify skip-wave only affects preparing waves and export/reset paths behave with and without saved checkpoints.

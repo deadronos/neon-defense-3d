@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { GameProvider, useGame } from '../../game/GameState';
@@ -211,5 +211,48 @@ describe('GameProvider (engine-backed)', () => {
     expect(result.current.gameState.currentMapIndex).toBe(1);
     expect(result.current.towers).toHaveLength(0);
     expect(result.current.gameState.gameStatus).toBe('playing');
+  });
+
+  it('resetCheckpoint returns an error when no checkpoint exists', () => {
+    localStorage.clear();
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
+
+    act(() => {
+      const res = result.current.resetCheckpoint();
+      expect(res.ok).toBe(false);
+      expect(res.error).toMatch(/checkpoint/i);
+    });
+  });
+
+  it('exportCheckpointJson falls back to live state when no checkpoint exists', () => {
+    localStorage.clear();
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
+
+    const exportResult = result.current.exportCheckpointJson();
+    expect(exportResult.hasCheckpoint).toBe(false);
+    const parsed = JSON.parse(exportResult.json) as { schemaVersion: number };
+    expect(parsed.schemaVersion).toBe(1);
+  });
+
+  it('skipWave zeroes the wave timer during the preparing phase', async () => {
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
+
+    act(() => {
+      result.current.startGame();
+    });
+
+    act(() => {
+      result.current.step(0.1, 0.1);
+    });
+
+    await waitFor(() => {
+      expect(result.current.waveState?.phase).toBe('preparing');
+    });
+
+    act(() => {
+      result.current.skipWave();
+    });
+
+    expect(result.current.waveState?.timer).toBe(0);
   });
 });

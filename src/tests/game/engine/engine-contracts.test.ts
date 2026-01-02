@@ -263,4 +263,42 @@ describe('runtime helpers', () => {
     expect(next.engine.effects.map((fx) => fx.id)).toEqual(['fx-1']);
     expect(next.ui).toBe(initial.ui);
   });
+
+  it('skipWave zeroes the timer when the wave is preparing', () => {
+    const initial = {
+      engine: applyEnginePatch(createInitialEngineState(), {
+        wave: {
+          wave: 1,
+          phase: 'preparing',
+          enemiesRemainingToSpawn: 0,
+          enemiesAlive: 0,
+          timerMs: 5000,
+          spawnIntervalMs: 2000,
+        },
+      }),
+      ui: createInitialUiState(),
+    };
+
+    const next = applyEngineRuntimeAction(initial, { type: 'skipWave' });
+    expect(next.engine.wave?.timerMs).toBe(0);
+  });
+
+  it('skipWave is a no-op outside of preparing phase', () => {
+    const initial = {
+      engine: applyEnginePatch(createInitialEngineState(), {
+        wave: {
+          wave: 1,
+          phase: 'spawning',
+          enemiesRemainingToSpawn: 1,
+          enemiesAlive: 0,
+          timerMs: 1000,
+          spawnIntervalMs: 2000,
+        },
+      }),
+      ui: createInitialUiState(),
+    };
+
+    const next = applyEngineRuntimeAction(initial, { type: 'skipWave' });
+    expect(next).toBe(initial);
+  });
 });
