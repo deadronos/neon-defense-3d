@@ -17,7 +17,7 @@ import { InstancedTrails } from './Trails';
 import { World } from './World';
 
 export const SceneContent = () => {
-  const { enemies, towers, projectiles, effects, removeEffect, gameState } = useGame();
+  const { enemies, projectiles, effects, removeEffect, gameState } = useGame();
   const isHigh = gameState.graphicsQuality === 'high';
 
   const chromaticOffset = React.useMemo(() => new THREE.Vector2(0.002, 0.002), []);
@@ -39,9 +39,9 @@ export const SceneContent = () => {
       <World />
 
       <group position={[offsetX, 0, offsetZ]}>
-        <InstancedTowers towers={towers} />
+        <InstancedTowers />
         {isHigh && <InstancedTrails enemies={enemies} />}
-        <InstancedEnemies enemies={enemies} />
+        <InstancedEnemies />
         <InstancedProjectiles projectiles={projectiles} />
         {effects.length > 0 && <InstancedExplosions effects={effects} remove={removeEffect} />}
       </group>

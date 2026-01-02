@@ -13,6 +13,7 @@ import type {
 } from '../types';
 
 import type { SaveV1 } from './persistence';
+import type { RenderState } from './renderStateUtils';
 
 /**
  * Interface defining the properties and methods available in the GameContext.
@@ -99,4 +100,7 @@ export interface GameContextProps {
   gameSpeed: number;
   /** Sets the game speed multiplier. */
   setGameSpeed: (speed: number) => void;
+
+  /** Mutable ref to the latest render-ready state (enemies, towers, etc). */
+  renderStateRef: React.MutableRefObject<RenderState>;
 }

@@ -49,14 +49,21 @@ import {
   saveCheckpoint,
   serializeCheckpoint,
 } from './persistence';
+import { createInitialRenderState, syncRenderState } from './renderStateUtils';
 import { getTowerStats } from './utils';
 
-type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
-
-const buildEnemyTypeMap = () => {
-  const map = new Map<string, EnemyTypeConfig>();
+const buildEnemyTypeMap = (): Map<string, EnemyConfig> => {
+  const map = new Map<string, EnemyConfig>();
   for (const config of Object.values(ENEMY_TYPES)) {
-    map.set(config.name, config);
+    map.set(config.name, {
+      speed: config.speed,
+      hp: config.hpBase,
+      shield: config.shield,
+      reward: config.reward,
+      color: config.color,
+      scale: config.scale,
+      abilities: config.abilities,
+    });
   }
   return map;
 };
@@ -75,7 +82,7 @@ const toWaveState = (engineWave: EngineState['wave']): WaveState | null => {
 
 const toEnemyEntity = (
   enemy: EngineEnemy,
-  enemyTypeMap: Map<string, EnemyTypeConfig>,
+  enemyTypeMap: Map<string, EnemyConfig>,
   pathWaypoints: readonly EngineVector2[],
 ): EnemyEntity => {
   const baseConfig = enemyTypeMap.get(enemy.type);
@@ -242,6 +249,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const runtimeRef = useRef(runtime);
   runtimeRef.current = runtime;
 
+  const renderStateRef = useRef(createInitialRenderState());
+
   const lastAutosavedNonceRef = useRef<number>(-1);
 
   // Autosave a Tier-B checkpoint once per WaveStarted event.
@@ -328,12 +337,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     (x: number, z: number) => {
       if (x < 0 || x >= mapGrid[0].length || z < 0 || z >= mapGrid.length) return false;
       if (mapGrid[z][x] !== TileType.Grass) return false;
-      if (
-        runtimeRef.current.engine.towers.some(
-          (t) => t.gridPosition[0] === x && t.gridPosition[1] === z,
-        )
-      )
-        return false;
+
+      // Use the cached O(1) grid occupancy map from renderState
+      const key = `${x},${z}`;
+      if (renderStateRef.current.gridOccupancy.has(key)) return false;
+
       return true;
     },
     [mapGrid],
@@ -465,6 +473,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         engineCacheRef.current,
       );
 
+      // --- Sync Engine State to Mutable Render State ---
+      syncRenderState(result.state, renderStateRef.current, {
+        enemyTypeMap,
+        pathWaypoints: enginePathWaypoints,
+        tileSize: TILE_SIZE,
+      });
+
       // Process engine events for Audio
       if (result.events.immediate.length > 0 || result.events.deferred.length > 0) {
         const allEvents = [...result.events.immediate, ...result.events.deferred];
@@ -544,6 +559,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         skipWave,
         gameSpeed,
         setGameSpeed,
+        renderStateRef,
       }}
     >
       {children}
