@@ -303,3 +303,24 @@ Graphics quality persistence:
 
 4. WHEN runtime or GameState actions handle edge cases, THE SYSTEM SHALL be covered by unit tests for skip-wave behavior and checkpoint export/reset paths.  
    **Acceptance:** tests verify skip-wave only affects preparing waves and export/reset paths behave with and without saved checkpoints.
+---
+
+# Requirements — Fixed Timestep + Render Interpolation + World Batching
+
+**Status:** Draft (living document)
+**Updated:** 2026-01-02
+
+## Functional requirements (EARS)
+
+1. WHEN the render loop advances simulation time, THE SYSTEM SHALL step the engine using a fixed timestep and accumulate frame time for deterministic updates.
+   **Acceptance:** stepping with the same real-time input produces stable tick counts and does not depend on frame rate.
+
+2. WHEN rendering between simulation ticks, THE SYSTEM SHALL interpolate enemy and projectile positions between the previous and current simulation states.
+   **Acceptance:** visible entity motion remains smooth when frame time varies.
+
+3. WHEN rendering the world grid, THE SYSTEM SHALL batch static tiles into instanced geometry and render a single grid overlay instead of per-tile meshes.
+   **Acceptance:** the world grid renders with one instanced mesh and one line overlay.
+
+4. WHEN rendering instanced enemies, towers, and projectiles, THE SYSTEM SHALL use lower-cost materials (Lambert/Basic) to reduce GPU load.
+   **Acceptance:** instanced materials are non-PBR and render correctly at runtime.
+

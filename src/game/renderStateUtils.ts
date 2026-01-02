@@ -26,6 +26,15 @@ export interface RenderState {
 
   /** Map of "x,z" grid coordinates to TowerEntity for O(1) placement/selection checks. */
   gridOccupancy: Map<string, TowerEntity>;
+
+  /** Previous frame positions for interpolation (enemy id -> position). */
+  previousEnemyPositions: Map<string, Position3>;
+  /** Previous frame positions for interpolation (projectile id -> position). */
+  previousProjectilePositions: Map<string, Position3>;
+  /** Last known projectile positions for interpolation. */
+  projectilePositions: Map<string, Position3>;
+  /** Render interpolation alpha (0-1). */
+  renderAlpha: number;
 }
 
 export const createInitialRenderState = (): RenderState => ({
@@ -35,6 +44,10 @@ export const createInitialRenderState = (): RenderState => ({
   effects: [],
   enemiesById: new Map(),
   gridOccupancy: new Map(),
+  previousEnemyPositions: new Map(),
+  previousProjectilePositions: new Map(),
+  projectilePositions: new Map(),
+  renderAlpha: 0,
 });
 
 /**
@@ -91,6 +104,9 @@ export const syncRenderState = (
   for (const engEnemy of engineEnemies) {
     activeIds.add(engEnemy.id);
     let renderEnemy = renderState.enemiesById.get(engEnemy.id);
+    if (renderEnemy) {
+      renderState.previousEnemyPositions.set(engEnemy.id, renderEnemy.position);
+    }
 
     // Calculate Position
     // We should optimize selectEnemyWorldPosition to write to a target vector if possible,
@@ -134,6 +150,7 @@ export const syncRenderState = (
         abilityActiveTimer: engEnemy.abilityActiveTimer ?? 0,
       };
       renderState.enemiesById.set(engEnemy.id, renderEnemy);
+      renderState.previousEnemyPositions.set(engEnemy.id, pos);
     }
     nextEnemies.push(renderEnemy);
   }
@@ -142,6 +159,12 @@ export const syncRenderState = (
   for (const id of renderState.enemiesById.keys()) {
     if (!activeIds.has(id)) {
       renderState.enemiesById.delete(id);
+    }
+  }
+
+  for (const id of renderState.previousEnemyPositions.keys()) {
+    if (!activeIds.has(id)) {
+      renderState.previousEnemyPositions.delete(id);
     }
   }
 
@@ -214,10 +237,16 @@ export const syncRenderState = (
   // Actually, I should add it.
 
   const nextProjectiles: ProjectileEntity[] = [];
-  // Projectiles are short lived, so map might churn.
-  // But let's just map them. It's better than nothing.
+  const previousProjectilePositions = renderState.previousProjectilePositions;
+  previousProjectilePositions.clear();
+  const activeProjectileIds = new Set<string>();
 
   for (const proj of engine.projectiles) {
+    activeProjectileIds.add(proj.id);
+    const lastPos = renderState.projectilePositions.get(proj.id);
+    if (lastPos) {
+      previousProjectilePositions.set(proj.id, lastPos);
+    }
     const target = renderState.enemiesById.get(proj.targetId);
     // If we have a render-time enemy target, lerp toward its known world position (avoids using engine types).
     const pos: Position3 = target
@@ -227,6 +256,11 @@ export const syncRenderState = (
           proj.origin[2] + (target.position[2] - proj.origin[2]) * proj.progress,
         ] as Position3)
       : (proj.origin as Position3);
+
+    if (!lastPos) {
+      previousProjectilePositions.set(proj.id, pos);
+    }
+    renderState.projectilePositions.set(proj.id, pos);
 
     nextProjectiles.push({
       id: proj.id,
@@ -239,6 +273,13 @@ export const syncRenderState = (
       color: proj.color,
     });
   }
+  for (const id of renderState.projectilePositions.keys()) {
+    if (!activeProjectileIds.has(id)) {
+      renderState.projectilePositions.delete(id);
+      previousProjectilePositions.delete(id);
+    }
+  }
+
   renderState.projectiles = nextProjectiles;
 
   // --- 4. Sync Effects ---
@@ -252,3 +293,5 @@ export const syncRenderState = (
     createdAt: e.createdAt,
   }));
 };
+
+

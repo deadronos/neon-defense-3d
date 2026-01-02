@@ -22,7 +22,7 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 
 ## Progress Tracking
 
-**Overall Status:** In Progress - 97%
+**Overall Status:** In Progress - 99%
 
 ### Subtasks
 
@@ -34,7 +34,7 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 | 1.4 | Validate behavior parity + update memory/progress              | In Progress | 2026-01-02 | Typecheck fixed; manual FPS sampling done; tests pending |
 | 1.5 | Reduce render-loop instance work + avoid duplicate postprocess | Complete    | 2026-01-02 | Mesh count + single composer |
 | 1.6 | Address splash/tower/trail/projectile render hot paths         | Complete    | 2026-01-02 | Spatial reuse + pruning + lookAt removal |
-
+| 1.7 | Fixed timestep + render interpolation + world batching     | In Progress | 2026-01-02 |       |
 ## Progress Log
 
 ### 2026-01-02
@@ -64,3 +64,13 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 - Reused spatial grid for splash checks and cached enemy positions for tower targeting.
 - Removed per-tower candidate array allocations via spatial grid iterator.
 - Pruned trail spawn bookkeeping and removed per-projectile lookAt in render loop.
+
+### 2026-01-02
+
+- Implemented fixed-timestep simulation loop with render interpolation for enemies/projectiles.
+- Batched world tiles into instanced geometry with a single grid overlay and avoided per-tile React rerenders.
+- Switched instanced entity materials to Lambert/Basic to reduce GPU cost.
+
+
+
+

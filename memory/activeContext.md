@@ -5,6 +5,9 @@
 - Improving runtime performance in engine/render hot paths and adaptive rendering quality.
 
 ## Recent changes (code highlights)
+- Implemented fixed-timestep simulation loop with render interpolation in the render bridge.
+- Batched world tiles into an instanced mesh with a single grid overlay and hover updates.
+- Downgraded instanced materials (Lambert/Basic) for enemies, towers, and projectiles.
 
 - **Engine hot paths:** Added cached path segment lengths, reusable spatial grid buckets, and enemy position caching to reduce per-tick allocations.
 - **Tower targeting:** Switched to squared-distance checks in `stepTowers`.
@@ -26,3 +29,5 @@
 
 - Visual fidelity vs. performance: whether to reintroduce expensive effects (trails, per-entity lights) via instancing or shaders.
 - Sector/progression balancing: decide wave lengths and reward curves for persistent campaign progression.
+
+

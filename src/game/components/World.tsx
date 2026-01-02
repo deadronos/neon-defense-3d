@@ -1,101 +1,172 @@
-import React, { useState } from 'react';
+import type { ThreeEvent } from '@react-three/fiber';\nimport React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
-
 import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
-import { useGame } from '../GameState';
+import { useWorld } from '../GameState';
 
-const GRID_PLANE_GEO = new THREE.PlaneGeometry(TILE_SIZE, TILE_SIZE);
+const TILE_GEOMETRY = new THREE.PlaneGeometry(TILE_SIZE * 0.95, TILE_SIZE * 0.95);
+const TILE_ROTATION = new THREE.Euler(-Math.PI / 2, 0, 0);
 
-const Tile = React.memo(({ x, z, type }: { x: number; z: number; type: TileType }) => {
-  const {
-    placeTower,
-    selectedTower,
-    isValidPlacement,
-    gameState,
-    setSelectedEntityId,
-    renderStateRef,
-  } = useGame();
-  const [hovered, setHovered] = useState(false);
+const getTileBaseColor = (type: TileType) => {
+  if (type === TileType.Path) return '#001133';
+  if (type === TileType.Spawn) return '#330000';
+  if (type === TileType.Base) return '#110033';
+  return '#050510';
+};
 
-  let color = '#000000';
-  let emissive = '#000000';
-  let emissiveIntensity = 0;
+const createGridGeometry = (width: number, height: number, tileSize: number) => {
+  const positions: number[] = [];
+  const maxX = width * tileSize;
+  const maxZ = height * tileSize;
 
-  if (type === TileType.Path) {
-    color = '#001133';
-    emissive = '#0088ff';
-    emissiveIntensity = 0.5;
-  } else if (type === TileType.Spawn) {
-    color = '#330000';
-    emissive = '#ff0000';
-    emissiveIntensity = 0.8;
-  } else if (type === TileType.Base) {
-    color = '#110033';
-    emissive = '#ff00ff';
-    emissiveIntensity = 0.8;
-  } else {
-    // Grass / Empty
-    color = '#050510';
+  for (let x = 0; x <= width; x += 1) {
+    const px = x * tileSize;
+    positions.push(px, 0, 0, px, 0, maxZ);
   }
 
-  // Only check placement validity if we are hovering and interacting
-  if (hovered && selectedTower && type === TileType.Grass && gameState.gameStatus === 'playing') {
-    const valid = isValidPlacement(x, z);
-    color = valid ? '#003300' : '#330000';
-    emissive = valid ? '#00ff00' : '#ff0000';
-    emissiveIntensity = 0.5;
+  for (let z = 0; z <= height; z += 1) {
+    const pz = z * tileSize;
+    positions.push(0, 0, pz, maxX, 0, pz);
   }
 
-  return (
-    <group position={[x * TILE_SIZE, 0, z * TILE_SIZE]}>
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (gameState.gameStatus !== 'playing') return;
-
-          // Check if there's a tower here using the efficient O(1) map
-          const key = `${x},${z}`;
-          const existingTower = renderStateRef.current.gridOccupancy.get(key);
-
-          if (existingTower) {
-            setSelectedEntityId(existingTower.id);
-            return;
-          }
-
-          if (selectedTower) {
-            placeTower(x, z, selectedTower);
-          } else {
-            setSelectedEntityId(null);
-          }
-        }}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-        }}
-        onPointerOut={() => setHovered(false)}
-      >
-        <planeGeometry args={[TILE_SIZE * 0.95, TILE_SIZE * 0.95]} />
-        <meshStandardMaterial
-          color={color}
-          emissive={emissive}
-          emissiveIntensity={emissiveIntensity}
-          roughness={0.2}
-          metalness={0.8}
-        />
-      </mesh>
-      {/* Grid Floor Overlay */}
-      <lineSegments position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <edgesGeometry args={[GRID_PLANE_GEO]} />
-        <lineBasicMaterial color="#00f2ff" opacity={0.5} transparent />
-      </lineSegments>
-    </group>
-  );
-});
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  return geometry;
+};
 
 export const World = React.memo(() => {
-  const { mapGrid } = useGame();
+  const {
+    mapGrid,
+    placeTower,
+    isValidPlacement,
+    selectedTower,
+    gameStatus,
+    setSelectedEntityId,
+    renderStateRef,
+  } = useWorld();
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const hoveredIdRef = useRef<number | null>(null);
+  const hoverValidColor = useMemo(() => new THREE.Color('#00ff00'), []);
+  const hoverInvalidColor = useMemo(() => new THREE.Color('#ff0000'), []);
+
+  const tiles = useMemo(
+    () =>
+      mapGrid.flatMap((row, z) =>
+        row.map((type, x) => ({
+          x,
+          z,
+          type,
+        })),
+      ),
+    [mapGrid],
+  );
+
+  const baseColors = useMemo(
+    () => tiles.map((tile) => new THREE.Color(getTileBaseColor(tile.type))),
+    [tiles],
+  );
+
+  const gridGeometry = useMemo(
+    () => createGridGeometry(mapGrid[0].length, mapGrid.length, TILE_SIZE),
+    [mapGrid],
+  );
+
+  useEffect(() => () => gridGeometry.dispose(), [gridGeometry]);
+
+  const setInstanceColor = useCallback((index: number, color: THREE.Color) => {
+    if (!meshRef.current) return;
+    meshRef.current.setColorAt(index, color);
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true;
+    }
+  }, []);
+
+  const resetHover = useCallback(() => {
+    if (hoveredIdRef.current === null) return;
+    setInstanceColor(hoveredIdRef.current, baseColors[hoveredIdRef.current]);
+    hoveredIdRef.current = null;
+  }, [baseColors, setInstanceColor]);
+
+  const applyHover = useCallback(
+    (index: number) => {
+      const tile = tiles[index];
+      if (!tile) return;
+      if (
+        selectedTower &&
+        tile.type === TileType.Grass &&
+        gameStatus === 'playing'
+      ) {
+        const valid = isValidPlacement(tile.x, tile.z);
+        setInstanceColor(index, valid ? hoverValidColor : hoverInvalidColor);
+        return;
+      }
+      setInstanceColor(index, baseColors[index]);
+    },
+    [baseColors, gameStatus, hoverInvalidColor, hoverValidColor, isValidPlacement, selectedTower, setInstanceColor, tiles],
+  );
+
+  useLayoutEffect(() => {
+    if (!meshRef.current) return;
+    meshRef.current.count = tiles.length;
+
+    for (let i = 0; i < tiles.length; i += 1) {
+      const tile = tiles[i];
+      dummy.position.set(tile.x * TILE_SIZE, 0, tile.z * TILE_SIZE);
+      dummy.rotation.copy(TILE_ROTATION);
+      dummy.updateMatrix();
+      meshRef.current.setMatrixAt(i, dummy.matrix);
+      meshRef.current.setColorAt(i, baseColors[i]);
+    }
+
+    meshRef.current.instanceMatrix.needsUpdate = true;
+    if (meshRef.current.instanceColor) {
+      meshRef.current.instanceColor.needsUpdate = true;
+    }
+  }, [baseColors, dummy, tiles]);
+
+  useEffect(() => {
+    if (hoveredIdRef.current === null) return;
+    applyHover(hoveredIdRef.current);
+  }, [applyHover]);
+
+  const handlePointerMove = useCallback(\n    (event: ThreeEvent<PointerEvent>) => {\n      const instanceId = event.instanceId;
+      if (instanceId === undefined) return;
+      if (hoveredIdRef.current === instanceId) return;
+      resetHover();
+      hoveredIdRef.current = instanceId;
+      applyHover(instanceId);
+    },
+    [applyHover, resetHover],
+  );
+
+  const handlePointerOut = useCallback(() => {
+    resetHover();
+  }, [resetHover]);
+
+  const handlePointerDown = useCallback(\n    (event: ThreeEvent<PointerEvent>) => {\n      const instanceId = event.instanceId;
+      if (instanceId === undefined) return;
+      const tile = tiles[instanceId];
+      if (!tile) return;
+      if (gameStatus !== 'playing') return;
+
+      const key = `${tile.x},${tile.z}`;
+      const existingTower = renderStateRef.current.gridOccupancy.get(key);
+
+      if (existingTower) {
+        setSelectedEntityId(existingTower.id);
+        return;
+      }
+
+      if (selectedTower) {
+        placeTower(tile.x, tile.z, selectedTower);
+      } else {
+        setSelectedEntityId(null);
+      }
+    },
+    [gameStatus, placeTower, renderStateRef, selectedTower, setSelectedEntityId, tiles],
+  );
+
   return (
     <group
       position={[
@@ -104,9 +175,21 @@ export const World = React.memo(() => {
         (-MAP_HEIGHT * TILE_SIZE) / 2 + TILE_SIZE / 2,
       ]}
     >
-      {mapGrid.map((row, z) =>
-        row.map((type, x) => <Tile key={`${x}-${z}`} x={x} z={z} type={type} />),
-      )}
+      <instancedMesh
+        ref={meshRef}
+        args={[TILE_GEOMETRY, undefined, tiles.length]}
+        onPointerMove={handlePointerMove}
+        onPointerOut={handlePointerOut}
+        onPointerDown={handlePointerDown}
+      >
+        <meshLambertMaterial vertexColors />
+      </instancedMesh>
+
+      <lineSegments position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} geometry={gridGeometry}>
+        <lineBasicMaterial color="#00f2ff" opacity={0.4} transparent />
+      </lineSegments>
     </group>
   );
 });
+
+

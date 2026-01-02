@@ -33,7 +33,7 @@ import type {
 import { TileType, UpgradeType } from '../types';
 
 import { useAudio } from './audio/AudioManager';
-import type { GameContextProps } from './contextTypes';
+import type { GameContextProps, GameUiContextProps, RenderStateContextProps, WorldContextProps } from './contextTypes';
 import { applyEngineRuntimeAction } from './engine/runtime';
 import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
 import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
@@ -230,10 +230,31 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
 
 /** Context for managing game state. */
 const GameContext = createContext<GameContextProps | undefined>(undefined);
+const GameUiContext = createContext<GameUiContextProps | undefined>(undefined);
+const RenderStateContext = createContext<RenderStateContextProps | undefined>(undefined);
+const WorldContext = createContext<WorldContextProps | undefined>(undefined);
 
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) throw new Error('useGame must be used within GameProvider');
+  return context;
+};
+
+export const useGameUi = () => {
+  const context = useContext(GameUiContext);
+  if (!context) throw new Error('useGameUi must be used within GameProvider');
+  return context;
+};
+
+export const useRenderState = () => {
+  const context = useContext(RenderStateContext);
+  if (!context) throw new Error('useRenderState must be used within GameProvider');
+  return context.renderStateRef;
+};
+
+export const useWorld = () => {
+  const context = useContext(WorldContext);
+  if (!context) throw new Error('useWorld must be used within GameProvider');
   return context;
 };
 
@@ -526,43 +547,164 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     isPlaying: runtime.ui.gameStatus === 'playing',
   };
 
+  const gameContextValue = useMemo(
+    () => ({
+      gameState,
+      enemies,
+      towers,
+      projectiles,
+      effects,
+      waveState: waveState ?? null,
+      step,
+      removeEffect,
+      placeTower,
+      startGame,
+      resetGame,
+      selectedTower: runtime.ui.selectedTower,
+      setSelectedTower,
+      selectedEntityId: runtime.ui.selectedEntityId,
+      setSelectedEntityId,
+      upgradeTower,
+      sellTower,
+      isValidPlacement,
+      mapGrid,
+      pathWaypoints,
+      startNextSector,
+      purchaseUpgrade,
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+      skipWave,
+      gameSpeed,
+      setGameSpeed,
+      renderStateRef,
+    }),
+    [
+      gameState,
+      enemies,
+      towers,
+      projectiles,
+      effects,
+      waveState,
+      step,
+      removeEffect,
+      placeTower,
+      startGame,
+      resetGame,
+      runtime.ui.selectedTower,
+      setSelectedTower,
+      runtime.ui.selectedEntityId,
+      setSelectedEntityId,
+      upgradeTower,
+      sellTower,
+      isValidPlacement,
+      mapGrid,
+      pathWaypoints,
+      startNextSector,
+      purchaseUpgrade,
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+      skipWave,
+      gameSpeed,
+      setGameSpeed,
+      renderStateRef,
+    ],
+  );
+
+  const gameUiValue = useMemo(
+    () => ({
+      gameState,
+      waveState: waveState ?? null,
+      step,
+      removeEffect,
+      placeTower,
+      startGame,
+      resetGame,
+      selectedTower: runtime.ui.selectedTower,
+      setSelectedTower,
+      selectedEntityId: runtime.ui.selectedEntityId,
+      setSelectedEntityId,
+      upgradeTower,
+      sellTower,
+      startNextSector,
+      purchaseUpgrade,
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+      skipWave,
+      gameSpeed,
+      setGameSpeed,
+    }),
+    [
+      gameState,
+      waveState,
+      step,
+      removeEffect,
+      placeTower,
+      startGame,
+      resetGame,
+      runtime.ui.selectedTower,
+      setSelectedTower,
+      runtime.ui.selectedEntityId,
+      setSelectedEntityId,
+      upgradeTower,
+      sellTower,
+      startNextSector,
+      purchaseUpgrade,
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+      skipWave,
+      gameSpeed,
+      setGameSpeed,
+    ],
+  );
+
+  const renderStateValue = useMemo(
+    () => ({ renderStateRef }),
+    [],
+  );
+
+  const worldValue = useMemo(
+    () => ({
+      mapGrid,
+      placeTower,
+      isValidPlacement,
+      selectedTower: runtime.ui.selectedTower,
+      gameStatus: runtime.ui.gameStatus,
+      setSelectedEntityId,
+      renderStateRef,
+    }),
+    [
+      mapGrid,
+      placeTower,
+      isValidPlacement,
+      runtime.ui.selectedTower,
+      runtime.ui.gameStatus,
+      setSelectedEntityId,
+      renderStateRef,
+    ],
+  );
+
   return (
-    <GameContext.Provider
-      value={{
-        gameState,
-        enemies,
-        towers,
-        projectiles,
-        effects,
-        waveState: waveState ?? null,
-        step,
-        removeEffect,
-        placeTower,
-        startGame,
-        resetGame,
-        selectedTower: runtime.ui.selectedTower,
-        setSelectedTower,
-        selectedEntityId: runtime.ui.selectedEntityId,
-        setSelectedEntityId,
-        upgradeTower,
-        sellTower,
-        isValidPlacement,
-        mapGrid,
-        pathWaypoints,
-        startNextSector,
-        purchaseUpgrade,
-        setGraphicsQuality,
-        resetCheckpoint,
-        factoryReset,
-        applyCheckpointSave,
-        exportCheckpointJson,
-        skipWave,
-        gameSpeed,
-        setGameSpeed,
-        renderStateRef,
-      }}
-    >
-      {children}
+    <GameContext.Provider value={gameContextValue}>
+      <GameUiContext.Provider value={gameUiValue}>
+        <RenderStateContext.Provider value={renderStateValue}>
+          <WorldContext.Provider value={worldValue}>
+            {children}
+          </WorldContext.Provider>
+        </RenderStateContext.Provider>
+      </GameUiContext.Provider>
     </GameContext.Provider>
   );
 };
+

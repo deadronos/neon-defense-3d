@@ -2,19 +2,17 @@ import type { ThreeEvent } from '@react-three/fiber';
 import { useFrame } from '@react-three/fiber';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
-
 import { TOWER_CONFIGS } from '../../constants';
 import type { UpgradeType } from '../../types';
-import { useGame } from '../GameState';
+import { useGameUi, useRenderState } from '../GameState';
 import { getTowerStats } from '../utils';
-
 import { createComplexTowerBase } from './instancing/geometryUtils';
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedTowers: React.FC = () => {
-  const { setSelectedEntityId, selectedEntityId, gameState, renderStateRef } = useGame();
+  const { setSelectedEntityId, selectedEntityId, gameState } = useGameUi();
+  const renderStateRef = useRenderState();
   const [baseGeometry, setBaseGeometry] = useState<THREE.BufferGeometry | null>(null);
-
   const baseMeshRef = useRef<THREE.InstancedMesh>(null);
   const turretMeshRef = useRef<THREE.InstancedMesh>(null);
   const ringMeshRef = useRef<THREE.InstancedMesh>(null);
@@ -23,7 +21,6 @@ export const InstancedTowers: React.FC = () => {
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const colorCache = useRef<Map<string, THREE.Color>>(new Map());
 
-  // Use shared utility for geometry
   useEffect(() => {
     const geo = createComplexTowerBase();
     setBaseGeometry(geo);
@@ -41,7 +38,7 @@ export const InstancedTowers: React.FC = () => {
 
   useFrame(({ clock }) => {
     const towers = renderStateRef.current.towers;
-    const count = 100; // Max towers
+    const count = 100;
     const renderCount = Math.min(towers.length, count);
     const time = clock.getElapsedTime();
 
@@ -77,14 +74,11 @@ export const InstancedTowers: React.FC = () => {
         dummy.position.y += 0.8;
         const scale = 0.5 + tower.level * 0.1;
         dummy.scale.set(scale, scale, scale);
-
-        // Fixed: Explicit time-based rotation
         dummy.rotation.set(0, time, 0);
-
         dummy.updateMatrix();
         turretMeshRef.current.setMatrixAt(i, dummy.matrix);
 
-        TEMP_COLOR.copy(colorObj).multiplyScalar(10.0);
+        TEMP_COLOR.copy(colorObj).multiplyScalar(2.5);
         turretMeshRef.current.setColorAt(i, TEMP_COLOR);
       }
 
@@ -133,8 +127,7 @@ export const InstancedTowers: React.FC = () => {
     }
     if (turretMeshRef.current) {
       turretMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (turretMeshRef.current.instanceColor)
-        turretMeshRef.current.instanceColor.needsUpdate = true;
+      if (turretMeshRef.current.instanceColor) turretMeshRef.current.instanceColor.needsUpdate = true;
     }
     if (ringMeshRef.current) {
       ringMeshRef.current.instanceMatrix.needsUpdate = true;
@@ -162,11 +155,10 @@ export const InstancedTowers: React.FC = () => {
       {/* Base */}
       <instancedMesh
         ref={baseMeshRef}
-        args={[baseGeometry, undefined, 100]}
+        args={[baseGeometry, undefined, 100]} frustumCulled={false}
         onPointerDown={handlePointerDown}
-        frustumCulled={false}
       >
-        <meshStandardMaterial toneMapped={false} emissive="gray" emissiveIntensity={0.5} />
+        <meshLambertMaterial vertexColors />
       </instancedMesh>
 
       {/* Turret */}
@@ -177,7 +169,7 @@ export const InstancedTowers: React.FC = () => {
         frustumCulled={false}
       >
         <octahedronGeometry args={[0.5, 0]} />
-        <meshStandardMaterial toneMapped={false} emissive="white" emissiveIntensity={2} />
+        <meshLambertMaterial vertexColors />
       </instancedMesh>
 
       {/* Floating Ring */}
@@ -188,7 +180,7 @@ export const InstancedTowers: React.FC = () => {
         frustumCulled={false}
       >
         <torusGeometry args={[0.6, 0.05, 8, 32]} />
-        <meshStandardMaterial toneMapped={false} emissive="white" emissiveIntensity={1} />
+        <meshLambertMaterial vertexColors />
       </instancedMesh>
 
       {/* Range Ring */}
@@ -204,3 +196,5 @@ export const InstancedTowers: React.FC = () => {
     </group>
   );
 };
+
+
