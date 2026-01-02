@@ -303,6 +303,7 @@ Graphics quality persistence:
 
 4. WHEN runtime or GameState actions handle edge cases, THE SYSTEM SHALL be covered by unit tests for skip-wave behavior and checkpoint export/reset paths.  
    **Acceptance:** tests verify skip-wave only affects preparing waves and export/reset paths behave with and without saved checkpoints.
+
 ---
 
 # Requirements — Fixed Timestep + Render Interpolation + World Batching
@@ -323,4 +324,3 @@ Graphics quality persistence:
 
 4. WHEN rendering instanced enemies, towers, and projectiles, THE SYSTEM SHALL use lower-cost materials (Lambert/Basic) to reduce GPU load.
    **Acceptance:** instanced materials are non-PBR and render correctly at runtime.
-

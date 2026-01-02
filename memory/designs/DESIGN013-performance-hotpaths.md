@@ -50,6 +50,7 @@ GameLoopBridge -> GameState.step() -> stepEngine()
 ## Data Model Notes
 
 Cached structures are mutable and reused across ticks:
+
 - Maps are cleared each tick.
 - Arrays are length-reset, not replaced.
 - Segment lengths recomputed only when path or tile size changes.

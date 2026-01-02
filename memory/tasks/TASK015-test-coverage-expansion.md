@@ -26,13 +26,13 @@ Focus on high-impact logic: DynamicResScaler DPR adjustments, tower cooldown/tar
 
 ### Subtasks
 
-| ID  | Description                                       | Status       | Updated    | Notes |
-| --- | ------------------------------------------------- | ------------ | ---------- | ----- |
-| 1.1 | Requirements + design documentation               | Complete     | 2026-01-02 |       |
-| 1.2 | DynamicResScaler unit tests                        | Complete     | 2026-01-02 |       |
-| 1.3 | Tower + projectile engine edge-case tests          | Complete     | 2026-01-02 |       |
-| 1.4 | Runtime/GameState edge-case tests                  | Complete     | 2026-01-02 |       |
-| 1.5 | Update memory index + context notes                | Complete     | 2026-01-02 |       |
+| ID  | Description                               | Status   | Updated    | Notes |
+| --- | ----------------------------------------- | -------- | ---------- | ----- |
+| 1.1 | Requirements + design documentation       | Complete | 2026-01-02 |       |
+| 1.2 | DynamicResScaler unit tests               | Complete | 2026-01-02 |       |
+| 1.3 | Tower + projectile engine edge-case tests | Complete | 2026-01-02 |       |
+| 1.4 | Runtime/GameState edge-case tests         | Complete | 2026-01-02 |       |
+| 1.5 | Update memory index + context notes       | Complete | 2026-01-02 |       |
 
 ## Progress Log
 

@@ -24,11 +24,11 @@ Add unit tests for dynamic DPR scaling, tower cooldown/targeting, projectile shi
 
 ## Test Matrix
 
-| Area | Happy Path | Edge Case |
-| --- | --- | --- |
-| Dynamic DPR | DPR decreases when FPS is low | DPR clamps at min/max |
-| Towers | Fires at nearest target | No fire during cooldown |
-| Projectiles | Shield absorbs damage first | Freeze duration uses max |
+| Area              | Happy Path                         | Edge Case                            |
+| ----------------- | ---------------------------------- | ------------------------------------ |
+| Dynamic DPR       | DPR decreases when FPS is low      | DPR clamps at min/max                |
+| Towers            | Fires at nearest target            | No fire during cooldown              |
+| Projectiles       | Shield absorbs damage first        | Freeze duration uses max             |
 | Runtime/GameState | Skip-wave shortens preparing timer | Checkpoint export/reset without save |
 
 ## Error Handling / Diagnostics

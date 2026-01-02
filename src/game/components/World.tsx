@@ -1,6 +1,7 @@
 import type { ThreeEvent } from '@react-three/fiber';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+
 import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
 import { useWorld } from '../GameState';
@@ -93,18 +94,23 @@ export const World = React.memo(() => {
     (index: number) => {
       const tile = tiles[index];
       if (!tile) return;
-      if (
-        selectedTower &&
-        tile.type === TileType.Grass &&
-        gameStatus === 'playing'
-      ) {
+      if (selectedTower && tile.type === TileType.Grass && gameStatus === 'playing') {
         const valid = isValidPlacement(tile.x, tile.z);
         setInstanceColor(index, valid ? hoverValidColor : hoverInvalidColor);
         return;
       }
       setInstanceColor(index, baseColors[index]);
     },
-    [baseColors, gameStatus, hoverInvalidColor, hoverValidColor, isValidPlacement, selectedTower, setInstanceColor, tiles],
+    [
+      baseColors,
+      gameStatus,
+      hoverInvalidColor,
+      hoverValidColor,
+      isValidPlacement,
+      selectedTower,
+      setInstanceColor,
+      tiles,
+    ],
   );
 
   useLayoutEffect(() => {
@@ -196,6 +202,3 @@ export const World = React.memo(() => {
     </group>
   );
 });
-
-
-

@@ -10,7 +10,7 @@ Look for hot paths and improve performance overall with 5 targeted enhancements.
 
 ## Thought Process
 
-Focus on engine/render hot loops with minimal behavior change: reuse cached collections, avoid per-target sqrt, cache path segment lengths, reuse spatial grid buckets, and avoid O(n*m) projectile targeting in render.
+Focus on engine/render hot loops with minimal behavior change: reuse cached collections, avoid per-target sqrt, cache path segment lengths, reuse spatial grid buckets, and avoid O(n\*m) projectile targeting in render.
 
 ## Implementation Plan
 
@@ -26,15 +26,16 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 
 ### Subtasks
 
-| ID  | Description                                                   | Status      | Updated    | Notes |
-| --- | ------------------------------------------------------------- | ----------- | ---------- | ----- |
-| 1.1 | Draft requirements/design/task docs                           | Complete    | 2026-01-02 |       |
-| 1.2 | Implement engine hot-path cache optimizations                  | Complete    | 2026-01-02 |       |
-| 1.3 | Implement render-side projectile target lookup optimization    | Complete    | 2026-01-02 |       |
+| ID  | Description                                                    | Status      | Updated    | Notes                                                    |
+| --- | -------------------------------------------------------------- | ----------- | ---------- | -------------------------------------------------------- |
+| 1.1 | Draft requirements/design/task docs                            | Complete    | 2026-01-02 |                                                          |
+| 1.2 | Implement engine hot-path cache optimizations                  | Complete    | 2026-01-02 |                                                          |
+| 1.3 | Implement render-side projectile target lookup optimization    | Complete    | 2026-01-02 |                                                          |
 | 1.4 | Validate behavior parity + update memory/progress              | In Progress | 2026-01-02 | Typecheck fixed; manual FPS sampling done; tests pending |
-| 1.5 | Reduce render-loop instance work + avoid duplicate postprocess | Complete    | 2026-01-02 | Mesh count + single composer |
-| 1.6 | Address splash/tower/trail/projectile render hot paths         | Complete    | 2026-01-02 | Spatial reuse + pruning + lookAt removal |
-| 1.7 | Fixed timestep + render interpolation + world batching     | In Progress | 2026-01-02 |       |
+| 1.5 | Reduce render-loop instance work + avoid duplicate postprocess | Complete    | 2026-01-02 | Mesh count + single composer                             |
+| 1.6 | Address splash/tower/trail/projectile render hot paths         | Complete    | 2026-01-02 | Spatial reuse + pruning + lookAt removal                 |
+| 1.7 | Fixed timestep + render interpolation + world batching         | In Progress | 2026-01-02 |                                                          |
+
 ## Progress Log
 
 ### 2026-01-02
@@ -70,7 +71,3 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 - Implemented fixed-timestep simulation loop with render interpolation for enemies/projectiles.
 - Batched world tiles into instanced geometry with a single grid overlay and avoided per-tile React rerenders.
 - Switched instanced entity materials to Lambert/Basic to reduce GPU cost.
-
-
-
-

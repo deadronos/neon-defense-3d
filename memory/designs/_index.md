@@ -15,5 +15,3 @@
 
 - DESIGN001 - Memory bank initialization (metadata)
 - DESIGN003 - Performance optimizations and fixes
-
-

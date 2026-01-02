@@ -25,11 +25,11 @@ Add a small `DynamicResScaler` component that runs inside the Canvas, samples FP
 
 ### Subtasks
 
-| ID  | Description                              | Status    | Updated    | Notes |
-| --- | ---------------------------------------- | --------- | ---------- | ----- |
-| 1.1 | Write requirements and design doc         | Complete  | 2026-01-02 |       |
-| 1.2 | Implement DynamicResScaler component      | Complete  | 2026-01-02 |       |
-| 1.3 | Mount scaler and update documentation     | Complete  | 2026-01-02 |       |
+| ID  | Description                           | Status   | Updated    | Notes |
+| --- | ------------------------------------- | -------- | ---------- | ----- |
+| 1.1 | Write requirements and design doc     | Complete | 2026-01-02 |       |
+| 1.2 | Implement DynamicResScaler component  | Complete | 2026-01-02 |       |
+| 1.3 | Mount scaler and update documentation | Complete | 2026-01-02 |       |
 
 ## Progress Log
 
