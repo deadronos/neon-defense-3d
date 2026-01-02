@@ -143,3 +143,4 @@ export interface WorldContextProps {
   setSelectedEntityId: (id: string | null) => void;
   renderStateRef: MutableRefObject<RenderState>;
 }
+

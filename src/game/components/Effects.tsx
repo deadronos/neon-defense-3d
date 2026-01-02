@@ -1,6 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
+import type { EffectEntity } from '../../types';
 
 import { useRenderState } from '../GameState';
 
@@ -34,7 +35,7 @@ export const InstancedExplosions: React.FC<{
 
     const effects = renderStateRef.current.effects;
 
-    effects.forEach((effect) => {
+    effects.forEach((effect: EffectEntity) => {
       if (!processedRef.current.has(effect.id)) {
         processedRef.current.add(effect.id);
         spawnExplosion(
@@ -85,7 +86,7 @@ export const InstancedExplosions: React.FC<{
     meshRef.current.instanceMatrix.needsUpdate = true;
     if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
 
-    effects.forEach((e) => {
+    effects.forEach((e: EffectEntity) => {
       if (processedRef.current.has(e.id) && !activeEffectIds.has(e.id)) {
         remove(e.id);
         processedRef.current.delete(e.id);
@@ -100,3 +101,5 @@ export const InstancedExplosions: React.FC<{
     </instancedMesh>
   );
 };
+
+
