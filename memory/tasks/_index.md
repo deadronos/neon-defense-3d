@@ -3,6 +3,7 @@
 ## In Progress
 
 - [TASK003] Separate game engine and rendering — Extract pure engine layer + adapters, then migrate context/actions (2025-12-12)
+- [TASK013] Performance hot paths (targeted optimizations) (2026-01-02)
 
 ## Pending
 

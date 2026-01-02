@@ -240,3 +240,24 @@ Graphics quality persistence:
 - Detailed plan: `plans/settings-save-import-reset.md`
 - Design/spec: `memory/designs/DESIGN006-settings-modal-save-import-reset.md`
 - Implementation plan: `memory/tasks/TASK008-implement-settings-save-import-reset.md`
+
+---
+
+# Requirements — Performance Hot Paths (Targeted Optimizations)
+
+**Status:** Draft (living document)  
+**Updated:** 2026-01-02
+
+## Functional requirements (EARS)
+
+1. WHEN the engine tick runs with a cache instance, THE SYSTEM SHALL reuse cached collections for spatial grid, projectile tracking, and enemy positions to reduce per-tick allocations.  
+   **Acceptance:** engine tick output is unchanged and cached structures are mutated/cleared instead of replaced.
+
+2. WHEN towers evaluate targets, THE SYSTEM SHALL compare squared distances against squared ranges to avoid per-target square roots.  
+   **Acceptance:** targeting results match prior behavior for identical inputs.
+
+3. WHEN enemies advance along the path, THE SYSTEM SHALL reuse precomputed path segment lengths when available.  
+   **Acceptance:** movement results match prior behavior for identical inputs.
+
+4. WHEN projectiles are derived for rendering, THE SYSTEM SHALL use an enemy ID lookup table instead of scanning the enemy array per projectile.  
+   **Acceptance:** rendered projectile positions match prior behavior for identical inputs.

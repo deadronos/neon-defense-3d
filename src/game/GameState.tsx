@@ -108,10 +108,10 @@ const toEnemyEntity = (
 
 const toProjectileEntity = (
   projectile: EngineState['projectiles'][number],
-  enemies: EngineEnemy[],
+  enemiesById: Map<string, EngineEnemy>,
   pathWaypoints: readonly EngineVector2[],
 ): ProjectileEntity => {
-  const target = enemies.find((e) => e.id === projectile.targetId);
+  const target = enemiesById.get(projectile.targetId);
   const pos = selectProjectileWorldPosition(projectile, target, pathWaypoints, TILE_SIZE);
   return {
     id: projectile.id,
@@ -275,7 +275,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     projectileFreeze: new Map(),
     activeProjectiles: [],
     enemiesById: new Map(),
+    enemyPositions: new Map(),
+    enemyPositionPool: [],
     nextEnemies: [],
+    pathSegmentLengths: [],
+    scratchEnemyPos: [0, 0, 0],
   });
 
   const currentMapLayout = MAP_LAYOUTS[runtime.ui.currentMapIndex % MAP_LAYOUTS.length];
@@ -292,6 +296,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [runtime.engine.enemies, enemyTypeMap, enginePathWaypoints],
   );
 
+  const enemiesById = useMemo(() => {
+    const map = new Map<string, EngineEnemy>();
+    for (const enemy of runtime.engine.enemies) {
+      map.set(enemy.id, enemy);
+    }
+    return map;
+  }, [runtime.engine.enemies]);
+
   const towers = useMemo(
     () => runtime.engine.towers.map((tower) => toTowerEntity(tower)),
     [runtime.engine.towers],
@@ -300,9 +312,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const projectiles = useMemo(
     () =>
       runtime.engine.projectiles.map((projectile) =>
-        toProjectileEntity(projectile, runtime.engine.enemies, enginePathWaypoints),
+        toProjectileEntity(projectile, enemiesById, enginePathWaypoints),
       ),
-    [runtime.engine.projectiles, runtime.engine.enemies, enginePathWaypoints],
+    [runtime.engine.projectiles, enemiesById, enginePathWaypoints],
   );
 
   const effects = useMemo(

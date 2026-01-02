@@ -1,0 +1,43 @@
+# TASK013 - Performance hot paths (targeted optimizations)
+
+**Status:** In Progress  
+**Added:** 2026-01-02  
+**Updated:** 2026-01-02
+
+## Original Request
+
+Look for hot paths and improve performance overall with 5 targeted enhancements.
+
+## Thought Process
+
+Focus on engine/render hot loops with minimal behavior change: reuse cached collections, avoid per-target sqrt, cache path segment lengths, reuse spatial grid buckets, and avoid O(n*m) projectile targeting in render.
+
+## Implementation Plan
+
+- Extend engine cache and selectors to support reusable vectors and cached spatial data.
+- Optimize stepEnemies/stepTowers/stepProjectiles to reuse caches and reduce per-loop allocations.
+- Add render-side enemy ID lookup to avoid per-projectile scans.
+- Validate behavior parity via unit tests and manual sanity checks.
+- Update memory bank progress and task index.
+
+## Progress Tracking
+
+**Overall Status:** In Progress - 85%
+
+### Subtasks
+
+| ID  | Description                                                   | Status      | Updated    | Notes |
+| --- | ------------------------------------------------------------- | ----------- | ---------- | ----- |
+| 1.1 | Draft requirements/design/task docs                           | Complete    | 2026-01-02 |       |
+| 1.2 | Implement engine hot-path cache optimizations                  | Complete    | 2026-01-02 |       |
+| 1.3 | Implement render-side projectile target lookup optimization    | Complete    | 2026-01-02 |       |
+| 1.4 | Validate behavior parity + update memory/progress              | In Progress | 2026-01-02 | Pending tests |
+
+## Progress Log
+
+### 2026-01-02
+
+- Created requirements and design documentation for targeted performance improvements.
+- Implemented cached enemy positions, spatial grid reuse, squared distance checks, and path segment length caching.
+- Added render-side enemy ID lookup for projectile targeting.
+- Updated active context/progress docs; tests pending.

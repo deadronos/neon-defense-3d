@@ -5,6 +5,7 @@
 - Project scaffolding and developer scripts (`dev`, `build`, `test`, `e2e`) are present and configured.
 - Core gameplay loop, wave manager, tower placement, projectile collisions, and rendering are implemented under `src/game`.
 - Performance-oriented rendering: enemies and projectiles use instanced meshes to handle many entities efficiently.
+- Engine hot paths reuse cached spatial grids and enemy positions to reduce per-tick allocations.
 - Basic UI overlay, build/upgrade flow, and victory/tech-tree transitions are implemented in `src/components`.
 
 ## What's left / recommended next work

@@ -1,6 +1,7 @@
 import { stepEnemies } from './enemy';
 import { mergeEvents } from './events';
 import { stepProjectiles } from './projectile';
+import type { SpatialGrid } from './spatial';
 import { applyEnginePatch } from './state';
 import { stepTowers } from './tower';
 import type {
@@ -12,6 +13,7 @@ import type {
   EngineVector2,
   EngineEnemy,
   EngineProjectile,
+  EngineVector3,
 } from './types';
 import { stepWave } from './wave';
 
@@ -21,9 +23,20 @@ export interface EngineCache {
   projectileFreeze: Map<string, number>;
   activeProjectiles: EngineProjectile[];
   enemiesById: Map<string, EngineEnemy>;
+  enemyPositions: Map<string, EngineVector3>;
+  enemyPositionPool: EngineVector3[];
 
   // Reusable structures for enemies
   nextEnemies: EngineEnemy[];
+
+  // Cached path info
+  pathSegmentLengths: number[];
+  pathWaypointsRef?: readonly EngineVector2[];
+  pathTileSize?: number;
+
+  // Reusable spatial grid + scratch vectors
+  spatialGrid?: SpatialGrid;
+  scratchEnemyPos: EngineVector3;
 }
 
 export interface StepEngineOptions {
@@ -48,7 +61,7 @@ export const stepEngine = (
   if (enemyResult.patch.enemies !== undefined) patch.enemies = enemyResult.patch.enemies;
   workingState = applyEnginePatch(workingState, enemyResult.patch);
 
-  const towerResult = stepTowers(workingState, pathWaypoints, context, { tileSize });
+  const towerResult = stepTowers(workingState, pathWaypoints, context, { tileSize }, cache);
   patch.towers = towerResult.patch.towers ?? patch.towers;
   patch.projectiles = towerResult.patch.projectiles ?? patch.projectiles;
   if (towerResult.patch.idCounters) {

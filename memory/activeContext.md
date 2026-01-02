@@ -2,25 +2,18 @@
 
 ## Current focus
 
-- Implementing Tech Tree UI and Meta-Progression.
+- Improving runtime performance in engine/render hot paths.
 
 ## Recent changes (code highlights)
 
-- **Meta-Progression:** Updated `uiReducer.ts` to persist `researchPoints` and `upgrades` across runs.
-- **UI:**
-  - Implemented reusable `TechTreeModal` component.
-  - Integrated Tech Tree access into `IdleScreen` and `UI.tsx`.
-  - Added `factoryReset` to handle full state wipes.
-- **New Towers:** Implemented **Cryo Tower** (Status Effects) and **Missile Tower** (AOE Damage).
-- **Engine Logic:**
-  - Updated `src/game/engine/projectile.ts` to support `splashRadius` (AOE) and `freezeDuration`.
-  - Updated `src/game/engine/enemy.ts` to process `frozen` state (speed reduction).
+- **Engine hot paths:** Added cached path segment lengths, reusable spatial grid buckets, and enemy position caching to reduce per-tick allocations.
+- **Tower targeting:** Switched to squared-distance checks in `stepTowers`.
+- **Rendering:** Added enemy ID lookup map to avoid per-projectile scans.
 
 ## Next steps
 
 - Do a manual gameplay parity pass (movement, firing cadence, rewards, victory after wave 10).
-- Consider reducing per-frame allocations from deriving `THREE.Vector3` in selectors if performance/GC becomes an issue.
-- Monitor runtime performance and reduce allocations in hot loops if GC pressure appears.
+- Consider extending cached vector usage into render selectors if GC pressure persists.
 
 ## Open decisions
 

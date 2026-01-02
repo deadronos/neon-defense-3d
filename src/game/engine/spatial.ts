@@ -1,6 +1,6 @@
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
 
-import { selectEnemyWorldPosition } from './selectors';
+import { writeEnemyWorldPosition } from './selectors';
 import type { EngineEnemy, EngineVector2, EngineVector3 } from './types';
 
 /**
@@ -24,16 +24,24 @@ export const buildSpatialGrid = (
   tileSize: number = TILE_SIZE,
   width: number = MAP_WIDTH,
   height: number = MAP_HEIGHT,
+  reuseGrid?: SpatialGrid,
+  scratchPosition: EngineVector3 = [0, 0, 0],
 ): SpatialGrid => {
   const size = width * height;
-  // Pre-allocate the array with empty arrays
-  const grid: SpatialGrid = new Array(size);
+  const grid: SpatialGrid =
+    reuseGrid && reuseGrid.length === size ? reuseGrid : new Array<EngineEnemy[]>(size);
+
   for (let i = 0; i < size; i++) {
-    grid[i] = [];
+    const cell = grid[i];
+    if (cell) {
+      cell.length = 0;
+    } else {
+      grid[i] = [];
+    }
   }
 
   for (const enemy of enemies) {
-    const pos = selectEnemyWorldPosition(enemy, pathWaypoints, tileSize);
+    const pos = writeEnemyWorldPosition(scratchPosition, enemy, pathWaypoints, tileSize);
     const x = Math.floor(pos[0] / tileSize);
     const z = Math.floor(pos[2] / tileSize);
 
