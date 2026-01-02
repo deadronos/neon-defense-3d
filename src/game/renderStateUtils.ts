@@ -5,6 +5,7 @@ import type {
   TowerEntity,
   EnemyConfig,
   TowerType,
+  Position3,
 } from '../types';
 
 import { selectEnemyWorldPosition } from './engine/selectors';
@@ -219,13 +220,13 @@ export const syncRenderState = (
   for (const proj of engine.projectiles) {
     const target = renderState.enemiesById.get(proj.targetId);
     // If we have a render-time enemy target, lerp toward its known world position (avoids using engine types).
-    const pos = target
-      ? [
+    const pos: Position3 = target
+      ? ([
           proj.origin[0] + (target.position[0] - proj.origin[0]) * proj.progress,
           proj.origin[1] + (target.position[1] - proj.origin[1]) * proj.progress,
           proj.origin[2] + (target.position[2] - proj.origin[2]) * proj.progress,
-        ]
-      : proj.origin;
+        ] as Position3)
+      : (proj.origin as Position3);
 
     nextProjectiles.push({
       id: proj.id,

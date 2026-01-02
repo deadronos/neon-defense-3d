@@ -52,12 +52,18 @@ import {
 import { createInitialRenderState, syncRenderState } from './renderStateUtils';
 import { getTowerStats } from './utils';
 
-type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
-
-const buildEnemyTypeMap = () => {
-  const map = new Map<string, EnemyTypeConfig>();
+const buildEnemyTypeMap = (): Map<string, EnemyConfig> => {
+  const map = new Map<string, EnemyConfig>();
   for (const config of Object.values(ENEMY_TYPES)) {
-    map.set(config.name, config);
+    map.set(config.name, {
+      speed: config.speed,
+      hp: config.hpBase,
+      shield: config.shield,
+      reward: config.reward,
+      color: config.color,
+      scale: config.scale,
+      abilities: config.abilities,
+    });
   }
   return map;
 };
@@ -76,7 +82,7 @@ const toWaveState = (engineWave: EngineState['wave']): WaveState | null => {
 
 const toEnemyEntity = (
   enemy: EngineEnemy,
-  enemyTypeMap: Map<string, EnemyTypeConfig>,
+  enemyTypeMap: Map<string, EnemyConfig>,
   pathWaypoints: readonly EngineVector2[],
 ): EnemyEntity => {
   const baseConfig = enemyTypeMap.get(enemy.type);
