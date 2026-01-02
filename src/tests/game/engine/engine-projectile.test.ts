@@ -110,4 +110,95 @@ describe('engine stepProjectiles', () => {
     expect(result.patch.enemies?.[1].hp).toBe(50);
     expect(result.events.deferred).toContainEqual({ type: 'DamageDealt', amount: 100 });
   });
+
+  it('applies shield damage before HP damage', () => {
+    const state = {
+      ...createInitialEngineState(),
+      enemies: [
+        {
+          id: 'enemy-1',
+          type: 'Drone',
+          pathIndex: 0,
+          progress: 0,
+          hp: 100,
+          shield: 20,
+          reward: 10,
+        },
+      ],
+      projectiles: [
+        {
+          id: 'projectile-1',
+          origin: [0, 2, 0] as [number, number, number],
+          targetId: 'enemy-1',
+          speed: 20,
+          progress: 0.99,
+          damage: 10,
+          color: '#fff',
+        },
+      ],
+    };
+
+    const result = stepProjectiles(
+      state,
+      path,
+      { deltaMs: 100, nowMs: 2000, rng: () => 0.5 },
+      { tileSize: 2 },
+    );
+
+    expect(result.patch.enemies).toHaveLength(1);
+    const enemy = result.patch.enemies?.[0];
+    expect(enemy?.shield).toBe(10);
+    expect(enemy?.hp).toBe(100);
+    expect(result.events.deferred).toContainEqual({ type: 'DamageDealt', amount: 10 });
+  });
+
+  it('uses the max freeze duration when multiple hits apply freeze', () => {
+    const state = {
+      ...createInitialEngineState(),
+      enemies: [
+        {
+          id: 'enemy-1',
+          type: 'Drone',
+          pathIndex: 0,
+          progress: 0,
+          hp: 100,
+          shield: 0,
+          reward: 10,
+          frozen: 0,
+        },
+      ],
+      projectiles: [
+        {
+          id: 'projectile-1',
+          origin: [0, 2, 0] as [number, number, number],
+          targetId: 'enemy-1',
+          speed: 20,
+          progress: 0.99,
+          damage: 1,
+          color: '#fff',
+          freezeDuration: 1,
+        },
+        {
+          id: 'projectile-2',
+          origin: [0, 2, 0] as [number, number, number],
+          targetId: 'enemy-1',
+          speed: 20,
+          progress: 0.99,
+          damage: 1,
+          color: '#fff',
+          freezeDuration: 2,
+        },
+      ],
+    };
+
+    const result = stepProjectiles(
+      state,
+      path,
+      { deltaMs: 100, nowMs: 2000, rng: () => 0.5 },
+      { tileSize: 2 },
+    );
+
+    expect(result.patch.enemies).toHaveLength(1);
+    expect(result.patch.enemies?.[0]?.frozen).toBe(2);
+  });
 });

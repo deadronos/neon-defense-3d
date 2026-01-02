@@ -240,3 +240,87 @@ Graphics quality persistence:
 - Detailed plan: `plans/settings-save-import-reset.md`
 - Design/spec: `memory/designs/DESIGN006-settings-modal-save-import-reset.md`
 - Implementation plan: `memory/tasks/TASK008-implement-settings-save-import-reset.md`
+
+---
+
+# Requirements — Performance Hot Paths (Targeted Optimizations)
+
+**Status:** Draft (living document)  
+**Updated:** 2026-01-02
+
+## Functional requirements (EARS)
+
+1. WHEN the engine tick runs with a cache instance, THE SYSTEM SHALL reuse cached collections for spatial grid, projectile tracking, and enemy positions to reduce per-tick allocations.  
+   **Acceptance:** engine tick output is unchanged and cached structures are mutated/cleared instead of replaced.
+
+2. WHEN towers evaluate targets, THE SYSTEM SHALL compare squared distances against squared ranges to avoid per-target square roots.  
+   **Acceptance:** targeting results match prior behavior for identical inputs.
+
+3. WHEN enemies advance along the path, THE SYSTEM SHALL reuse precomputed path segment lengths when available.  
+   **Acceptance:** movement results match prior behavior for identical inputs.
+
+4. WHEN projectiles are derived for rendering, THE SYSTEM SHALL use an enemy ID lookup table instead of scanning the enemy array per projectile.  
+   **Acceptance:** rendered projectile positions match prior behavior for identical inputs.
+
+---
+
+# Requirements — Dynamic Resolution Scaling
+
+**Status:** Draft (living document)  
+**Updated:** 2026-01-02
+
+## Functional requirements (EARS)
+
+1. WHEN the frame rate drops below the target range, THE SYSTEM SHALL reduce DPR in small steps within configured bounds.  
+   **Acceptance:** DPR decreases when FPS stays below the target for at least one check interval.
+
+2. WHEN the frame rate rises above the target range, THE SYSTEM SHALL increase DPR in small steps within configured bounds.  
+   **Acceptance:** DPR increases when FPS stays above the target for at least one check interval.
+
+3. WHEN DPR changes, THE SYSTEM SHALL clamp the value between `MIN_DPR` and `MAX_DPR`.  
+   **Acceptance:** DPR never falls below `MIN_DPR` or exceeds `MAX_DPR`.
+
+4. WHEN the game starts, THE SYSTEM SHALL initialize DPR to `MAX_DPR` and adjust dynamically thereafter.  
+   **Acceptance:** initial DPR matches `MAX_DPR` and subsequent changes occur via the scaler.
+
+---
+
+# Requirements — Test Coverage Expansion
+
+**Status:** Draft (living document)  
+**Updated:** 2026-01-02
+
+## Functional requirements (EARS)
+
+1. WHEN dynamic DPR scaling runs, THE SYSTEM SHALL be covered by unit tests for lowering, raising, and clamping DPR values.  
+   **Acceptance:** unit tests assert DPR adjustments and bounds for low/high FPS scenarios.
+
+2. WHEN tower targeting runs, THE SYSTEM SHALL be covered by unit tests for cooldown handling and nearest-target selection.  
+   **Acceptance:** tests verify no projectile on cooldown and correct target selection when multiple enemies are in range.
+
+3. WHEN projectile resolution runs, THE SYSTEM SHALL be covered by unit tests for shield damage and freeze stacking behavior.  
+   **Acceptance:** tests verify shields absorb damage first and freeze duration uses max across hits.
+
+4. WHEN runtime or GameState actions handle edge cases, THE SYSTEM SHALL be covered by unit tests for skip-wave behavior and checkpoint export/reset paths.  
+   **Acceptance:** tests verify skip-wave only affects preparing waves and export/reset paths behave with and without saved checkpoints.
+
+---
+
+# Requirements — Fixed Timestep + Render Interpolation + World Batching
+
+**Status:** Draft (living document)
+**Updated:** 2026-01-02
+
+## Functional requirements (EARS)
+
+1. WHEN the render loop advances simulation time, THE SYSTEM SHALL step the engine using a fixed timestep and accumulate frame time for deterministic updates.
+   **Acceptance:** stepping with the same real-time input produces stable tick counts and does not depend on frame rate.
+
+2. WHEN rendering between simulation ticks, THE SYSTEM SHALL interpolate enemy and projectile positions between the previous and current simulation states.
+   **Acceptance:** visible entity motion remains smooth when frame time varies.
+
+3. WHEN rendering the world grid, THE SYSTEM SHALL batch static tiles into instanced geometry and render a single grid overlay instead of per-tile meshes.
+   **Acceptance:** the world grid renders with one instanced mesh and one line overlay.
+
+4. WHEN rendering instanced enemies, towers, and projectiles, THE SYSTEM SHALL use lower-cost materials (Lambert/Basic) to reduce GPU load.
+   **Acceptance:** instanced materials are non-PBR and render correctly at runtime.

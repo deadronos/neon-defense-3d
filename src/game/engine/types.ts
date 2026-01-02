@@ -2,6 +2,7 @@ import type { EngineEvent } from './events';
 
 export type EngineVector2 = readonly [number, number];
 export type EngineVector3 = readonly [number, number, number];
+export type EngineMutableVector3 = [number, number, number];
 
 export interface EngineEnemy {
   id: string;

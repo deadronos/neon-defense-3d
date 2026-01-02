@@ -1,22 +1,9 @@
 import { Canvas } from '@react-three/fiber';
-import { Bloom, EffectComposer } from '@react-three/postprocessing';
 import React from 'react';
 import * as THREE from 'three';
 
+import { DynamicResScaler } from './components/DynamicResScaler';
 import { SceneContent } from './components/Scene';
-import { useGame } from './GameState';
-
-const PostProcessing = () => {
-  const { gameState } = useGame();
-
-  if (gameState.graphicsQuality === 'low') return null;
-
-  return (
-    <EffectComposer enableNormalPass={false}>
-      <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.4} />
-    </EffectComposer>
-  );
-};
 
 export const GameCanvas = () => {
   return (
@@ -32,8 +19,8 @@ export const GameCanvas = () => {
           // Let's keep defaults but be aware.
         }}
       >
+        <DynamicResScaler />
         <SceneContent />
-        <PostProcessing />
       </Canvas>
     </div>
   );

@@ -33,7 +33,12 @@ import type {
 import { TileType, UpgradeType } from '../types';
 
 import { useAudio } from './audio/AudioManager';
-import type { GameContextProps } from './contextTypes';
+import type {
+  GameContextProps,
+  GameUiContextProps,
+  RenderStateContextProps,
+  WorldContextProps,
+} from './contextTypes';
 import { applyEngineRuntimeAction } from './engine/runtime';
 import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
 import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
@@ -49,14 +54,21 @@ import {
   saveCheckpoint,
   serializeCheckpoint,
 } from './persistence';
+import { createInitialRenderState, syncRenderState } from './renderStateUtils';
 import { getTowerStats } from './utils';
 
-type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
-
-const buildEnemyTypeMap = () => {
-  const map = new Map<string, EnemyTypeConfig>();
+const buildEnemyTypeMap = (): Map<string, EnemyConfig> => {
+  const map = new Map<string, EnemyConfig>();
   for (const config of Object.values(ENEMY_TYPES)) {
-    map.set(config.name, config);
+    map.set(config.name, {
+      speed: config.speed,
+      hp: config.hpBase,
+      shield: config.shield,
+      reward: config.reward,
+      color: config.color,
+      scale: config.scale,
+      abilities: config.abilities,
+    });
   }
   return map;
 };
@@ -75,7 +87,7 @@ const toWaveState = (engineWave: EngineState['wave']): WaveState | null => {
 
 const toEnemyEntity = (
   enemy: EngineEnemy,
-  enemyTypeMap: Map<string, EnemyTypeConfig>,
+  enemyTypeMap: Map<string, EnemyConfig>,
   pathWaypoints: readonly EngineVector2[],
 ): EnemyEntity => {
   const baseConfig = enemyTypeMap.get(enemy.type);
@@ -108,10 +120,10 @@ const toEnemyEntity = (
 
 const toProjectileEntity = (
   projectile: EngineState['projectiles'][number],
-  enemies: EngineEnemy[],
+  enemiesById: Map<string, EngineEnemy>,
   pathWaypoints: readonly EngineVector2[],
 ): ProjectileEntity => {
-  const target = enemies.find((e) => e.id === projectile.targetId);
+  const target = enemiesById.get(projectile.targetId);
   const pos = selectProjectileWorldPosition(projectile, target, pathWaypoints, TILE_SIZE);
   return {
     id: projectile.id,
@@ -223,10 +235,31 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
 
 /** Context for managing game state. */
 const GameContext = createContext<GameContextProps | undefined>(undefined);
+const GameUiContext = createContext<GameUiContextProps | undefined>(undefined);
+const RenderStateContext = createContext<RenderStateContextProps | undefined>(undefined);
+const WorldContext = createContext<WorldContextProps | undefined>(undefined);
 
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) throw new Error('useGame must be used within GameProvider');
+  return context;
+};
+
+export const useGameUi = () => {
+  const context = useContext(GameUiContext);
+  if (!context) throw new Error('useGameUi must be used within GameProvider');
+  return context;
+};
+
+export const useRenderState = () => {
+  const context = useContext(RenderStateContext);
+  if (!context) throw new Error('useRenderState must be used within GameProvider');
+  return context.renderStateRef;
+};
+
+export const useWorld = () => {
+  const context = useContext(WorldContext);
+  if (!context) throw new Error('useWorld must be used within GameProvider');
   return context;
 };
 
@@ -241,6 +274,8 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const runtimeRef = useRef(runtime);
   runtimeRef.current = runtime;
+
+  const renderStateRef = useRef(createInitialRenderState());
 
   const lastAutosavedNonceRef = useRef<number>(-1);
 
@@ -275,7 +310,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     projectileFreeze: new Map(),
     activeProjectiles: [],
     enemiesById: new Map(),
+    enemyPositions: new Map(),
+    enemyPositionPool: [],
     nextEnemies: [],
+    pathSegmentLengths: [],
+    scratchEnemyPos: [0, 0, 0],
   });
 
   const currentMapLayout = MAP_LAYOUTS[runtime.ui.currentMapIndex % MAP_LAYOUTS.length];
@@ -292,6 +331,14 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [runtime.engine.enemies, enemyTypeMap, enginePathWaypoints],
   );
 
+  const enemiesById = useMemo(() => {
+    const map = new Map<string, EngineEnemy>();
+    for (const enemy of runtime.engine.enemies) {
+      map.set(enemy.id, enemy);
+    }
+    return map;
+  }, [runtime.engine.enemies]);
+
   const towers = useMemo(
     () => runtime.engine.towers.map((tower) => toTowerEntity(tower)),
     [runtime.engine.towers],
@@ -300,9 +347,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const projectiles = useMemo(
     () =>
       runtime.engine.projectiles.map((projectile) =>
-        toProjectileEntity(projectile, runtime.engine.enemies, enginePathWaypoints),
+        toProjectileEntity(projectile, enemiesById, enginePathWaypoints),
       ),
-    [runtime.engine.projectiles, runtime.engine.enemies, enginePathWaypoints],
+    [runtime.engine.projectiles, enemiesById, enginePathWaypoints],
   );
 
   const effects = useMemo(
@@ -316,12 +363,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     (x: number, z: number) => {
       if (x < 0 || x >= mapGrid[0].length || z < 0 || z >= mapGrid.length) return false;
       if (mapGrid[z][x] !== TileType.Grass) return false;
-      if (
-        runtimeRef.current.engine.towers.some(
-          (t) => t.gridPosition[0] === x && t.gridPosition[1] === z,
-        )
-      )
-        return false;
+
+      // Use the cached O(1) grid occupancy map from renderState
+      const key = `${x},${z}`;
+      if (renderStateRef.current.gridOccupancy.has(key)) return false;
+
       return true;
     },
     [mapGrid],
@@ -453,6 +499,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         engineCacheRef.current,
       );
 
+      // --- Sync Engine State to Mutable Render State ---
+      syncRenderState(result.state, renderStateRef.current, {
+        enemyTypeMap,
+        pathWaypoints: enginePathWaypoints,
+        tileSize: TILE_SIZE,
+      });
+
       // Process engine events for Audio
       if (result.events.immediate.length > 0 || result.events.deferred.length > 0) {
         const allEvents = [...result.events.immediate, ...result.events.deferred];
@@ -499,42 +552,158 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     isPlaying: runtime.ui.gameStatus === 'playing',
   };
 
+  const gameContextValue = useMemo(
+    () => ({
+      gameState,
+      enemies,
+      towers,
+      projectiles,
+      effects,
+      waveState: waveState ?? null,
+      step,
+      removeEffect,
+      placeTower,
+      startGame,
+      resetGame,
+      selectedTower: runtime.ui.selectedTower,
+      setSelectedTower,
+      selectedEntityId: runtime.ui.selectedEntityId,
+      setSelectedEntityId,
+      upgradeTower,
+      sellTower,
+      isValidPlacement,
+      mapGrid,
+      pathWaypoints,
+      startNextSector,
+      purchaseUpgrade,
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+      skipWave,
+      gameSpeed,
+      setGameSpeed,
+      renderStateRef,
+    }),
+    [
+      gameState,
+      enemies,
+      towers,
+      projectiles,
+      effects,
+      waveState,
+      step,
+      removeEffect,
+      placeTower,
+      startGame,
+      resetGame,
+      runtime.ui.selectedTower,
+      setSelectedTower,
+      runtime.ui.selectedEntityId,
+      setSelectedEntityId,
+      upgradeTower,
+      sellTower,
+      isValidPlacement,
+      mapGrid,
+      pathWaypoints,
+      startNextSector,
+      purchaseUpgrade,
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+      skipWave,
+      gameSpeed,
+      setGameSpeed,
+      renderStateRef,
+    ],
+  );
+
+  const gameUiValue = useMemo(
+    () => ({
+      gameState,
+      waveState: waveState ?? null,
+      step,
+      removeEffect,
+      placeTower,
+      startGame,
+      resetGame,
+      selectedTower: runtime.ui.selectedTower,
+      setSelectedTower,
+      selectedEntityId: runtime.ui.selectedEntityId,
+      setSelectedEntityId,
+      upgradeTower,
+      sellTower,
+      startNextSector,
+      purchaseUpgrade,
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+      skipWave,
+      gameSpeed,
+      setGameSpeed,
+    }),
+    [
+      gameState,
+      waveState,
+      step,
+      removeEffect,
+      placeTower,
+      startGame,
+      resetGame,
+      runtime.ui.selectedTower,
+      setSelectedTower,
+      runtime.ui.selectedEntityId,
+      setSelectedEntityId,
+      upgradeTower,
+      sellTower,
+      startNextSector,
+      purchaseUpgrade,
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+      skipWave,
+      gameSpeed,
+      setGameSpeed,
+    ],
+  );
+
+  const renderStateValue = useMemo(() => ({ renderStateRef }), []);
+
+  const worldValue = useMemo(
+    () => ({
+      mapGrid,
+      placeTower,
+      isValidPlacement,
+      selectedTower: runtime.ui.selectedTower,
+      gameStatus: runtime.ui.gameStatus,
+      setSelectedEntityId,
+      renderStateRef,
+    }),
+    [
+      mapGrid,
+      placeTower,
+      isValidPlacement,
+      runtime.ui.selectedTower,
+      runtime.ui.gameStatus,
+      setSelectedEntityId,
+      renderStateRef,
+    ],
+  );
+
   return (
-    <GameContext.Provider
-      value={{
-        gameState,
-        enemies,
-        towers,
-        projectiles,
-        effects,
-        waveState: waveState ?? null,
-        step,
-        removeEffect,
-        placeTower,
-        startGame,
-        resetGame,
-        selectedTower: runtime.ui.selectedTower,
-        setSelectedTower,
-        selectedEntityId: runtime.ui.selectedEntityId,
-        setSelectedEntityId,
-        upgradeTower,
-        sellTower,
-        isValidPlacement,
-        mapGrid,
-        pathWaypoints,
-        startNextSector,
-        purchaseUpgrade,
-        setGraphicsQuality,
-        resetCheckpoint,
-        factoryReset,
-        applyCheckpointSave,
-        exportCheckpointJson,
-        skipWave,
-        gameSpeed,
-        setGameSpeed,
-      }}
-    >
-      {children}
+    <GameContext.Provider value={gameContextValue}>
+      <GameUiContext.Provider value={gameUiValue}>
+        <RenderStateContext.Provider value={renderStateValue}>
+          <WorldContext.Provider value={worldValue}>{children}</WorldContext.Provider>
+        </RenderStateContext.Provider>
+      </GameUiContext.Provider>
     </GameContext.Provider>
   );
 };

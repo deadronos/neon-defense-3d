@@ -2,25 +2,33 @@
 
 ## Current focus
 
-- Implementing Tech Tree UI and Meta-Progression.
+- Improving runtime performance in engine/render hot paths and adaptive rendering quality.
 
 ## Recent changes (code highlights)
 
-- **Meta-Progression:** Updated `uiReducer.ts` to persist `researchPoints` and `upgrades` across runs.
-- **UI:**
-  - Implemented reusable `TechTreeModal` component.
-  - Integrated Tech Tree access into `IdleScreen` and `UI.tsx`.
-  - Added `factoryReset` to handle full state wipes.
-- **New Towers:** Implemented **Cryo Tower** (Status Effects) and **Missile Tower** (AOE Damage).
-- **Engine Logic:**
-  - Updated `src/game/engine/projectile.ts` to support `splashRadius` (AOE) and `freezeDuration`.
-  - Updated `src/game/engine/enemy.ts` to process `frozen` state (speed reduction).
+- Implemented fixed-timestep simulation loop with render interpolation in the render bridge.
+- Batched world tiles into an instanced mesh with a single grid overlay and hover updates.
+- Downgraded instanced materials (Lambert/Basic) for enemies, towers, and projectiles.
+
+- **Engine hot paths:** Added cached path segment lengths, reusable spatial grid buckets, and enemy position caching to reduce per-tick allocations.
+- **Tower targeting:** Switched to squared-distance checks in `stepTowers`.
+- **Rendering:** Avoided per-projectile enemy scans with a memoized enemy ID map.
+- **Rendering:** Instanced render hook now uses `mesh.count` to skip zeroing unused instances per frame.
+- **Rendering:** Removed duplicate post-processing composer to avoid double full-screen passes.
+- **Rendering:** Removed per-projectile lookAt and pruned trail spawn bookkeeping to reduce per-frame CPU.
+- **Engine:** Reused spatial grid for splash checks and cached enemy positions for tower targeting.
+- **Rendering:** Added a dynamic resolution scaler that adjusts DPR based on FPS.
+- **Testing:** Added unit coverage for DPR scaling, tower cooldown/targeting, projectile shield/freeze, and runtime checkpoint/skip-wave edges.
+- **Rendering:** Fixed world grid overlay rotation so it sits on the ground plane again.
+- **Rendering:** Switched world/enemy materials to unlit and brightened tile colors for clearer map/path/enemy visibility.
+- **Rendering:** Fixed instanced tower/projectile coloring by ensuring instanced meshes have both `instanceColor` *and* a vertex `color` attribute so Three enables the shader color path and applies `instanceColor` at render time.
+- **Rendering:** Aligned the world grid overlay with tile boundaries (grid line geometry is offset by half a tile).
 
 ## Next steps
 
 - Do a manual gameplay parity pass (movement, firing cadence, rewards, victory after wave 10).
-- Consider reducing per-frame allocations from deriving `THREE.Vector3` in selectors if performance/GC becomes an issue.
-- Monitor runtime performance and reduce allocations in hot loops if GC pressure appears.
+- Verify dynamic DPR behavior on a range of devices and consider exposing tuning to a graphics setting.
+- Consider extending cached vector usage into render selectors if GC pressure persists.
 
 ## Open decisions
 

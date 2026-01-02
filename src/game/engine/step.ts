@@ -1,6 +1,7 @@
 import { stepEnemies } from './enemy';
 import { mergeEvents } from './events';
 import { stepProjectiles } from './projectile';
+import type { SpatialGrid } from './spatial';
 import { applyEnginePatch } from './state';
 import { stepTowers } from './tower';
 import type {
@@ -12,6 +13,7 @@ import type {
   EngineVector2,
   EngineEnemy,
   EngineProjectile,
+  EngineMutableVector3,
 } from './types';
 import { stepWave } from './wave';
 
@@ -21,9 +23,21 @@ export interface EngineCache {
   projectileFreeze: Map<string, number>;
   activeProjectiles: EngineProjectile[];
   enemiesById: Map<string, EngineEnemy>;
+  enemyPositions: Map<string, EngineMutableVector3>;
+  enemyPositionPool: EngineMutableVector3[];
+  enemyPositionsSource?: EngineEnemy[];
 
   // Reusable structures for enemies
   nextEnemies: EngineEnemy[];
+
+  // Cached path info
+  pathSegmentLengths: number[];
+  pathWaypointsRef?: readonly EngineVector2[];
+  pathTileSize?: number;
+
+  // Reusable spatial grid + scratch vectors
+  spatialGrid?: SpatialGrid;
+  scratchEnemyPos: EngineMutableVector3;
 }
 
 export interface StepEngineOptions {
@@ -38,7 +52,7 @@ export const stepEngine = (
   context: EngineTickContext,
   options: StepEngineOptions = {},
   cache?: EngineCache,
-): EngineTickResult => {
+): EngineTickResult & { state: EngineState } => {
   const tileSize = options.tileSize;
   const waveResult = stepWave(state, pathWaypoints, context, { prepTimeMs: options.prepTimeMs });
   let workingState = applyEnginePatch(state, waveResult.patch);
@@ -48,7 +62,7 @@ export const stepEngine = (
   if (enemyResult.patch.enemies !== undefined) patch.enemies = enemyResult.patch.enemies;
   workingState = applyEnginePatch(workingState, enemyResult.patch);
 
-  const towerResult = stepTowers(workingState, pathWaypoints, context, { tileSize });
+  const towerResult = stepTowers(workingState, pathWaypoints, context, { tileSize }, cache);
   patch.towers = towerResult.patch.towers ?? patch.towers;
   patch.projectiles = towerResult.patch.projectiles ?? patch.projectiles;
   if (towerResult.patch.idCounters) {
@@ -93,7 +107,7 @@ export const stepEngine = (
     patch.wave = { ...workingState.wave, enemiesAlive: workingState.enemies.length };
   }
 
-  return { patch, events };
+  return { patch, events, state: workingState };
 };
 
 // Explicit re-exports to aid test readability without widening public API surface elsewhere.
