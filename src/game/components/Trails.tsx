@@ -1,7 +1,9 @@
 import { useFrame } from '@react-three/fiber';
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+
 import { useRenderState } from '../GameState';
+
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 import { ParticlePool } from './instancing/ParticlePool';
 

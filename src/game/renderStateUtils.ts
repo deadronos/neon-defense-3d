@@ -293,5 +293,3 @@ export const syncRenderState = (
     createdAt: e.createdAt,
   }));
 };
-
-

@@ -1,7 +1,9 @@
 import { useFrame } from '@react-three/fiber';
 import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
+
 import { useRenderState } from '../GameState';
+
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -92,7 +94,8 @@ export const InstancedEnemies: React.FC = () => {
     }
     if (shieldMeshRef.current) {
       shieldMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (shieldMeshRef.current.instanceColor) shieldMeshRef.current.instanceColor.needsUpdate = true;
+      if (shieldMeshRef.current.instanceColor)
+        shieldMeshRef.current.instanceColor.needsUpdate = true;
     }
     if (ringMeshRef.current) {
       ringMeshRef.current.instanceMatrix.needsUpdate = true;
@@ -125,5 +128,3 @@ export const InstancedEnemies: React.FC = () => {
     </group>
   );
 };
-
-

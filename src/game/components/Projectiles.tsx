@@ -1,7 +1,9 @@
 import { useFrame } from '@react-three/fiber';
 import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
+
 import { useRenderState } from '../GameState';
+
 import { TEMP_COLOR } from './instancing/instancedUtils';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
@@ -51,4 +53,3 @@ export const InstancedProjectiles: React.FC = () => {
     </instancedMesh>
   );
 };
-

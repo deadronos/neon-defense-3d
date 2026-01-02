@@ -33,7 +33,12 @@ import type {
 import { TileType, UpgradeType } from '../types';
 
 import { useAudio } from './audio/AudioManager';
-import type { GameContextProps, GameUiContextProps, RenderStateContextProps, WorldContextProps } from './contextTypes';
+import type {
+  GameContextProps,
+  GameUiContextProps,
+  RenderStateContextProps,
+  WorldContextProps,
+} from './contextTypes';
 import { applyEngineRuntimeAction } from './engine/runtime';
 import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
 import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
@@ -669,10 +674,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     ],
   );
 
-  const renderStateValue = useMemo(
-    () => ({ renderStateRef }),
-    [],
-  );
+  const renderStateValue = useMemo(() => ({ renderStateRef }), []);
 
   const worldValue = useMemo(
     () => ({
@@ -699,12 +701,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     <GameContext.Provider value={gameContextValue}>
       <GameUiContext.Provider value={gameUiValue}>
         <RenderStateContext.Provider value={renderStateValue}>
-          <WorldContext.Provider value={worldValue}>
-            {children}
-          </WorldContext.Provider>
+          <WorldContext.Provider value={worldValue}>{children}</WorldContext.Provider>
         </RenderStateContext.Provider>
       </GameUiContext.Provider>
     </GameContext.Provider>
   );
 };
-

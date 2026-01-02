@@ -2,9 +2,11 @@ import { OrbitControls, SoftShadows } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing';
 import React from 'react';
 import * as THREE from 'three';
+
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
 import { useGameUi } from '../GameState';
 import { StarField } from '../StarField';
+
 import { InstancedExplosions } from './Effects';
 import { InstancedEnemies } from './Enemies';
 import { GameLoopBridge } from './GameLoop';

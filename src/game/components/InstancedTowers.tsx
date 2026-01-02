@@ -2,10 +2,12 @@ import type { ThreeEvent } from '@react-three/fiber';
 import { useFrame } from '@react-three/fiber';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+
 import { TOWER_CONFIGS } from '../../constants';
 import type { UpgradeType } from '../../types';
 import { useGameUi, useRenderState } from '../GameState';
 import { getTowerStats } from '../utils';
+
 import { createComplexTowerBase } from './instancing/geometryUtils';
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
@@ -127,7 +129,8 @@ export const InstancedTowers: React.FC = () => {
     }
     if (turretMeshRef.current) {
       turretMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (turretMeshRef.current.instanceColor) turretMeshRef.current.instanceColor.needsUpdate = true;
+      if (turretMeshRef.current.instanceColor)
+        turretMeshRef.current.instanceColor.needsUpdate = true;
     }
     if (ringMeshRef.current) {
       ringMeshRef.current.instanceMatrix.needsUpdate = true;
@@ -155,7 +158,8 @@ export const InstancedTowers: React.FC = () => {
       {/* Base */}
       <instancedMesh
         ref={baseMeshRef}
-        args={[baseGeometry, undefined, 100]} frustumCulled={false}
+        args={[baseGeometry, undefined, 100]}
+        frustumCulled={false}
         onPointerDown={handlePointerDown}
       >
         <meshLambertMaterial vertexColors />
@@ -196,5 +200,3 @@ export const InstancedTowers: React.FC = () => {
     </group>
   );
 };
-
-
