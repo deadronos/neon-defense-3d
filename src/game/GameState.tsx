@@ -32,6 +32,7 @@ import type {
 } from '../types';
 import { TileType, UpgradeType } from '../types';
 
+import { useAudio } from './audio/AudioManager';
 import type { GameContextProps } from './contextTypes';
 import { applyEngineRuntimeAction } from './engine/runtime';
 import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
@@ -230,6 +231,7 @@ export const useGame = () => {
 };
 
 export const GameProvider = ({ children }: { children: ReactNode }) => {
+  const { playSFX } = useAudio();
   const enemyTypeMap = useMemo(buildEnemyTypeMap, []);
 
   const [runtime, dispatch] = useReducer(runtimeReducer, undefined, () => ({
@@ -328,15 +330,43 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const placeTower = useCallback(
     (x: number, z: number, type: TowerType) => {
       if (runtimeRef.current.ui.gameStatus !== 'playing') return;
-      if (!isValidPlacement(x, z)) return;
+      if (!isValidPlacement(x, z)) {
+        playSFX('error');
+        return;
+      }
+      playSFX('build');
       dispatch({ type: 'placeTower', x, z, towerType: type });
       dispatch({ type: 'uiAction', action: { type: 'setSelectedTower', tower: null } });
     },
-    [isValidPlacement],
+    [isValidPlacement, playSFX],
   );
 
-  const upgradeTower = useCallback((id: string) => dispatch({ type: 'upgradeTower', id }), []);
-  const sellTower = useCallback((id: string) => dispatch({ type: 'sellTower', id }), []);
+  const upgradeTower = useCallback(
+    (id: string) => {
+      // Check if affordable? Logic is in reducer.
+      // We'll optimistically play sound or check state here.
+      const state = runtimeRef.current;
+      const tower = state.engine.towers.find((t) => t.id === id);
+      if (tower) {
+        const stats = getTowerStats(tower.type as TowerType, tower.level, state.ui.upgrades);
+        if (state.ui.money >= stats.upgradeCost) {
+          playSFX('build'); // Reuse build sound for upgrade
+        } else {
+          playSFX('error');
+        }
+      }
+      dispatch({ type: 'upgradeTower', id });
+    },
+    [playSFX],
+  );
+
+  const sellTower = useCallback(
+    (id: string) => {
+      playSFX('sell');
+      dispatch({ type: 'sellTower', id });
+    },
+    [playSFX],
+  );
   const skipWave = useCallback(() => dispatch({ type: 'skipWave' }), []);
 
   const startGame = useCallback(() => {
@@ -423,9 +453,45 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         engineCacheRef.current,
       );
 
+      // Process engine events for Audio
+      if (result.events.immediate.length > 0 || result.events.deferred.length > 0) {
+        const allEvents = [...result.events.immediate, ...result.events.deferred];
+        // We can batch play sounds or just play them.
+        // To avoid spamming, we might want to throttle shoot/impact sounds.
+        // But for now, let's just detect "DamageDealt" for impact, and "EffectSpawned" (explosion)
+
+        // Wait, 'DamageDealt' is aggregated per frame.
+        // 'EffectSpawned' is per effect.
+
+        // Check for projectile creation?
+        // stepEngine result.patch.projectiles might be set.
+        // But checking diff is expensive.
+        // Let's rely on EngineEvents.
+        // stepTowers doesn't emit 'ProjectileFired' event yet.
+
+        // We should add 'ProjectileFired' event to stepTowers if we want audio for it.
+        // For now, let's look at EffectSpawned (explosions/impacts usually create effects or just damage).
+
+        allEvents.forEach((e) => {
+          if (e.type === 'EffectSpawned') {
+            // EffectSpawned is used for explosions.
+            playSFX('impact');
+          } else if (e.type === 'ProjectileFired') {
+            playSFX('shoot');
+          }
+        });
+      }
+
+      // Heuristic for shooting sound:
+      // If new projectiles were added in this tick.
+      // result.patch.projectiles is the NEW list if changed.
+      // But we don't know if it grew.
+      // A better way is to update `stepTowers` to emit events.
+      // For now, I will modify stepTowers to emit 'ProjectileFired'.
+
       dispatch({ type: 'applyTickResult', result });
     },
-    [enginePathWaypoints, gameSpeed],
+    [enginePathWaypoints, gameSpeed, playSFX],
   );
 
   const gameState: GameState = {

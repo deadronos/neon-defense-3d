@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { useAudio } from '../../game/audio/AudioManager';
 import { useGame } from '../../game/GameState';
 import type { SaveV1 } from '../../game/persistence';
 import { migrateSave } from '../../game/persistence';
@@ -23,6 +24,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) =
     applyCheckpointSave,
     exportCheckpointJson,
   } = useGame();
+
+  const { masterVolume, sfxVolume, musicVolume, setMasterVolume, setSFXVolume, setMusicVolume } =
+    useAudio();
 
   const [exportJson, setExportJson] = useState('');
   const [hasCheckpoint, setHasCheckpoint] = useState(false);
@@ -198,6 +202,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) =
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-8">
+          {/* Audio */}
+          <section className="bg-black/20 border border-[#0f3460] rounded p-5">
+            <h3 className="text-lg font-bold text-white mb-2">Audio</h3>
+            <div className="space-y-4 max-w-md">
+              <div className="flex items-center gap-4">
+                <label className="text-gray-300 text-sm w-16">Master</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={masterVolume}
+                  onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
+                  className="flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="text-gray-300 text-sm w-16">SFX</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={sfxVolume}
+                  onChange={(e) => setSFXVolume(parseFloat(e.target.value))}
+                  className="flex-1"
+                />
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="text-gray-300 text-sm w-16">Music</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={musicVolume}
+                  onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+                  className="flex-1"
+                />
+              </div>
+            </div>
+          </section>
+
           {/* Quality */}
           <section className="bg-black/20 border border-[#0f3460] rounded p-5">
             <h3 className="text-lg font-bold text-white mb-2">Quality</h3>

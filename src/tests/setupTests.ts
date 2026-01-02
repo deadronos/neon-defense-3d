@@ -31,3 +31,44 @@ class ResizeObserverMock {
 
 // @ts-ignore
 global.ResizeObserver = global.ResizeObserver || ResizeObserverMock;
+
+// Mock Web Audio API
+if (!global.AudioContext) {
+  // @ts-ignore
+  global.AudioContext = class {
+    state = 'suspended';
+    createGain() {
+      return { connect: () => {}, gain: { value: 0 } };
+    }
+    createOscillator() {
+      return {
+        connect: () => {},
+        start: () => {},
+        stop: () => {},
+        type: 'sine',
+        frequency: { value: 0 },
+        detune: { value: 0 },
+      };
+    }
+    createBufferSource() {
+      return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null };
+    }
+    createBuffer(_channels: number, length: number, _sampleRate: number) {
+      return { getChannelData: () => new Float32Array(length) };
+    }
+    resume() {
+      return Promise.resolve();
+    }
+    get destination() {
+      return {};
+    }
+    get sampleRate() {
+      return 44100;
+    }
+  };
+}
+
+// Mock useAudio in tests automatically?
+// No, unit tests might want to test it or ignore it.
+// The failure happens because `src/game/audio/Synth.ts` instantiates `new AudioContext()` at module scope.
+// By mocking AudioContext global above, it should fix the crash.

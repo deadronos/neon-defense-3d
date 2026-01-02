@@ -5,9 +5,19 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 
 import { UI } from '../../components/UI';
 import { SettingsModal } from '../../components/ui/SettingsModal';
+import { useAudio } from '../../game/audio/AudioManager';
 import { GameProvider, useGame } from '../../game/GameState';
 import type { Vector2 } from '../../types';
 import { TileType, TowerType } from '../../types';
+
+vi.mock('../../game/audio/AudioManager', () => ({
+  useAudio: vi.fn(),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  AudioProvider: ({ children }: any) => <>{children}</>,
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockUseAudio = useAudio as any;
 
 const findFirstBuildableSpot = (grid: TileType[][]): Vector2 | null => {
   for (let z = 0; z < grid.length; z++) {
@@ -34,6 +44,15 @@ describe('SettingsModal', () => {
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    mockUseAudio.mockReturnValue({
+      masterVolume: 0.5,
+      sfxVolume: 1,
+      musicVolume: 1,
+      setMasterVolume: vi.fn(),
+      setSFXVolume: vi.fn(),
+      setMusicVolume: vi.fn(),
+      playSFX: vi.fn(),
+    });
   });
 
   it('blocks invalid JSON import and does not change the current run', async () => {

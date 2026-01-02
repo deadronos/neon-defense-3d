@@ -34,7 +34,7 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
         baseColor = '#00ffff';
       }
 
-      TEMP_COLOR.set(baseColor).multiplyScalar(2);
+      TEMP_COLOR.set(baseColor).multiplyScalar(10); // Bright for bloom
       mesh.setColorAt(i, TEMP_COLOR);
     },
   });
@@ -91,24 +91,26 @@ export const InstancedEnemies: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies
     <group>
       <instancedMesh ref={meshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <dodecahedronGeometry args={[1, 0]} />
-        <meshBasicMaterial toneMapped={false} />
+        <meshStandardMaterial toneMapped={false} emissive="white" emissiveIntensity={2} />
       </instancedMesh>
 
       <instancedMesh ref={shieldRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <sphereGeometry args={[1, 16, 16]} />
-        <meshBasicMaterial
-          color="white"
+        <meshStandardMaterial
+          color="#00ffff"
           transparent
           opacity={0.3}
           depthWrite={false}
           blending={THREE.AdditiveBlending}
+          emissive="#00ffff"
+          emissiveIntensity={1}
         />
       </instancedMesh>
 
       {/* Rotating Ring */}
       <instancedMesh ref={ringRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <torusGeometry args={[0.7, 0.05, 8, 32]} />
-        <meshBasicMaterial toneMapped={false} />
+        <meshStandardMaterial toneMapped={false} emissive="white" emissiveIntensity={1} />
       </instancedMesh>
     </group>
   );
