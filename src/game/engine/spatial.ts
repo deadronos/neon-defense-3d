@@ -26,6 +26,8 @@ export const buildSpatialGrid = (
   height: number = MAP_HEIGHT,
   reuseGrid?: SpatialGrid,
   scratchPosition: EngineMutableVector3 = [0, 0, 0],
+  enemyPositions?: Map<string, EngineMutableVector3>,
+  enemyPositionPool?: EngineMutableVector3[],
 ): SpatialGrid => {
   const size = width * height;
   const grid: SpatialGrid =
@@ -42,6 +44,13 @@ export const buildSpatialGrid = (
 
   for (const enemy of enemies) {
     const pos = writeEnemyWorldPosition(scratchPosition, enemy, pathWaypoints, tileSize);
+    if (enemyPositions) {
+      const stored = enemyPositionPool?.pop() ?? [0, 0, 0];
+      stored[0] = pos[0];
+      stored[1] = pos[1];
+      stored[2] = pos[2];
+      enemyPositions.set(enemy.id, stored);
+    }
     const x = Math.floor(pos[0] / tileSize);
     const z = Math.floor(pos[2] / tileSize);
 
@@ -55,6 +64,39 @@ export const buildSpatialGrid = (
   }
 
   return grid;
+};
+
+/**
+ * Iterates over enemies that fall within the tile bounds of a radius around a position.
+ * Avoids allocating a candidates array per query.
+ */
+export const forEachNearbyEnemy = (
+  grid: SpatialGrid,
+  position: EngineVector3,
+  radius: number,
+  tileSize: number = TILE_SIZE,
+  width: number = MAP_WIDTH,
+  height: number = MAP_HEIGHT,
+  visit: (enemy: EngineEnemy) => void,
+) => {
+  const centerX = position[0] / tileSize;
+  const centerZ = position[2] / tileSize;
+  const radiusInTiles = radius / tileSize;
+
+  const minX = Math.max(0, Math.floor(centerX - radiusInTiles));
+  const maxX = Math.min(width - 1, Math.ceil(centerX + radiusInTiles));
+  const minZ = Math.max(0, Math.floor(centerZ - radiusInTiles));
+  const maxZ = Math.min(height - 1, Math.ceil(centerZ + radiusInTiles));
+
+  for (let z = minZ; z <= maxZ; z++) {
+    for (let x = minX; x <= maxX; x++) {
+      const index = z * width + x;
+      const cellEnemies = grid[index];
+      for (let i = 0; i < cellEnemies.length; i++) {
+        visit(cellEnemies[i]);
+      }
+    }
+  }
 };
 
 /**

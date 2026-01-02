@@ -5,8 +5,7 @@ const TARGET_FPS = 60;
 const FPS_TOLERANCE = 5;
 const CHECK_INTERVAL_MS = 500;
 const MIN_DPR = 0.5;
-const MAX_DPR =
-  typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1;
+const MAX_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1;
 const STEP = 0.1;
 
 export const DynamicResScaler = () => {
@@ -41,9 +40,7 @@ export const DynamicResScaler = () => {
       dprRef.current = nextDpr;
       setDpr(nextDpr);
       if (process.env.NODE_ENV === 'development') {
-        console.log(
-          `[DynamicResScaler] FPS: ${fps}, DPR: ${nextDpr.toFixed(2)}`
-        );
+        console.log(`[DynamicResScaler] FPS: ${fps}, DPR: ${nextDpr.toFixed(2)}`);
       }
     }
   });

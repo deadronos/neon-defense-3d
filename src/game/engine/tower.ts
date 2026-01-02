@@ -1,7 +1,7 @@
-import { TOWER_CONFIGS } from '../../constants';
+import { MAP_HEIGHT, MAP_WIDTH, TOWER_CONFIGS } from '../../constants';
 
 import { writeEnemyWorldPosition } from './selectors';
-import { buildSpatialGrid, getNearbyEnemies } from './spatial';
+import { buildSpatialGrid, forEachNearbyEnemy } from './spatial';
 import type { EngineCache } from './step';
 import type {
   EngineEvents,
@@ -63,6 +63,16 @@ export const stepTowers = (
   const newProjectiles: EngineProjectile[] = [];
   let nextTowers: EngineTower[] | undefined;
   const scratchEnemyPos = cache?.scratchEnemyPos ?? [0, 0, 0];
+  const enemyPositions = cache?.enemyPositions;
+  const enemyPositionPool = cache?.enemyPositionPool;
+
+  if (cache && enemyPositions && enemyPositionPool) {
+    for (const position of enemyPositions.values()) {
+      enemyPositionPool.push(position);
+    }
+    enemyPositions.clear();
+    cache.enemyPositionsSource = undefined;
+  }
 
   // Build spatial grid once per tick
   const spatialGrid =
@@ -75,9 +85,14 @@ export const stepTowers = (
           undefined,
           cache?.spatialGrid,
           scratchEnemyPos,
+          enemyPositions,
+          enemyPositionPool,
         )
       : undefined;
-  if (cache) cache.spatialGrid = spatialGrid;
+  if (cache) {
+    cache.spatialGrid = spatialGrid;
+    if (enemyPositions) cache.enemyPositionsSource = state.enemies;
+  }
 
   for (let index = 0; index < state.towers.length; index += 1) {
     const tower = state.towers[index];
@@ -92,16 +107,34 @@ export const stepTowers = (
     let targetId: string | undefined;
     let minDistanceSquared = Infinity;
 
-    const candidates = spatialGrid
-      ? getNearbyEnemies(spatialGrid, towerPos, stats.range, tileSize)
-      : state.enemies;
-
-    for (const enemy of candidates) {
-      writeEnemyWorldPosition(scratchEnemyPos, enemy, pathWaypoints, tileSize);
-      const d2 = distanceSquared(towerPos, scratchEnemyPos);
-      if (d2 <= rangeSquared && d2 < minDistanceSquared) {
-        minDistanceSquared = d2;
-        targetId = enemy.id;
+    if (spatialGrid) {
+      forEachNearbyEnemy(
+        spatialGrid,
+        towerPos,
+        stats.range,
+        tileSize,
+        MAP_WIDTH,
+        MAP_HEIGHT,
+        (enemy) => {
+          const cachedPos = enemyPositions?.get(enemy.id);
+          const position = cachedPos
+            ? cachedPos
+            : writeEnemyWorldPosition(scratchEnemyPos, enemy, pathWaypoints, tileSize);
+          const d2 = distanceSquared(towerPos, position);
+          if (d2 <= rangeSquared && d2 < minDistanceSquared) {
+            minDistanceSquared = d2;
+            targetId = enemy.id;
+          }
+        },
+      );
+    } else {
+      for (const enemy of state.enemies) {
+        writeEnemyWorldPosition(scratchEnemyPos, enemy, pathWaypoints, tileSize);
+        const d2 = distanceSquared(towerPos, scratchEnemyPos);
+        if (d2 <= rangeSquared && d2 < minDistanceSquared) {
+          minDistanceSquared = d2;
+          targetId = enemy.id;
+        }
       }
     }
 

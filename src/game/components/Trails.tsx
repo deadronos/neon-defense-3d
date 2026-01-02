@@ -15,6 +15,8 @@ export const InstancedTrails: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies 
 
   // Throttle per-enemy trail spawning to avoid saturating the particle buffer.
   const lastSpawnByEnemyIdRef = useRef<Map<string, number>>(new Map());
+  const activeEnemyIdsRef = useRef<Set<string>>(new Set());
+  const lastPruneTimeRef = useRef(0);
   const spawnIntervalSeconds = 0.05; // 20 particles/sec per enemy max
 
   // Particle system pool
@@ -34,10 +36,13 @@ export const InstancedTrails: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies 
 
     const now = state.clock.elapsedTime;
     const lastSpawnByEnemyId = lastSpawnByEnemyIdRef.current;
+    const activeEnemyIds = activeEnemyIdsRef.current;
+    activeEnemyIds.clear();
 
     // 1. Spawn new particles
     // Iterate enemies and spawn a trail particle at their current position
     for (const enemy of enemies) {
+      activeEnemyIds.add(enemy.id);
       const last = lastSpawnByEnemyId.get(enemy.id) ?? -Infinity;
       if (now - last < spawnIntervalSeconds) continue;
       lastSpawnByEnemyId.set(enemy.id, now);
@@ -63,6 +68,15 @@ export const InstancedTrails: React.FC<{ enemies: EnemyEntity[] }> = ({ enemies 
         0.5, // Lifetime in seconds
         enemy.id,
       );
+    }
+
+    if (now - lastPruneTimeRef.current >= 1) {
+      lastPruneTimeRef.current = now;
+      for (const id of lastSpawnByEnemyId.keys()) {
+        if (!activeEnemyIds.has(id)) {
+          lastSpawnByEnemyId.delete(id);
+        }
+      }
     }
 
     // 2. Update active particles

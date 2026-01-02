@@ -22,7 +22,7 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 
 ## Progress Tracking
 
-**Overall Status:** In Progress - 90%
+**Overall Status:** In Progress - 97%
 
 ### Subtasks
 
@@ -31,7 +31,9 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 | 1.1 | Draft requirements/design/task docs                           | Complete    | 2026-01-02 |       |
 | 1.2 | Implement engine hot-path cache optimizations                  | Complete    | 2026-01-02 |       |
 | 1.3 | Implement render-side projectile target lookup optimization    | Complete    | 2026-01-02 |       |
-| 1.4 | Validate behavior parity + update memory/progress              | In Progress | 2026-01-02 | Typecheck fixed; tests pending |
+| 1.4 | Validate behavior parity + update memory/progress              | In Progress | 2026-01-02 | Typecheck fixed; manual FPS sampling done; tests pending |
+| 1.5 | Reduce render-loop instance work + avoid duplicate postprocess | Complete    | 2026-01-02 | Mesh count + single composer |
+| 1.6 | Address splash/tower/trail/projectile render hot paths         | Complete    | 2026-01-02 | Spatial reuse + pruning + lookAt removal |
 
 ## Progress Log
 
@@ -46,3 +48,19 @@ Focus on engine/render hot loops with minimal behavior change: reuse cached coll
 
 - Fixed engine selector scratch vector mutability typing to unblock typecheck.
 - Silenced unused-vars warnings in the algorithmic art generator template.
+
+### 2026-01-02
+
+- Switched instanced render hook to use `mesh.count` instead of zeroing unused instances every frame.
+- Replaced per-projectile enemy scans with a memoized enemy ID map in rendering.
+- Removed duplicate post-processing composer to avoid double full-screen passes.
+
+### 2026-01-02
+
+- Profiled live build (Vite) with rAF sampling: ~39.7 FPS on High vs ~54.0 FPS on Low at 1x speed (no towers placed).
+
+### 2026-01-02
+
+- Reused spatial grid for splash checks and cached enemy positions for tower targeting.
+- Removed per-tower candidate array allocations via spatial grid iterator.
+- Pruned trail spawn bookkeeping and removed per-projectile lookAt in render loop.

@@ -1,5 +1,8 @@
+import { MAP_HEIGHT, MAP_WIDTH } from '../../constants';
+
 import type { EngineEvent } from './events';
 import { writeEnemyWorldPosition } from './selectors';
+import { forEachNearbyEnemy } from './spatial';
 import type { EngineCache } from './step';
 import type {
   EngineEffectIntent,
@@ -64,13 +67,14 @@ export const stepProjectiles = (
   // Cache enemy positions for splash checks and effects.
   const enemyPositions = cache ? cache.enemyPositions : new Map<string, EngineMutableVector3>();
   const enemyPositionPool = cache ? cache.enemyPositionPool : [];
-  if (cache) {
+  const positionsFromCache = cache?.enemyPositionsSource === state.enemies;
+  if (cache && !positionsFromCache) {
     for (const position of enemyPositions.values()) {
       enemyPositionPool.push(position);
     }
     enemyPositions.clear();
+    cache.enemyPositionsSource = undefined;
   }
-  let enemyPositionsComputed = false;
 
   const ensureEnemyPosition = (enemy: EngineEnemy): EngineVector3 => {
     const existing = enemyPositions.get(enemy.id);
@@ -84,14 +88,6 @@ export const stepProjectiles = (
     return next;
   };
 
-  const ensureEnemyPositions = () => {
-    if (enemyPositionsComputed) return;
-    for (const enemy of state.enemies) {
-      ensureEnemyPosition(enemy);
-    }
-    enemyPositionsComputed = true;
-  };
-
   for (const enemy of state.enemies) {
     enemiesById.set(enemy.id, enemy);
   }
@@ -103,9 +99,6 @@ export const stepProjectiles = (
     const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;
     if (nextProgress >= 1) {
       if (projectile.splashRadius) {
-        // If we haven't computed enemy positions yet, do it now.
-        ensureEnemyPositions();
-
         // We can look up the target position directly if it exists, otherwise compute it.
         const impactPos = enemyPositions.get(target.id) ?? ensureEnemyPosition(target);
 
@@ -123,16 +116,39 @@ export const stepProjectiles = (
 
         const splashRadiusSquared = projectile.splashRadius ** 2;
 
-        for (const enemy of state.enemies) {
-          const pos = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy);
+        const spatialGrid = cache?.spatialGrid;
+        if (spatialGrid) {
+          forEachNearbyEnemy(
+            spatialGrid,
+            impactPos,
+            projectile.splashRadius,
+            tileSize,
+            MAP_WIDTH,
+            MAP_HEIGHT,
+            (enemy) => {
+              const pos = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy);
+              if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
+                hits.set(enemy.id, (hits.get(enemy.id) ?? 0) + projectile.damage);
+                if (projectile.freezeDuration) {
+                  const current = freezeHits.get(enemy.id) ?? 0;
+                  freezeHits.set(enemy.id, Math.max(current, projectile.freezeDuration));
+                }
+                frameTotalDamage += projectile.damage;
+              }
+            },
+          );
+        } else {
+          for (const enemy of state.enemies) {
+            const pos = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy);
 
-          if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
-            hits.set(enemy.id, (hits.get(enemy.id) ?? 0) + projectile.damage);
-            if (projectile.freezeDuration) {
-              const current = freezeHits.get(enemy.id) ?? 0;
-              freezeHits.set(enemy.id, Math.max(current, projectile.freezeDuration));
+            if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
+              hits.set(enemy.id, (hits.get(enemy.id) ?? 0) + projectile.damage);
+              if (projectile.freezeDuration) {
+                const current = freezeHits.get(enemy.id) ?? 0;
+                freezeHits.set(enemy.id, Math.max(current, projectile.freezeDuration));
+              }
+              frameTotalDamage += projectile.damage;
             }
-            frameTotalDamage += projectile.damage;
           }
         }
       } else {

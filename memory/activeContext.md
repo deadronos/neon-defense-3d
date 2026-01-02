@@ -8,7 +8,11 @@
 
 - **Engine hot paths:** Added cached path segment lengths, reusable spatial grid buckets, and enemy position caching to reduce per-tick allocations.
 - **Tower targeting:** Switched to squared-distance checks in `stepTowers`.
-- **Rendering:** Added enemy ID lookup map to avoid per-projectile scans.
+- **Rendering:** Avoided per-projectile enemy scans with a memoized enemy ID map.
+- **Rendering:** Instanced render hook now uses `mesh.count` to skip zeroing unused instances per frame.
+- **Rendering:** Removed duplicate post-processing composer to avoid double full-screen passes.
+- **Rendering:** Removed per-projectile lookAt and pruned trail spawn bookkeeping to reduce per-frame CPU.
+- **Engine:** Reused spatial grid for splash checks and cached enemy positions for tower targeting.
 - **Rendering:** Added a dynamic resolution scaler that adjusts DPR based on FPS.
 - **Testing:** Added unit coverage for DPR scaling, tower cooldown/targeting, projectile shield/freeze, and runtime checkpoint/skip-wave edges.
 

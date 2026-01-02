@@ -14,7 +14,6 @@ import type {
   EngineEnemy,
   EngineProjectile,
   EngineMutableVector3,
-  EngineVector3,
 } from './types';
 import { stepWave } from './wave';
 
@@ -26,6 +25,7 @@ export interface EngineCache {
   enemiesById: Map<string, EngineEnemy>;
   enemyPositions: Map<string, EngineMutableVector3>;
   enemyPositionPool: EngineMutableVector3[];
+  enemyPositionsSource?: EngineEnemy[];
 
   // Reusable structures for enemies
   nextEnemies: EngineEnemy[];

@@ -42,7 +42,7 @@ export const SceneContent = () => {
         <InstancedTowers towers={towers} />
         {isHigh && <InstancedTrails enemies={enemies} />}
         <InstancedEnemies enemies={enemies} />
-        <InstancedProjectiles projectiles={projectiles} enemies={enemies} />
+        <InstancedProjectiles projectiles={projectiles} />
         {effects.length > 0 && <InstancedExplosions effects={effects} remove={removeEffect} />}
       </group>
 
