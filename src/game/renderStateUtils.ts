@@ -1,13 +1,13 @@
 import type {
   EffectEntity,
   EnemyEntity,
-  Position3,
   ProjectileEntity,
   TowerEntity,
-  Vector2,
+  EnemyConfig,
+  TowerType,
 } from '../types';
 
-import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
+import { selectEnemyWorldPosition } from './engine/selectors';
 import type { EngineState, EngineVector2 } from './engine/types';
 
 /**
@@ -44,7 +44,7 @@ export const syncRenderState = (
   engine: EngineState,
   renderState: RenderState,
   context: {
-    enemyTypeMap: Map<string, any>; // Using any to avoid importing huge types here, or we can import EnemyTypeConfig
+    enemyTypeMap: Map<string, EnemyConfig>;
     pathWaypoints: readonly EngineVector2[];
     tileSize: number;
   },
@@ -176,7 +176,7 @@ export const syncRenderState = (
 
     const tower: TowerEntity = {
       id: engTower.id,
-      type: engTower.type as any, // Cast to TowerType
+      type: engTower.type as TowerType,
       gridPos: [engTower.gridPosition[0], engTower.gridPosition[1]],
       position: [engTower.gridPosition[0] * tileSize, 0.5, engTower.gridPosition[1] * tileSize],
       lastFired: engTower.lastFired,
@@ -218,8 +218,14 @@ export const syncRenderState = (
 
   for (const proj of engine.projectiles) {
     const target = renderState.enemiesById.get(proj.targetId);
-    // Note: selectProjectileWorldPosition might return new [x,y,z]
-    const pos = selectProjectileWorldPosition(proj, target as any, pathWaypoints, tileSize);
+    // If we have a render-time enemy target, lerp toward its known world position (avoids using engine types).
+    const pos = target
+      ? [
+          proj.origin[0] + (target.position[0] - proj.origin[0]) * proj.progress,
+          proj.origin[1] + (target.position[1] - proj.origin[1]) * proj.progress,
+          proj.origin[2] + (target.position[2] - proj.origin[2]) * proj.progress,
+        ]
+      : proj.origin;
 
     nextProjectiles.push({
       id: proj.id,

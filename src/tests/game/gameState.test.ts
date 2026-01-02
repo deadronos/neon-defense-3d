@@ -2,7 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { GameProvider, useGame } from '../../game/GameState';
-import { TowerType, TileType } from '../../types';
+import { TowerType } from '../../types';
 
 vi.mock('../../game/audio/AudioManager', () => ({
   useAudio: () => ({
