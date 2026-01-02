@@ -1,10 +1,10 @@
 import { useFrame } from '@react-three/fiber';
-import React, { useMemo, useRef } from 'react';
+import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { useRenderState } from '../GameState';
 
-import { TEMP_COLOR } from './instancing/instancedUtils';
+import { ensureInstanceColor, TEMP_COLOR } from './instancing/instancedUtils';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -13,6 +13,10 @@ export const InstancedProjectiles: React.FC = () => {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const count = 2000;
   const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useLayoutEffect(() => {
+    if (meshRef.current) ensureInstanceColor(meshRef.current, count);
+  }, [count]);
 
   useFrame(() => {
     if (!meshRef.current) return;
@@ -53,3 +57,4 @@ export const InstancedProjectiles: React.FC = () => {
     </instancedMesh>
   );
 };
+

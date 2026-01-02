@@ -19,6 +19,9 @@
 - **Engine:** Reused spatial grid for splash checks and cached enemy positions for tower targeting.
 - **Rendering:** Added a dynamic resolution scaler that adjusts DPR based on FPS.
 - **Testing:** Added unit coverage for DPR scaling, tower cooldown/targeting, projectile shield/freeze, and runtime checkpoint/skip-wave edges.
+- **Rendering:** Fixed world grid overlay rotation so it sits on the ground plane again.
+- **Rendering:** Switched world/enemy materials to unlit and brightened tile colors for clearer map/path/enemy visibility.
+- **Rendering:** Explicitly initialized instanced mesh colors so per-instance colors render reliably.
 
 ## Next steps
 

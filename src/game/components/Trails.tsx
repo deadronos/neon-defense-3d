@@ -4,7 +4,7 @@ import * as THREE from 'three';
 
 import { useRenderState } from '../GameState';
 
-import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 import { ParticlePool } from './instancing/ParticlePool';
 
 export const InstancedTrails: React.FC = () => {
@@ -23,6 +23,7 @@ export const InstancedTrails: React.FC = () => {
 
   useLayoutEffect(() => {
     if (!meshRef.current) return;
+    ensureInstanceColor(meshRef.current, count);
     for (let i = 0; i < count; i++) {
       meshRef.current.setMatrixAt(i, ZERO_MATRIX);
     }
@@ -108,7 +109,8 @@ export const InstancedTrails: React.FC = () => {
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
       <boxGeometry args={[1, 1, 1]} />
-      <meshBasicMaterial transparent opacity={0.4} toneMapped={false} />
+      <meshBasicMaterial transparent opacity={0.4} toneMapped={false} vertexColors />
     </instancedMesh>
   );
 };
+

@@ -6,7 +6,7 @@ import type { EffectEntity } from '../../types';
 import { useRenderState } from '../GameState';
 
 import { spawnExplosion } from './effects/spawners';
-import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 import { ParticlePool } from './instancing/ParticlePool';
 
 export const InstancedExplosions: React.FC<{
@@ -22,6 +22,7 @@ export const InstancedExplosions: React.FC<{
 
   React.useLayoutEffect(() => {
     if (!meshRef.current) return;
+    ensureInstanceColor(meshRef.current, count);
     for (let i = 0; i < count; i++) {
       meshRef.current.setMatrixAt(i, ZERO_MATRIX);
     }
@@ -97,7 +98,8 @@ export const InstancedExplosions: React.FC<{
   return (
     <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
       <boxGeometry args={[0.5, 0.5, 0.5]} />
-      <meshBasicMaterial toneMapped={false} />
+      <meshBasicMaterial toneMapped={false} vertexColors />
     </instancedMesh>
   );
 };
+

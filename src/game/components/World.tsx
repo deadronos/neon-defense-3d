@@ -6,14 +6,16 @@ import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
 import { useWorld } from '../GameState';
 
+import { ensureInstanceColor } from './instancing/instancedUtils';
+
 const TILE_GEOMETRY = new THREE.PlaneGeometry(TILE_SIZE * 0.95, TILE_SIZE * 0.95);
 const TILE_ROTATION = new THREE.Euler(-Math.PI / 2, 0, 0);
 
 const getTileBaseColor = (type: TileType) => {
-  if (type === TileType.Path) return '#001133';
-  if (type === TileType.Spawn) return '#330000';
-  if (type === TileType.Base) return '#110033';
-  return '#050510';
+  if (type === TileType.Path) return '#0b3a5a';
+  if (type === TileType.Spawn) return '#5a1b1b';
+  if (type === TileType.Base) return '#3b1b5a';
+  return '#0b1020';
 };
 
 const createGridGeometry = (width: number, height: number, tileSize: number) => {
@@ -116,6 +118,7 @@ export const World = React.memo(() => {
   useLayoutEffect(() => {
     if (!meshRef.current) return;
     meshRef.current.count = tiles.length;
+    ensureInstanceColor(meshRef.current, tiles.length);
 
     for (let i = 0; i < tiles.length; i += 1) {
       const tile = tiles[i];
@@ -193,10 +196,10 @@ export const World = React.memo(() => {
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown}
       >
-        <meshLambertMaterial vertexColors />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
 
-      <lineSegments position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]} geometry={gridGeometry}>
+      <lineSegments position={[0, 0.02, 0]} geometry={gridGeometry}>
         <lineBasicMaterial color="#00f2ff" opacity={0.4} transparent />
       </lineSegments>
     </group>

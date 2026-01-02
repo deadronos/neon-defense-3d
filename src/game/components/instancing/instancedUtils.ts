@@ -4,6 +4,20 @@ import * as THREE from 'three';
 export const ZERO_MATRIX = new THREE.Matrix4().makeScale(0, 0, 0);
 export const TEMP_COLOR = new THREE.Color();
 
+export function ensureInstanceColor(mesh: THREE.InstancedMesh, count: number) {
+  if (!mesh.instanceColor || mesh.instanceColor.count !== count) {
+    const attribute = new THREE.InstancedBufferAttribute(new Float32Array(count * 3).fill(1), 3);
+    attribute.setUsage(THREE.DynamicDrawUsage);
+    mesh.instanceColor = attribute;
+  }
+  if (mesh.geometry && mesh.instanceColor) {
+    mesh.geometry.setAttribute('instanceColor', mesh.instanceColor);
+  }
+  if (mesh.instanceColor) {
+    mesh.instanceColor.needsUpdate = true;
+  }
+}
+
 /**
  * Hides unused instances in an InstancedMesh by setting their scale to zero.
  * @param mesh - The instanced mesh to update.

@@ -1,10 +1,10 @@
 import { useFrame } from '@react-three/fiber';
-import React, { useMemo, useRef } from 'react';
+import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
 import { useRenderState } from '../GameState';
 
-import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -18,6 +18,11 @@ export const InstancedEnemies: React.FC = () => {
 
   // Shared dummy for transforms
   const dummy = useMemo(() => new THREE.Object3D(), []);
+
+  useLayoutEffect(() => {
+    if (bodyMeshRef.current) ensureInstanceColor(bodyMeshRef.current, count);
+    if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, count);
+  }, [count]);
 
   useFrame(({ clock }) => {
     const renderState = renderStateRef.current;
@@ -107,7 +112,7 @@ export const InstancedEnemies: React.FC = () => {
     <group>
       <instancedMesh ref={bodyMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <dodecahedronGeometry args={[1, 0]} />
-        <meshLambertMaterial vertexColors />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
 
       <instancedMesh ref={shieldMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
@@ -123,7 +128,7 @@ export const InstancedEnemies: React.FC = () => {
 
       <instancedMesh ref={ringMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
         <torusGeometry args={[0.7, 0.05, 8, 32]} />
-        <meshLambertMaterial vertexColors />
+        <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
     </group>
   );
