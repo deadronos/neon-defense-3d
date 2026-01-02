@@ -1,13 +1,13 @@
 import { useFrame } from '@react-three/fiber';
-import React, { useRef, useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import * as THREE from 'three';
-import type { EffectEntity } from '../../types';
 
+import type { EffectEntity } from '../../types';
 import { useRenderState } from '../GameState';
 
 import { spawnExplosion } from './effects/spawners';
-import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 import { ParticlePool } from './instancing/ParticlePool';
+import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
 export const InstancedExplosions: React.FC<{
   remove: (id: string) => void;
@@ -101,5 +101,3 @@ export const InstancedExplosions: React.FC<{
     </instancedMesh>
   );
 };
-
-

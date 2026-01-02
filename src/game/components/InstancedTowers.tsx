@@ -7,7 +7,6 @@ import { TOWER_CONFIGS } from '../../constants';
 import type { UpgradeType } from '../../types';
 import { useGameUi, useRenderState } from '../GameState';
 import { getTowerStats } from '../utils';
-
 import { createComplexTowerBase } from './instancing/geometryUtils';
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
@@ -54,7 +53,6 @@ export const InstancedTowers: React.FC = () => {
       const baseColor = TOWER_CONFIGS[tower.type as keyof typeof TOWER_CONFIGS]?.color || '#00ff00';
       const colorObj = getCachedColor(baseColor);
 
-      // --- 1. Base Mesh ---
       if (baseMeshRef.current) {
         dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
         dummy.rotation.set(0, 0, 0);
@@ -70,7 +68,6 @@ export const InstancedTowers: React.FC = () => {
         baseMeshRef.current.setColorAt(i, TEMP_COLOR);
       }
 
-      // --- 2. Turret Mesh ---
       if (turretMeshRef.current) {
         dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
         dummy.position.y += 0.8;
@@ -84,7 +81,6 @@ export const InstancedTowers: React.FC = () => {
         turretMeshRef.current.setColorAt(i, TEMP_COLOR);
       }
 
-      // --- 3. Floating Ring ---
       if (ringMeshRef.current) {
         dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
         dummy.position.y += 0.8;
@@ -101,7 +97,6 @@ export const InstancedTowers: React.FC = () => {
         ringMeshRef.current.setColorAt(i, TEMP_COLOR);
       }
 
-      // --- 4. Range Ring ---
       if (rangeMeshRef.current) {
         if (tower.id === selectedEntityId) {
           const stats = getTowerStats(
@@ -129,8 +124,7 @@ export const InstancedTowers: React.FC = () => {
     }
     if (turretMeshRef.current) {
       turretMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (turretMeshRef.current.instanceColor)
-        turretMeshRef.current.instanceColor.needsUpdate = true;
+      if (turretMeshRef.current.instanceColor) turretMeshRef.current.instanceColor.needsUpdate = true;
     }
     if (ringMeshRef.current) {
       ringMeshRef.current.instanceMatrix.needsUpdate = true;
@@ -155,17 +149,15 @@ export const InstancedTowers: React.FC = () => {
 
   return (
     <group>
-      {/* Base */}
       <instancedMesh
         ref={baseMeshRef}
         args={[baseGeometry, undefined, 100]}
-        frustumCulled={false}
         onPointerDown={handlePointerDown}
+        frustumCulled={false}
       >
         <meshLambertMaterial vertexColors />
       </instancedMesh>
 
-      {/* Turret */}
       <instancedMesh
         ref={turretMeshRef}
         args={[undefined, undefined, 100]}
@@ -176,7 +168,6 @@ export const InstancedTowers: React.FC = () => {
         <meshLambertMaterial vertexColors />
       </instancedMesh>
 
-      {/* Floating Ring */}
       <instancedMesh
         ref={ringMeshRef}
         args={[undefined, undefined, 100]}
@@ -187,7 +178,6 @@ export const InstancedTowers: React.FC = () => {
         <meshLambertMaterial vertexColors />
       </instancedMesh>
 
-      {/* Range Ring */}
       <instancedMesh
         ref={rangeMeshRef}
         args={[undefined, undefined, 100]}
@@ -200,4 +190,3 @@ export const InstancedTowers: React.FC = () => {
     </group>
   );
 };
-
