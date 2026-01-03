@@ -24,6 +24,10 @@
 - **Rendering:** Fixed instanced tower/projectile coloring by ensuring instanced meshes have both `instanceColor` *and* a vertex `color` attribute so Three enables the shader color path and applies `instanceColor` at render time.
 - **Rendering:** Aligned the world grid overlay with tile boundaries (grid line geometry is offset by half a tile).
 
+- **UI (responsive):** Build menu, `TopBar` and `UpgradeInspector` made responsive: buttons/icon sizes, wrapping and stacked layouts on small screens to prevent overflow.
+
+- **Audio:** Synth music engine enhanced — added lowpass filter, delay-based feedback, slow LFO (subtle detune/chorus), an arpeggio oscillator for movement, and a procedural convolver impulse reverb. Tests and mocks updated.
+
 ## Next steps
 
 - Do a manual gameplay parity pass (movement, firing cadence, rewards, victory after wave 10).

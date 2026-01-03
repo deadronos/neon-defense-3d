@@ -16,3 +16,4 @@
 - DESIGN001 - Memory bank initialization (metadata)
 - DESIGN003 - Performance optimizations and fixes
 - DESIGN018 - Instanced `instanceColor` shader gotcha
+- DESIGN019 - Synth & Reverb Enhancements (procedural convolver, LFO, delay, arpeggio)
