@@ -314,13 +314,26 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'resetEngine' });
   }, []);
 
-  const applyCheckpointSave = useCallback((save: SaveV1) => {
-    const snapshot = runtimeRef.current;
-    const next = buildRuntimeFromCheckpoint(save, snapshot.ui);
-    // Reset autosave tracking so wave 1 (or any future wave) can autosave again after restore.
-    lastAutosavedNonceRef.current = -1;
-    dispatch({ type: 'setRuntimeState', engine: next.engine, ui: next.ui });
-  }, []);
+  const applyCheckpointSave = useCallback(
+    (save: SaveV1) => {
+      const snapshot = runtimeRef.current;
+      const next = buildRuntimeFromCheckpoint(save, snapshot.ui);
+      // Reset autosave tracking so wave 1 (or any future wave) can autosave again after restore.
+      lastAutosavedNonceRef.current = -1;
+      dispatch({ type: 'setRuntimeState', engine: next.engine, ui: next.ui });
+
+      // Immediately sync render state so gridOccupancy is up-to-date for placement checks.
+      // Without this, tower hover/placement would be broken until the first game tick.
+      const nextMapLayout = MAP_LAYOUTS[next.ui.currentMapIndex % MAP_LAYOUTS.length];
+      const nextPathWaypoints = generatePath(nextMapLayout);
+      syncRenderState(next.engine, renderStateRef.current, {
+        enemyTypeMap,
+        pathWaypoints: nextPathWaypoints,
+        tileSize: TILE_SIZE,
+      });
+    },
+    [enemyTypeMap],
+  );
 
   const resetCheckpoint = useCallback((): { ok: boolean; error?: string } => {
     const checkpoint = loadCheckpoint();

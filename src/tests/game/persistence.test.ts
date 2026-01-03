@@ -311,4 +311,44 @@ describe('persistence (Tier-B checkpoint)', () => {
     expect(save.checkpoint.waveToStart).toBeGreaterThanOrEqual(1);
     expect(save.checkpoint.towers).toHaveLength(1);
   });
+
+  it('isValidPlacement respects towers from loaded checkpoint', async () => {
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
+
+    // Start game and place a tower
+    act(() => result.current.startGame());
+    act(() => result.current.placeTower(0, 0, TowerType.Basic));
+
+    // Advance time to trigger WaveStarted and autosave
+    act(() => result.current.step(5.1, 5.1));
+
+    await waitFor(() => {
+      expect(loadCheckpoint()).not.toBeNull();
+    });
+
+    // Tower should exist and block placement at (0,0)
+    expect(result.current.towers).toHaveLength(1);
+    expect(result.current.isValidPlacement(0, 0)).toBe(false);
+
+    // Sell the tower and tick to update gridOccupancy
+    const towerId = result.current.towers[0]?.id;
+    expect(towerId).toBeDefined();
+    act(() => result.current.sellTower(towerId!));
+    act(() => result.current.step(0.016, 5.116)); // trigger syncRenderState
+
+    // Now (0,0) should be free
+    expect(result.current.towers).toHaveLength(0);
+    expect(result.current.isValidPlacement(0, 0)).toBe(true);
+
+    // Load checkpoint - tower should block (0,0) again immediately
+    act(() => {
+      const res = result.current.resetCheckpoint();
+      expect(res.ok).toBe(true);
+    });
+
+    // After reset, placement at (0,0) should be blocked by restored tower
+    // This proves syncRenderState was called after applyCheckpointSave
+    expect(result.current.towers).toHaveLength(1);
+    expect(result.current.isValidPlacement(0, 0)).toBe(false);
+  });
 });
