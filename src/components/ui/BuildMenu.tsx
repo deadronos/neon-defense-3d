@@ -21,7 +21,7 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
   return (
     <div className="absolute bottom-10 w-full flex justify-center pointer-events-auto">
       <div
-        className="bg-black/80 backdrop-blur-md border border-gray-800 p-4 flex gap-4 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+        className="bg-black/80 backdrop-blur-md border border-gray-800 p-3 sm:p-4 flex flex-wrap gap-3 sm:gap-4 justify-center max-w-[min(98%,1000px)] shadow-[0_0_20px_rgba(0,0,0,0.5)]"
         style={{
           clipPath:
             'polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px)',
@@ -53,7 +53,7 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
               aria-pressed={isSelected}
               aria-disabled={!canAfford && !isSelected}
               className={`
-                relative group flex flex-col items-center p-3 transition-all duration-200 w-28 border
+                relative group flex flex-col items-center p-2 sm:p-3 transition-all duration-200 w-20 sm:w-24 md:w-28 border
                 ${
                   isSelected
                     ? 'border-cyan-400 bg-cyan-900/20 shadow-[0_0_15px_rgba(6,182,212,0.3)]'
@@ -64,11 +64,11 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
               `}
             >
               <div
-                className="w-12 h-12 mb-3 shadow-lg transition-transform duration-300 group-hover:scale-110 flex items-center justify-center border border-white/10"
+                className="w-10 h-10 mb-3 shadow-lg transition-transform duration-300 group-hover:scale-110 flex items-center justify-center border border-white/10"
                 style={{ backgroundColor: `${config.color}22` }}
               >
                 <div
-                  className="w-6 h-6 rounded-full shadow-[0_0_10px_currentColor]"
+                  className="w-5 h-5 sm:w-6 sm:h-6 rounded-full shadow-[0_0_10px_currentColor]"
                   style={{
                     backgroundColor: config.color,
                     boxShadow: `0 0 10px ${config.color}`,
@@ -76,7 +76,7 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
                 />
               </div>
 
-              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest group-hover:text-white transition-colors">
+              <span className="text-[9px] sm:text-[10px] font-bold text-gray-300 uppercase tracking-widest group-hover:text-white transition-colors">
                 {config.name}
               </span>
               <span
@@ -88,7 +88,7 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
               </span>
 
               {/* Tooltip */}
-              <div className="absolute bottom-full mb-6 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 translate-y-2 group-hover:translate-y-0 group-focus-visible:translate-y-0 transition-all duration-200 w-48 bg-black/95 p-4 text-xs text-left border border-cyan-900 pointer-events-none shadow-2xl z-20 backdrop-blur-md">
+              <div className="absolute bottom-full mb-6 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 translate-y-2 group-hover:translate-y-0 group-focus-visible:translate-y-0 transition-all duration-200 w-40 sm:w-48 bg-black/95 p-3 sm:p-4 text-xs text-left border border-cyan-900 pointer-events-none shadow-2xl z-20 backdrop-blur-md">
                 <h3 className="font-bold text-cyan-400 text-sm mb-1 uppercase tracking-wider border-b border-cyan-900 pb-1">
                   {config.name}
                 </h3>

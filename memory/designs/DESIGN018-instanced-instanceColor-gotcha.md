@@ -1,6 +1,6 @@
 # DESIGN018 - Instanced `instanceColor` Shader Gotcha
 
-**Status:** Active
+**Status:** Completed
 **Added:** 2026-01-02
 **Updated:** 2026-01-02
 
@@ -47,4 +47,3 @@ When touching instanced rendering, verify:
 - Enemies (body/ring/shield) still show their expected emissive/unlit coloration
 
 Optional: add a lightweight screenshot test at some point (Playwright) to catch “all black entities” regressions.
-
