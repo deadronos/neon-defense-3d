@@ -24,7 +24,7 @@ export class Synth {
     // Set initial volumes
     this.masterGain.gain.value = 0.5;
     this.sfxGain.gain.value = 1.0;
-    this.musicGain.gain.value = 0.3; // Music softer by default
+    this.musicGain.gain.value = 0.45; // Music louder by default so effects are audible
 
     this.generateBuffers();
   }
@@ -125,6 +125,16 @@ export class Synth {
   // A full music track via buffers is large. Let's do a simple looped drone/arpeggio.
   bgmNodes: OscillatorNode[] = [];
   bgmGain: GainNode | null = null;
+  // Extra nodes for richer sound
+  bgmFilter: BiquadFilterNode | null = null;
+  delayNode: DelayNode | null = null;
+  delayFeedback: GainNode | null = null;
+  lfo: OscillatorNode | null = null;
+  lfoGain: GainNode | null = null;
+  arpOsc: OscillatorNode | null = null;
+  arpGain: GainNode | null = null;
+  arpInterval: number | null = null;
+
   isPlayingMusic = false;
 
   startMusic() {
@@ -134,8 +144,53 @@ export class Synth {
 
     // Create a sub-mix for music to easily stop it
     this.bgmGain = this.ctx.createGain();
-    this.bgmGain.connect(this.musicGain);
-    this.bgmGain.gain.value = 0.5;
+    // Create a mild lowpass to warm the mix
+    try {
+      this.bgmFilter = this.ctx.createBiquadFilter();
+      this.bgmFilter.type = 'lowpass';
+      this.bgmFilter.frequency.value = 1200;
+      this.bgmFilter.Q.value = 0.8;
+      this.bgmGain.connect(this.bgmFilter);
+      // Feed both dry and wet
+      this.bgmFilter.connect(this.musicGain);
+    } catch (e) {
+      // Fallback if the environment doesn't support filters
+      this.bgmGain.connect(this.musicGain);
+    }
+
+    // Gentle delay-based reverb (feedback loop)
+    try {
+      this.delayNode = this.ctx.createDelay();
+      this.delayNode.delayTime.value = 0.28;
+      this.delayFeedback = this.ctx.createGain();
+      this.delayFeedback.gain.value = 0.36;
+
+      if (this.bgmFilter) {
+        this.bgmFilter.connect(this.delayNode);
+      } else {
+        this.bgmGain.connect(this.delayNode);
+      }
+      this.delayNode.connect(this.delayFeedback);
+      this.delayFeedback.connect(this.delayNode);
+      // Send delay output to main music bus (wet)
+      this.delayNode.connect(this.musicGain);
+    } catch (e) {
+      // ignore if not available
+    }
+
+    // subtle LFO for gentle detune/chorus movement
+    try {
+      this.lfo = this.ctx.createOscillator();
+      this.lfo.type = 'sine';
+      this.lfo.frequency.value = 0.18; // slow
+      this.lfoGain = this.ctx.createGain();
+      this.lfoGain.gain.value = 8; // detune amount in cents
+      this.lfo.connect(this.lfoGain);
+      this.lfo.start();
+    } catch (e) {
+      this.lfo = null;
+      this.lfoGain = null;
+    }
 
     // Bass drone
     const osc1 = this.ctx.createOscillator();
@@ -145,24 +200,117 @@ export class Synth {
     osc1.start();
     this.bgmNodes.push(osc1);
 
-    // Arpeggio LFO (simulated by modulating gain of another osc? No, that's AM)
-    // Let's just add a simple detuned pad
+    // Pad / chorus layer
     const osc2 = this.ctx.createOscillator();
     osc2.type = 'sine';
     osc2.frequency.value = 110; // A2
-    osc2.detune.value = 5;
+    osc2.detune.value = 6;
+    if (this.lfoGain && osc2.detune) {
+      // connect LFO to detune for slow motion
+      this.lfoGain.connect(osc2.detune as unknown as AudioParam);
+    }
     osc2.connect(this.bgmGain);
     osc2.start();
     this.bgmNodes.push(osc2);
+
+    // Additional detuned saw for thickness
+    const osc3 = this.ctx.createOscillator();
+    osc3.type = 'sawtooth';
+    osc3.frequency.value = 110;
+    osc3.detune.value = -8;
+    if (this.lfoGain && osc3.detune) {
+      this.lfoGain.connect(osc3.detune as unknown as AudioParam);
+    }
+    osc3.connect(this.bgmGain);
+    osc3.start();
+    this.bgmNodes.push(osc3);
+
+    // Small arpeggio to add movement
+    try {
+      this.arpOsc = this.ctx.createOscillator();
+      this.arpOsc.type = 'triangle';
+      this.arpGain = this.ctx.createGain();
+      this.arpGain.gain.value = 0.0; // start silent
+      this.arpOsc.connect(this.arpGain);
+      this.arpGain.connect(this.bgmGain);
+      this.arpOsc.start();
+
+      const notes = [220, 277.18, 329.63, 392]; // A minor-ish arpeggio
+      let idx = 0;
+      this.arpInterval = window.setInterval(() => {
+        if (!this.arpOsc || !this.arpGain) return;
+        const note = notes[idx % notes.length];
+        // quick per-note envelope
+        this.arpOsc.frequency.value = note;
+        this.arpGain.gain.value = 0.6;
+        setTimeout(() => {
+          if (this.arpGain) this.arpGain.gain.value = 0.0;
+        }, 140);
+        idx++;
+      }, 180);
+    } catch (e) {
+      // ignore
+    }
+
+    // finally connect the submix to the music bus if not connected earlier
+    if (!this.bgmGain) return;
+    if (!this.bgmFilter) {
+      // already connected in filter branch, otherwise connect now
+      this.bgmGain.connect(this.musicGain);
+    }
+    this.bgmGain.gain.value = 0.6;
   }
 
   stopMusic() {
     this.bgmNodes.forEach((n) => n.stop());
     this.bgmNodes = [];
+
+    if (this.arpOsc) {
+      try {
+        this.arpOsc.stop();
+      } catch (e) {}
+      this.arpOsc = null;
+    }
+    if (this.arpInterval) {
+      clearInterval(this.arpInterval);
+      this.arpInterval = null;
+    }
+
+    if (this.lfo) {
+      try {
+        this.lfo.stop();
+      } catch (e) {}
+      this.lfo = null;
+    }
+    this.lfoGain = null;
+
+    if (this.delayFeedback) {
+      try {
+        this.delayFeedback.disconnect();
+      } catch (e) {}
+      this.delayFeedback = null;
+    }
+    if (this.delayNode) {
+      try {
+        this.delayNode.disconnect();
+      } catch (e) {}
+      this.delayNode = null;
+    }
+
+    if (this.bgmFilter) {
+      try {
+        this.bgmFilter.disconnect();
+      } catch (e) {}
+      this.bgmFilter = null;
+    }
+
     if (this.bgmGain) {
-      this.bgmGain.disconnect();
+      try {
+        this.bgmGain.disconnect();
+      } catch (e) {}
       this.bgmGain = null;
     }
+
     this.isPlayingMusic = false;
   }
 }
