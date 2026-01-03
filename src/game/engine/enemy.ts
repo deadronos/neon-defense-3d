@@ -16,6 +16,15 @@ export interface StepEnemiesOptions {
 
 const DEFAULT_TILE_SIZE = 2;
 
+/** Speed multiplier when an enemy is frozen (50% speed). */
+const FROZEN_SPEED_MULTIPLIER = 0.5;
+/** Speed multiplier during dash ability (3x normal speed). */
+const DASH_SPEED_MULTIPLIER = 3;
+/** Duration of the dash ability in seconds. */
+const DASH_DURATION_SECONDS = 0.5;
+/** Cooldown between enemy dash abilities in seconds. */
+const DASH_COOLDOWN_SECONDS = 4;
+
 export const stepEnemies = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -59,7 +68,7 @@ export const stepEnemies = (
 
     let nextFrozen = enemy.frozen ?? 0;
     if (nextFrozen > 0) {
-      currentSpeed *= 0.5;
+      currentSpeed *= FROZEN_SPEED_MULTIPLIER;
       nextFrozen = Math.max(0, nextFrozen - deltaSeconds);
     }
 
@@ -74,12 +83,12 @@ export const stepEnemies = (
     if (hasDashAbility) {
       if (abilityActiveTimer > 0) {
         nextActiveTimer = Math.max(0, abilityActiveTimer - deltaSeconds);
-        currentSpeed *= 3;
+        currentSpeed *= DASH_SPEED_MULTIPLIER;
       } else {
         nextCooldown = abilityCooldown - deltaSeconds;
         if (nextCooldown <= 0) {
-          nextActiveTimer = 0.5;
-          nextCooldown = 4;
+          nextActiveTimer = DASH_DURATION_SECONDS;
+          nextCooldown = DASH_COOLDOWN_SECONDS;
         }
       }
     }

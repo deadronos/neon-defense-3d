@@ -102,4 +102,3 @@ export const InstancedExplosions: React.FC<{
     </instancedMesh>
   );
 };
-

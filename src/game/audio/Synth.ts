@@ -36,7 +36,7 @@ export class Synth {
       const impulse = this.createImpulseResponse(2.5, 2.0); // 2.5s impulse, longish decay for synthwave
       this.convolver.buffer = impulse;
       this.convolver.connect(this.musicGain); // wet goes to music bus
-    } catch (e) {
+    } catch {
       this.convolver = null;
     }
 
@@ -197,7 +197,7 @@ export class Synth {
       this.bgmGain.connect(this.bgmFilter);
       // Feed both dry and wet
       this.bgmFilter.connect(this.musicGain);
-    } catch (e) {
+    } catch {
       // Fallback if the environment doesn't support filters
       this.bgmGain.connect(this.musicGain);
     }
@@ -218,7 +218,7 @@ export class Synth {
       this.delayFeedback.connect(this.delayNode);
       // Send delay output to main music bus (wet)
       this.delayNode.connect(this.musicGain);
-    } catch (e) {
+    } catch {
       // ignore if not available
     }
 
@@ -231,7 +231,7 @@ export class Synth {
       this.lfoGain.gain.value = 8; // detune amount in cents
       this.lfo.connect(this.lfoGain);
       this.lfo.start();
-    } catch (e) {
+    } catch {
       this.lfo = null;
       this.lfoGain = null;
     }
@@ -292,7 +292,7 @@ export class Synth {
         }, 140);
         idx++;
       }, 180);
-    } catch (e) {
+    } catch {
       // ignore
     }
 
@@ -321,7 +321,9 @@ export class Synth {
     if (this.arpOsc) {
       try {
         this.arpOsc.stop();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.arpOsc = null;
     }
     if (this.arpInterval) {
@@ -332,7 +334,9 @@ export class Synth {
     if (this.lfo) {
       try {
         this.lfo.stop();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.lfo = null;
     }
     this.lfoGain = null;
@@ -340,27 +344,35 @@ export class Synth {
     if (this.delayFeedback) {
       try {
         this.delayFeedback.disconnect();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.delayFeedback = null;
     }
     if (this.delayNode) {
       try {
         this.delayNode.disconnect();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.delayNode = null;
     }
 
     if (this.bgmFilter) {
       try {
         this.bgmFilter.disconnect();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.bgmFilter = null;
     }
 
     if (this.bgmGain) {
       try {
         this.bgmGain.disconnect();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.bgmGain = null;
     }
 

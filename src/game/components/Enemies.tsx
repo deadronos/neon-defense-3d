@@ -141,4 +141,3 @@ export const InstancedEnemies: React.FC = () => {
     </group>
   );
 };
-

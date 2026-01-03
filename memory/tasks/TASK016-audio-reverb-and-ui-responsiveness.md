@@ -25,7 +25,6 @@
   - Ran `npm test` after changes — **107 tests passed**.
   - Verified local dev server and manual visual/audio checks.
 
-
 ## Files changed (high-level)
 
 - src/game/audio/Synth.ts (new nodes, impulse reverb, setReverbMix)
@@ -35,22 +34,18 @@
 - src/components/ui/UpgradeInspector.tsx (responsive layouts)
 - memory updates: `memory/designs/DESIGN019...`, `memory/tasks/TASK016...`, `memory/activeContext.md`, `memory/progress.md`
 
-
 ## Acceptance criteria
 
 - Music has noticeable movement and ambience at default settings.
 - UI no longer overflows at small widths; top controls and build menu remain accessible and usable.
 - All automated tests pass.
 
-
 ## Progress log
 
 - 2026-01-03: Implemented synth improvements, convolver IR generator, and UI responsive changes; updated audio test mocks. Ran full test suite — all green.
-
 
 ## Follow-ups / Next tasks
 
 - TASK017 (suggestion): Add `Reverb Mix` slider and `Disable Reverb` toggle in `SettingsModal` so users can tune ambience.
 - Optionally bundle small IR sample presets (small room / plate / hall) and provide a UI preset selector.
 - Consider adding a Playwright visual test to catch layout regressions and a small audio QA checklist for manual checks.
-

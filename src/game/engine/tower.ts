@@ -23,6 +23,17 @@ const DEFAULT_TILE_SIZE = 2;
 const TOWER_HEIGHT_Y = 0.5;
 const PROJECTILE_SPAWN_OFFSET_Y = 1.5;
 
+/** Damage increase per tower level (25% per level). */
+const DAMAGE_SCALE_PER_LEVEL = 0.25;
+/** Range increase per tower level (10% per level). */
+const RANGE_SCALE_PER_LEVEL = 0.1;
+/** Cooldown reduction per tower level (5% faster per level). */
+const COOLDOWN_REDUCTION_PER_LEVEL = 0.05;
+/** Minimum cooldown multiplier to prevent instant firing. */
+const MIN_COOLDOWN_MULTIPLIER = 0.1;
+/** Default projectile speed in world units per second. */
+const PROJECTILE_SPEED = 20;
+
 const getTowerStats = (towerType: string, level: number) => {
   const config = TOWER_CONFIGS[towerType as keyof typeof TOWER_CONFIGS];
   const baseDamage = config?.damage ?? 0;
@@ -32,9 +43,13 @@ const getTowerStats = (towerType: string, level: number) => {
   const splashRadius = config?.splashRadius;
 
   return {
-    damage: baseDamage * (1 + (level - 1) * 0.25),
-    range: baseRange * (1 + (level - 1) * 0.1),
-    cooldownMs: Math.max(0.1, baseCooldown * (1 - (level - 1) * 0.05)) * 1000,
+    damage: baseDamage * (1 + (level - 1) * DAMAGE_SCALE_PER_LEVEL),
+    range: baseRange * (1 + (level - 1) * RANGE_SCALE_PER_LEVEL),
+    cooldownMs:
+      Math.max(
+        MIN_COOLDOWN_MULTIPLIER,
+        baseCooldown * (1 - (level - 1) * COOLDOWN_REDUCTION_PER_LEVEL),
+      ) * 1000,
     freezeDuration,
     splashRadius,
   };
@@ -155,7 +170,7 @@ export const stepTowers = (
       id: projectileId,
       origin,
       targetId,
-      speed: 20,
+      speed: PROJECTILE_SPEED,
       progress: 0,
       damage: stats.damage,
       color,

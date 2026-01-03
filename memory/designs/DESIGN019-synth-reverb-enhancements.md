@@ -57,5 +57,6 @@ Improve the in-engine music/synth sound so the background music is less "flat" a
 
 ```md
 Change log:
+
 - 2026-01-03: Implementation completed and tested locally (no asset added - procedural approach)
 ```
