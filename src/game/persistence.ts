@@ -313,7 +313,8 @@ export const loadCheckpoint = (): SaveV1 | null => {
     const migrated = migrateSave(parsed);
     if (!migrated.ok || !migrated.save) return null;
     return migrated.save;
-  } catch {
+  } catch (e) {
+    console.warn('[PERSISTENCE] Failed to load checkpoint, returning null:', e);
     return null;
   }
 };
@@ -321,8 +322,8 @@ export const loadCheckpoint = (): SaveV1 | null => {
 export const clearCheckpoint = (): void => {
   try {
     localStorage.removeItem(CHECKPOINT_STORAGE_KEY_V1);
-  } catch {
-    // ignore
+  } catch (e) {
+    console.warn('[PERSISTENCE] Failed to clear checkpoint:', e);
   }
 };
 
