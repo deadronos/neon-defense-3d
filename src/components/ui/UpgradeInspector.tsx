@@ -23,7 +23,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
 }) => {
   return (
     <div className="absolute bottom-10 w-full flex justify-center pointer-events-auto">
-      <div className="bg-black/90 backdrop-blur border-t-2 border-cyan-500/50 p-6 flex gap-8 shadow-2xl min-w-[500px] animate-fade-in-up">
+      <div className="bg-black/90 backdrop-blur border-t-2 border-cyan-500/50 p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-8 shadow-2xl w-[min(98%,900px)] max-w-full animate-fade-in-up rounded-t-md">
         {/* Info */}
         <div className="flex flex-col gap-2 flex-grow">
           <div className="flex items-center gap-3 border-b border-gray-800 pb-2 mb-2">
@@ -43,7 +43,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-4 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             {(() => {
               const current = getTowerStats(
                 selectedTowerEntity.type,
@@ -89,7 +89,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col gap-3 min-w-[140px] border-l border-gray-800 pl-6 justify-center">
+        <div className="flex flex-col gap-3 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-gray-800 pt-4 sm:pt-0 sm:pl-6 justify-center">
           <button
             className="text-[10px] text-gray-500 hover:text-white uppercase tracking-widest text-right mb-auto"
             onClick={onClose}
