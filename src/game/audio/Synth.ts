@@ -26,6 +26,20 @@ export class Synth {
     this.sfxGain.gain.value = 1.0;
     this.musicGain.gain.value = 0.45; // Music louder by default so effects are audible
 
+    // prepare reverb send node (dry/wet control)
+    this.reverbSend = this.ctx.createGain();
+    this.reverbSend.gain.value = 0.12;
+
+    // create convolver and load a procedural impulse
+    try {
+      this.convolver = this.ctx.createConvolver();
+      const impulse = this.createImpulseResponse(2.5, 2.0); // 2.5s impulse, longish decay for synthwave
+      this.convolver.buffer = impulse;
+      this.convolver.connect(this.musicGain); // wet goes to music bus
+    } catch (e) {
+      this.convolver = null;
+    }
+
     this.generateBuffers();
   }
 
@@ -109,6 +123,32 @@ export class Synth {
     return buffer;
   }
 
+  // Procedurally generate an impulse response using filtered noise with exponential decay
+  createImpulseResponse(durationSec = 2.0, decay = 1.5): AudioBuffer {
+    const rate = this.ctx.sampleRate;
+    const length = Math.floor(rate * durationSec);
+    const impulse = this.ctx.createBuffer(2, length, rate);
+
+    for (let ch = 0; ch < 2; ch++) {
+      const channelData = impulse.getChannelData(ch);
+      for (let i = 0; i < length; i++) {
+        // white noise * envelope
+        const t = i / rate;
+        const env = Math.pow(1 - t / durationSec, decay);
+        // simple filtered noise approximation by scaling and random
+        channelData[i] = (Math.random() * 2 - 1) * env * 0.6;
+      }
+    }
+    return impulse;
+  }
+
+  setReverbMix(value: number) {
+    // value: 0..1 wet mix
+    if (!this.reverbSend) return;
+    const wet = Math.max(0, Math.min(1, value));
+    this.reverbSend.gain.value = wet;
+  }
+
   playSFX(name: string) {
     this.resume();
     const buffer = this.buffers.get(name);
@@ -134,6 +174,10 @@ export class Synth {
   arpOsc: OscillatorNode | null = null;
   arpGain: GainNode | null = null;
   arpInterval: number | null = null;
+
+  // Convolver (impulse) reverb
+  convolver: ConvolverNode | null = null;
+  reverbSend: GainNode | null = null;
 
   isPlayingMusic = false;
 
@@ -254,10 +298,19 @@ export class Synth {
 
     // finally connect the submix to the music bus if not connected earlier
     if (!this.bgmGain) return;
+
+    // connect dry
     if (!this.bgmFilter) {
       // already connected in filter branch, otherwise connect now
       this.bgmGain.connect(this.musicGain);
     }
+
+    // connect wet via reverb send -> convolver
+    if (this.reverbSend && this.convolver) {
+      this.bgmGain.connect(this.reverbSend);
+      this.reverbSend.connect(this.convolver);
+    }
+
     this.bgmGain.gain.value = 0.6;
   }
 

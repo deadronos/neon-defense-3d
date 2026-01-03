@@ -68,6 +68,13 @@ if (!global.AudioContext) {
         disconnect: () => {},
       };
     }
+    createConvolver() {
+      return {
+        buffer: null,
+        connect: () => {},
+        disconnect: () => {},
+      };
+    }
     createBufferSource() {
       return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null };
     }
