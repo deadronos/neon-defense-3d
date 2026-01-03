@@ -50,6 +50,31 @@ if (!global.AudioContext) {
         detune: { value: 0 },
       };
     }
+
+    createBiquadFilter() {
+      return {
+        type: 'lowpass',
+        frequency: { value: 1000 },
+        Q: { value: 1 },
+        connect: () => {},
+        disconnect: () => {},
+      };
+    }
+
+    createDelay() {
+      return {
+        delayTime: { value: 0 },
+        connect: () => {},
+        disconnect: () => {},
+      };
+    }
+    createConvolver() {
+      return {
+        buffer: null,
+        connect: () => {},
+        disconnect: () => {},
+      };
+    }
     createBufferSource() {
       return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null };
     }
