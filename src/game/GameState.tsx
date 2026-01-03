@@ -581,6 +581,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const worldValue = useMemo(
     () => ({
       mapGrid,
+      currentMapIndex: runtime.ui.currentMapIndex,
       placeTower,
       isValidPlacement,
       selectedTower: runtime.ui.selectedTower,
@@ -590,6 +591,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }),
     [
       mapGrid,
+      runtime.ui.currentMapIndex,
       placeTower,
       isValidPlacement,
       runtime.ui.selectedTower,

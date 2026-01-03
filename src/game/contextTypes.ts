@@ -83,6 +83,7 @@ export interface RenderStateContextProps {
 
 export interface WorldContextProps {
   mapGrid: TileType[][];
+  currentMapIndex: number;
   placeTower: (x: number, z: number, type: TowerType) => void;
   isValidPlacement: (x: number, z: number) => boolean;
   selectedTower: TowerType | null;

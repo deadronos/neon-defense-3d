@@ -46,6 +46,7 @@ const createGridGeometry = (width: number, height: number, tileSize: number) => 
 export const World = React.memo(() => {
   const {
     mapGrid,
+    currentMapIndex,
     placeTower,
     isValidPlacement,
     selectedTower,
@@ -186,6 +187,7 @@ export const World = React.memo(() => {
 
   return (
     <group
+      key={`map-${currentMapIndex}`}
       position={[
         (-MAP_WIDTH * TILE_SIZE) / 2 + TILE_SIZE / 2,
         0,
