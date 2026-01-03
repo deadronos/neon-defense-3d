@@ -1,97 +1,78 @@
-# Neon Defense 3D - AI Coding Instructions
+# Copilot Instructions
 
-## Project Overview
+> **Primary Instruction File for Neon Defense 3D**
+>
+> This file is the Source of Truth for Architecture, Conventions, Workflows, and Tech Stack.
+> All agents and developers must follow these guidelines.
 
-Neon Defense 3D is a Tower Defense game built with **React 19**, **Vite**, **TypeScript**, and **Three.js** (via `@react-three/fiber`).
+## 1. Project Overview
 
-## Architecture
+**Neon Defense 3D** is a Tower Defense game built with React 19, TypeScript, and Three.js (@react-three/fiber). It features a distinct "Neon" aesthetic (Pink/Cyan palette).
 
-### Core Components
+## 2. Tech Stack
 
--- **Game State (`src/game/GameState.tsx`):** Centralized state management using React Context (`GameProvider`). Holds `enemies`, `towers`, `projectiles`, `effects`, and global `gameState`.
--- **Game Loop (`src/game/GameCanvas.tsx` -> `GameLoopBridge`):** The `GameLoopBridge` component uses `useFrame` to handle per-frame logic:
+- **Framework:** React 19 + TypeScript
+- **3D Engine:** Three.js + @react-three/fiber + @react-three/drei
+- **Post-Processing:** @react-three/postprocessing (Bloom effects)
+- **Styling:** Tailwind CSS (for UI overlays)
+- **Build Tool:** Vite
+- **Testing:** Vitest (Unit/Integration), Playwright (E2E)
 
-- Enemy spawning and movement.
-- Tower targeting and firing.
-- Projectile movement and collision detection.
-- Particle effects updates.
-  -- **Rendering (`src/game/GameCanvas.tsx`):** Renders the 3D scene.
-- **World:** Renders the grid based on `MAP_GRID`.
-- **Entities:** Renders `Tower`, `Enemy`, `Projectile` components based on state data.
-- **Visuals:** Uses geometric primitives (Box, Sphere, Cylinder) rather than external models.
-  -- **UI Overlay (`src/components/UI.tsx`):** HTML/CSS overlay for HUD, menus, and game controls. Uses Tailwind CSS.
+## 3. Architecture & Patterns
 
-### Data Flow
+### Game Loop & State Management
+- **Central State:** `GameState` (Context) holds the canonical arrays of entities (`enemies`, `towers`, `projectiles`, `effects`) and global values (`money`, `lives`, `wave`).
+- **Game Loop:** `GameLoopBridge` (`src/game/components/GameLoop.tsx`) drives the frame-by-frame logic using `useFrame`.
+- **Logic Separation:** Logic is split into custom hooks:
+  - `useWaveManager`: Handles wave progression and enemy spawning.
+  - `useEnemyBehavior`: Updates enemy positions and status effects.
+  - `useTowerBehavior`: Handles tower targeting and cooldowns.
+  - `useProjectileBehavior`: Manages projectile movement, collision, and damage.
 
-1.  **State:** `GameState` holds the "source of truth" arrays for all entities.
-2.  **Logic:** `GameLoopBridge` reads state, calculates updates (movement, collisions), and calls setters (`setEnemies`, `setProjectiles`, etc.).
-3.  **Render:** React components (`Enemy`, `Tower`) subscribe to data changes and render the current state.
-
-## Key Conventions
+### Rendering Strategy
+- **InstancedMesh:** High-count entities (Enemies, Projectiles, Towers) use `InstancedMesh` for performance.
+- **Visuals vs. Logic:** Rendering components consume state from `GameState` but do not drive logic. Logic happens in the `GameLoopBridge`.
+- **Post-Processing:** Use high emissive values on materials to trigger the Bloom effect.
 
 ### Coordinate System
+- **Grid:** The game uses a fixed grid (12x8 tiles).
+- **World Coordinates:** Calculated centrally using `TILE_SIZE`.
+- **Positioning:** Game entities store positions as `readonly [number, number, number]` tuples to avoid GC overhead.
 
-- **Grid:** Logic uses 2D grid coordinates `[x, z]` (0-indexed).
-- **World:** 3D world coordinates map to grid: `x_world = x_grid * TILE_SIZE`, `z_world = z_grid * TILE_SIZE`.
-- **Up Axis:** Y-axis is up. Ground is at `y=0`.
-  -- **Tile Size:** Defined in `src/constants.ts` (default `2`).
+## 4. Workflows
 
-### State Management
+### Adding Content
+- **Towers:** Define new towers in `TOWER_CONFIGS` (`src/constants.ts`). Implement visual geometry in `InstancedTowers.tsx` or similar.
+- **Enemies:** Define types in `ENEMY_TYPES` (`src/constants.ts`).
+- **Maps:** Layouts are defined in `MAP_LAYOUTS` (`src/constants.ts`) using integer codes.
 
-- **Functional Updates:** Always use functional state updates for arrays to avoid race conditions in the game loop (e.g., `setEnemies(prev => ...)`).
-- **Immutability:** Treat state objects as immutable. Create shallow copies before modifying properties in the loop.
+### Testing
+- **Unit Tests:** `npm run test`. Located in `src/tests/` (configured via `vitest.config.ts`).
+- **E2E Tests:** `npm run e2e`. Located in `tests/e2e/`.
 
-### Game Logic
+## 5. Coding Standards
 
--- **Pathfinding:** Pre-calculated BFS path stored in `PATH_WAYPOINTS` (in `src/constants.ts`).
+### TypeScript
+- Target ES2022.
+- No `any`. Use strict typing.
+- Use `interface` for props and state shapes.
 
-- **Towers:** Defined in `TOWER_CONFIGS`. Stats (damage, range, cooldown) are calculated dynamically based on level using `getTowerStats`.
-- **Enemies:** Defined in `ENEMY_TYPES`. Spawning logic is in `GameLoopBridge`.
+### React
+- Functional components with Hooks only.
+- Minimize re-renders. Use `React.memo` for static components (like `Tile`).
+- Optimize loop performance: avoid creating objects in `useFrame`. Reuse shared vectors/matrices.
 
-### Styling & Assets
+## 6. Detailed Instruction References
 
-- **UI:** Tailwind CSS for all overlay UI.
-- **3D:** Use `@react-three/drei` helpers (`OrbitControls`, `SoftShadows`, `Trail`) and standard Three.js geometries. Avoid importing external `.gltf` models unless necessary; prefer procedural generation.
+For specific domain knowledge, refer to the following instruction files:
 
-## Developer Workflow
-
-### Commands
-
-- `npm run dev`: Start local development server.
-- `npm run build`: Build for production.
-
-### Common Tasks
-
--- **Adding a Tower:**
-
-1.  Add type to `TowerType` enum in `src/types.ts`.
-2.  Add config to `TOWER_CONFIGS` in `src/constants.ts`.
-3.  Update `Tower` component in `src/game/GameCanvas.tsx` if custom visuals are needed.
-    -- **Adding an Enemy:**
-4.  Add config to `ENEMY_TYPES` in `src/constants.ts`.
-5.  Update spawning logic in `GameLoopBridge` (`src/game/GameCanvas.tsx`) to include the new enemy type.
-
-- **Map Editing:**
-  1.  Modify `RAW_MAP` in `src/constants.ts`.
-  2.  Ensure `2` (Spawn) and `3` (Base) exist for pathfinding to work.
-
-## Tech Stack Details
-
-- **React:** v19
-- **Three.js:** R3F (`@react-three/fiber`)
-- **Styling:** Tailwind CSS
-- **Build:** Vite
-
-## AI Agent Workflow & Memory
-
-### Core Instructions
-
-- Follow the **Memory Bank** protocols defined in `.github/instructions/memory-bank.instructions.md`.
-- Adhere to the **Spec-Driven Workflow** outlined in `.github/instructions/spec-driven-workflow-v1.instructions.md`.
-- **Subagents:** If available, utilize specialized agents (check `.github/agents`) for Planning, Implementation, and Review phases.
-
-### Directory Structure
-
-- **Memory Bank:** `/memory` (Root for all context)
-- **Designs:** `/memory/designs` (Technical designs and architecture)
-- **Task Plans:** `/memory/tasks` (Implementation plans and progress tracking)
+- **AI & Prompts:** `.github/instructions/ai-prompt-engineering-safety-best-practices.instructions.md`
+- **CI/CD:** `.github/instructions/github-actions-ci-cd-best-practices.instructions.md`
+- **Code Review:** `.github/instructions/code-review-generic.instructions.md`
+- **Markdown:** `.github/instructions/markdown.instructions.md`
+- **Memory Bank:** `.github/instructions/memory-bank.instructions.md`
+- **Performance:** `.github/instructions/performance-optimization.instructions.md`
+- **Playwright:** `.github/instructions/playwright-typescript.instructions.md`
+- **React:** `.github/instructions/reactjs.instructions.md`
+- **Spec-Driven Workflow:** `.github/instructions/spec-driven-workflow-v1.instructions.md`
+- **TypeScript:** `.github/instructions/typescript-5-es2022.instructions.md`
