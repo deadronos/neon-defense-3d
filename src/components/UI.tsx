@@ -6,6 +6,7 @@ import { TechTreeModal } from './TechTreeModal';
 import { BuildMenu } from './ui/BuildMenu';
 import { GameOverScreen } from './ui/GameOverScreen';
 import { IdleScreen } from './ui/IdleScreen';
+import { KillStreakAnnouncer } from './ui/KillStreakAnnouncer';
 import { SettingsModal } from './ui/SettingsModal';
 import { TopBar } from './ui/TopBar';
 import { UpgradeInspector } from './ui/UpgradeInspector';
@@ -91,6 +92,8 @@ export const UI = () => {
         gameSpeed={gameSpeed}
         onSetGameSpeed={setGameSpeed}
       />
+
+      <KillStreakAnnouncer />
 
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
 

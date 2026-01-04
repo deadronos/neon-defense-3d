@@ -408,6 +408,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const [gameSpeed, setGameSpeed] = useState(1);
+  const killStreakRef = useRef({ count: 0, lastTime: 0 });
 
   const step = useCallback(
     (deltaSeconds: number, nowSeconds: number) => {
@@ -453,14 +454,61 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         // We should add 'ProjectileFired' event to stepTowers if we want audio for it.
         // For now, let's look at EffectSpawned (explosions/impacts usually create effects or just damage).
 
+        // Kill Streak Logic
+        let killsThisTick = 0;
         allEvents.forEach((e) => {
           if (e.type === 'EffectSpawned') {
-            // EffectSpawned is used for explosions.
             playSFX('impact');
           } else if (e.type === 'ProjectileFired') {
             playSFX('shoot');
+          } else if (e.type === 'EnemyKilled') {
+            killsThisTick++;
           }
         });
+
+        if (killsThisTick > 0) {
+          const streakState = killStreakRef.current;
+          const timeSinceLast = nowSeconds - streakState.lastTime;
+
+          if (timeSinceLast < 1.5) {
+            streakState.count += killsThisTick;
+          } else {
+            streakState.count = killsThisTick;
+          }
+          streakState.lastTime = nowSeconds;
+
+          let announcementText = '';
+          let subtext = '';
+
+          // Determine announcement
+          // Simple thresholds for now
+          if (streakState.count === 2) {
+            announcementText = 'DOUBLE KILL';
+          } else if (streakState.count === 3) {
+            announcementText = 'TRIPLE KILL';
+          } else if (streakState.count === 4) {
+            announcementText = 'QUADRA KILL';
+          } else if (streakState.count === 5) {
+            announcementText = 'PENTA KILL';
+          } else if (streakState.count > 5) {
+            announcementText = 'RAMPAGE';
+            subtext = `${streakState.count} KILLS!`;
+          }
+
+          if (announcementText) {
+            dispatch({
+              type: 'uiAction',
+              action: {
+                type: 'setAnnouncement',
+                announcement: {
+                  text: announcementText,
+                  subtext,
+                  id: Date.now(),
+                },
+              },
+            });
+          }
+        }
       }
 
       // Heuristic for shooting sound:
