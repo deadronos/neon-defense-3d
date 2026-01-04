@@ -27,6 +27,7 @@
 - **UI (responsive):** Build menu, `TopBar` and `UpgradeInspector` made responsive: buttons/icon sizes, wrapping and stacked layouts on small screens to prevent overflow.
 
 - **Audio:** Synth music engine enhanced — added lowpass filter, delay-based feedback, slow LFO (subtle detune/chorus), an arpeggio oscillator for movement, and a procedural convolver impulse reverb. Tests and mocks updated.
+- **Bug Fix:** Fixed critical save/load interaction bug where loaded games were non-interactive. Implemented a `sessionNonce` strategy to force a full 3D scene remount upon loading a checkpoint, ensuring fresh event binding.
 
 ## Next steps
 

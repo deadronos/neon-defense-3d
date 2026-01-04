@@ -12,6 +12,13 @@ This file documents the recurring architectural patterns and conventions used ac
   - Updates projectiles via `useProjectileBehavior` (collision, damage, rewards).
 - Rendering is a pure view layer that consumes `GameState` arrays. For performance, enemies and projectiles are rendered with `InstancedMesh` implementations (`InstancedEnemies`, `InstancedProjectiles`).
 
+## React-Three-Fiber & Integration
+
+- **Session Nonce / Forced Remounts:** To handle major state discontinuities (like loading a save game), we use a `sessionNonce` integer in `GameState`. The root `<GameCanvas>` component uses this nonce as a `key`. Incrementing this nonce acts as a "hard reset" for the 3D scene, forcing all R3F components to unmount and remount. This ensures that:
+  - All `InstancedMesh` instances are strictly synchronized with the new state.
+  - Event handlers (which may have closed over stale state) are re-bound correctly.
+  - Internal refs in R3F components are reset.
+
 ## Data & state conventions
 
 - Always use functional state updates for arrays inside the loop (e.g., `setEnemies(prev => ...)`) to avoid lost updates or closure issues.
