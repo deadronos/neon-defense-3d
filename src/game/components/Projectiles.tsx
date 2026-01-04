@@ -58,5 +58,3 @@ export const InstancedProjectiles: React.FC = () => {
     </instancedMesh>
   );
 };
-
-

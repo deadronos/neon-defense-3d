@@ -46,6 +46,7 @@ const createGridGeometry = (width: number, height: number, tileSize: number) => 
 export const World = React.memo(() => {
   const {
     mapGrid,
+    currentMapIndex,
     placeTower,
     isValidPlacement,
     selectedTower,
@@ -186,6 +187,7 @@ export const World = React.memo(() => {
 
   return (
     <group
+      key={`map-${currentMapIndex}`}
       position={[
         (-MAP_WIDTH * TILE_SIZE) / 2 + TILE_SIZE / 2,
         0,
@@ -232,7 +234,12 @@ export const World = React.memo(() => {
         <meshBasicMaterial color={TILE_COLORS[TileType.Base]} toneMapped={false} />
       </instancedMesh>
 
-      <mesh ref={hoverMeshRef} visible={false} position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh
+        ref={hoverMeshRef}
+        visible={false}
+        position={[0, 0.01, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
         <planeGeometry args={[TILE_SIZE * 0.95, TILE_SIZE * 0.95]} />
         <meshBasicMaterial color={hoverValidColor} transparent opacity={0.35} toneMapped={false} />
       </mesh>

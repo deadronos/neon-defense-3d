@@ -21,8 +21,13 @@
 - **Testing:** Added unit coverage for DPR scaling, tower cooldown/targeting, projectile shield/freeze, and runtime checkpoint/skip-wave edges.
 - **Rendering:** Fixed world grid overlay rotation so it sits on the ground plane again.
 - **Rendering:** Switched world/enemy materials to unlit and brightened tile colors for clearer map/path/enemy visibility.
-- **Rendering:** Fixed instanced tower/projectile coloring by ensuring instanced meshes have both `instanceColor` *and* a vertex `color` attribute so Three enables the shader color path and applies `instanceColor` at render time.
+- **Rendering:** Fixed instanced tower/projectile coloring by ensuring instanced meshes have both `instanceColor` _and_ a vertex `color` attribute so Three enables the shader color path and applies `instanceColor` at render time.
 - **Rendering:** Aligned the world grid overlay with tile boundaries (grid line geometry is offset by half a tile).
+
+- **UI (responsive):** Build menu, `TopBar` and `UpgradeInspector` made responsive: buttons/icon sizes, wrapping and stacked layouts on small screens to prevent overflow.
+
+- **Audio:** Synth music engine enhanced — added lowpass filter, delay-based feedback, slow LFO (subtle detune/chorus), an arpeggio oscillator for movement, and a procedural convolver impulse reverb. Tests and mocks updated.
+- **Bug Fix:** Fixed critical save/load interaction bug where loaded games were non-interactive. Implemented a `sessionNonce` strategy to force a full 3D scene remount upon loading a checkpoint, ensuring fresh event binding.
 
 ## Next steps
 

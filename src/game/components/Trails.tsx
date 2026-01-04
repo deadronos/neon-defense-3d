@@ -113,4 +113,3 @@ export const InstancedTrails: React.FC = () => {
     </instancedMesh>
   );
 };
-

@@ -10,26 +10,8 @@ import {
 } from 'react';
 import type { ReactNode } from 'react';
 
-import {
-  ENEMY_TYPES,
-  MAP_LAYOUTS,
-  TILE_SIZE,
-  TOWER_CONFIGS,
-  generatePath,
-  getMapGrid,
-} from '../constants';
-import type {
-  EffectEntity,
-  EnemyConfig,
-  EnemyEntity,
-  GameState,
-  GraphicsQuality,
-  ProjectileEntity,
-  TowerEntity,
-  TowerType,
-  Vector2,
-  WaveState,
-} from '../types';
+import { MAP_LAYOUTS, TILE_SIZE, TOWER_CONFIGS, generatePath, getMapGrid } from '../constants';
+import type { GameState, GraphicsQuality, TowerType, Vector2 } from '../types';
 import { TileType, UpgradeType } from '../types';
 
 import { useAudio } from './audio/AudioManager';
@@ -40,7 +22,6 @@ import type {
   WorldContextProps,
 } from './contextTypes';
 import { applyEngineRuntimeAction } from './engine/runtime';
-import { selectEnemyWorldPosition, selectProjectileWorldPosition } from './engine/selectors';
 import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
 import { stepEngine } from './engine/step';
 import type { EngineCache } from './engine/step';
@@ -55,107 +36,15 @@ import {
   serializeCheckpoint,
 } from './persistence';
 import { createInitialRenderState, syncRenderState } from './renderStateUtils';
+import {
+  buildEnemyTypeMap,
+  toEffectEntity,
+  toEnemyEntity,
+  toProjectileEntity,
+  toTowerEntity,
+  toWaveState,
+} from './transforms';
 import { getTowerStats } from './utils';
-
-const buildEnemyTypeMap = (): Map<string, EnemyConfig> => {
-  const map = new Map<string, EnemyConfig>();
-  for (const config of Object.values(ENEMY_TYPES)) {
-    map.set(config.name, {
-      speed: config.speed,
-      hp: config.hpBase,
-      shield: config.shield,
-      reward: config.reward,
-      color: config.color,
-      scale: config.scale,
-      abilities: config.abilities,
-    });
-  }
-  return map;
-};
-
-const toWaveState = (engineWave: EngineState['wave']): WaveState | null => {
-  if (!engineWave) return null;
-  return {
-    wave: engineWave.wave,
-    phase: engineWave.phase,
-    nextWaveTime: 0,
-    enemiesAlive: engineWave.enemiesAlive,
-    enemiesRemainingToSpawn: engineWave.enemiesRemainingToSpawn,
-    timer: engineWave.timerMs / 1000,
-  };
-};
-
-const toEnemyEntity = (
-  enemy: EngineEnemy,
-  enemyTypeMap: Map<string, EnemyConfig>,
-  pathWaypoints: readonly EngineVector2[],
-): EnemyEntity => {
-  const baseConfig = enemyTypeMap.get(enemy.type);
-  const config: EnemyConfig = {
-    speed: enemy.speed ?? baseConfig?.speed ?? 0,
-    hp: enemy.hp,
-    shield: enemy.shield ?? baseConfig?.shield ?? 0,
-    reward: enemy.reward ?? baseConfig?.reward ?? 0,
-    color: enemy.color ?? baseConfig?.color ?? '#ffffff',
-    scale: enemy.scale ?? baseConfig?.scale,
-    abilities: baseConfig?.abilities,
-  };
-
-  const pos = selectEnemyWorldPosition(enemy, pathWaypoints, TILE_SIZE);
-
-  return {
-    id: enemy.id,
-    config,
-    pathIndex: enemy.pathIndex,
-    progress: enemy.progress,
-    position: pos,
-    hp: enemy.hp,
-    shield: enemy.shield ?? 0,
-    maxShield: enemy.maxShield ?? enemy.shield ?? 0,
-    frozen: enemy.frozen ?? 0,
-    abilityCooldown: enemy.abilityCooldown ?? 0,
-    abilityActiveTimer: enemy.abilityActiveTimer ?? 0,
-  };
-};
-
-const toProjectileEntity = (
-  projectile: EngineState['projectiles'][number],
-  enemiesById: Map<string, EngineEnemy>,
-  pathWaypoints: readonly EngineVector2[],
-): ProjectileEntity => {
-  const target = enemiesById.get(projectile.targetId);
-  const pos = selectProjectileWorldPosition(projectile, target, pathWaypoints, TILE_SIZE);
-  return {
-    id: projectile.id,
-    startPos: projectile.origin,
-    position: pos,
-    targetId: projectile.targetId,
-    speed: projectile.speed,
-    progress: projectile.progress,
-    damage: projectile.damage,
-    color: projectile.color,
-  };
-};
-
-const toEffectEntity = (effect: EngineState['effects'][number]): EffectEntity => ({
-  id: effect.id,
-  type: effect.type,
-  position: effect.position,
-  color: effect.color,
-  scale: effect.scale,
-  duration: effect.duration,
-  createdAt: effect.createdAt,
-});
-
-const toTowerEntity = (tower: EngineState['towers'][number]): TowerEntity => ({
-  id: tower.id,
-  type: tower.type as TowerType,
-  gridPos: [tower.gridPosition[0], tower.gridPosition[1]],
-  position: [tower.gridPosition[0] * TILE_SIZE, 0.5, tower.gridPosition[1] * TILE_SIZE],
-  lastFired: tower.lastFired,
-  targetId: tower.targetId ?? null,
-  level: tower.level,
-});
 
 type RuntimeState = {
   engine: EngineState;
@@ -425,13 +314,26 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: 'resetEngine' });
   }, []);
 
-  const applyCheckpointSave = useCallback((save: SaveV1) => {
-    const snapshot = runtimeRef.current;
-    const next = buildRuntimeFromCheckpoint(save, snapshot.ui);
-    // Reset autosave tracking so wave 1 (or any future wave) can autosave again after restore.
-    lastAutosavedNonceRef.current = -1;
-    dispatch({ type: 'setRuntimeState', engine: next.engine, ui: next.ui });
-  }, []);
+  const applyCheckpointSave = useCallback(
+    (save: SaveV1) => {
+      const snapshot = runtimeRef.current;
+      const next = buildRuntimeFromCheckpoint(save, snapshot.ui);
+      // Reset autosave tracking so wave 1 (or any future wave) can autosave again after restore.
+      lastAutosavedNonceRef.current = -1;
+      dispatch({ type: 'setRuntimeState', engine: next.engine, ui: next.ui });
+
+      // Immediately sync render state so gridOccupancy is up-to-date for placement checks.
+      // Without this, tower hover/placement would be broken until the first game tick.
+      const nextMapLayout = MAP_LAYOUTS[next.ui.currentMapIndex % MAP_LAYOUTS.length];
+      const nextPathWaypoints = generatePath(nextMapLayout);
+      syncRenderState(next.engine, renderStateRef.current, {
+        enemyTypeMap,
+        pathWaypoints: nextPathWaypoints,
+        tileSize: TILE_SIZE,
+      });
+    },
+    [enemyTypeMap],
+  );
 
   const resetCheckpoint = useCallback((): { ok: boolean; error?: string } => {
     const checkpoint = loadCheckpoint();
@@ -679,6 +581,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const worldValue = useMemo(
     () => ({
       mapGrid,
+      currentMapIndex: runtime.ui.currentMapIndex,
       placeTower,
       isValidPlacement,
       selectedTower: runtime.ui.selectedTower,
@@ -688,6 +591,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     }),
     [
       mapGrid,
+      runtime.ui.currentMapIndex,
       placeTower,
       isValidPlacement,
       runtime.ui.selectedTower,

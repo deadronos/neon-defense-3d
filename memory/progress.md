@@ -10,6 +10,9 @@
 - Adaptive rendering: dynamic DPR scaler adjusts resolution based on FPS for stable performance.
 - Expanded unit tests covering DPR scaling, tower targeting/cooldown, projectile shield/freeze, and runtime checkpoint/skip-wave edges.
 - Basic UI overlay, build/upgrade flow, and victory/tech-tree transitions are implemented in `src/components`.
+- Audio engine: Added richer music processing (filter, delay, LFO, arpeggio) and procedural convolver reverb. Test stubs and mocks updated and verified.
+- Responsive UI: `BuildMenu`, `TopBar`, and `UpgradeInspector` made responsive to prevent overflow on narrow viewports.
+- **Save/Load:** Full checkpoint system works reliably, including interaction restoration on loaded games (via session nonce remount strategy). Verified with reproduction tests.
 
 ## What's left / recommended next work
 

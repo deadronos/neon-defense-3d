@@ -50,6 +50,12 @@ export interface GameState {
   upgrades: {
     [key in UpgradeType]?: number; // Level of each upgrade
   };
+
+  /**
+   * Incremented whenever a major state change (like loading a save) requires
+   * a full remount of the game scene components.
+   */
+  sessionNonce: number;
 }
 
 export enum UpgradeType {

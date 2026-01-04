@@ -22,6 +22,11 @@ export interface UiState {
   upgrades: {
     [key in UpgradeType]?: number;
   };
+  /**
+   * Incremented whenever a major state change (like loading a save) requires
+   * a full remount of the game scene components.
+   */
+  sessionNonce: number;
 }
 
 export type UiAction =
@@ -52,6 +57,7 @@ export const createInitialUiState = (): UiState => ({
   totalCurrencyEarned: 0,
   graphicsQuality: 'high',
   upgrades: {},
+  sessionNonce: 0,
 });
 
 const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
@@ -133,6 +139,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       return {
         ...createInitialUiState(),
         graphicsQuality: state.graphicsQuality,
+        sessionNonce: state.sessionNonce + 1,
       };
     case 'startNextSector': {
       const greedLevel = state.upgrades?.[UpgradeType.GLOBAL_GREED] || 0;

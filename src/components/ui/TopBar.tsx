@@ -29,7 +29,9 @@ export const TopBar: React.FC<TopBarProps> = ({
       <div className="flex gap-3 sm:gap-6 items-start">
         <div className="relative bg-black/40 border-l-4 border-b border-r border-t border-t-transparent border-r-transparent border-b-transparent border-l-red-500 pl-3 pr-4 py-1 sm:pl-4 sm:pr-6 sm:py-2 skew-x-[-10deg]">
           <div className="skew-x-10 flex flex-col">
-            <span className="text-[9px] sm:text-[10px] text-red-400 uppercase tracking-wider">Sys.Integrity</span>
+            <span className="text-[9px] sm:text-[10px] text-red-400 uppercase tracking-wider">
+              Sys.Integrity
+            </span>
             <span
               className={`text-xl sm:text-2xl font-bold font-mono ${lives < 10 ? 'text-red-500 animate-pulse' : 'text-white'}`}
             >
@@ -40,8 +42,12 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         <div className="relative bg-black/40 border-l-4 border-b border-r border-t border-t-transparent border-r-transparent border-b-transparent border-l-yellow-400 pl-3 pr-4 py-1 sm:pl-4 sm:pr-6 sm:py-2 skew-x-[-10deg]">
           <div className="skew-x-10 flex flex-col">
-            <span className="text-[9px] sm:text-[10px] text-yellow-500 uppercase tracking-wider">Resources</span>
-            <span className="text-xl sm:text-2xl font-bold font-mono text-yellow-300">${money}</span>
+            <span className="text-[9px] sm:text-[10px] text-yellow-500 uppercase tracking-wider">
+              Resources
+            </span>
+            <span className="text-xl sm:text-2xl font-bold font-mono text-yellow-300">
+              ${money}
+            </span>
           </div>
         </div>
 

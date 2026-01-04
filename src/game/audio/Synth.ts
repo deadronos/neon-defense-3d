@@ -37,6 +37,7 @@ export class Synth {
       this.convolver.buffer = impulse;
       this.convolver.connect(this.musicGain); // wet goes to music bus
     } catch (e) {
+      console.warn('[AUDIO] Failed to create convolver/reverb:', e);
       this.convolver = null;
     }
 
@@ -198,7 +199,7 @@ export class Synth {
       // Feed both dry and wet
       this.bgmFilter.connect(this.musicGain);
     } catch (e) {
-      // Fallback if the environment doesn't support filters
+      console.warn('[AUDIO] Failed to create lowpass filter, using direct connection:', e);
       this.bgmGain.connect(this.musicGain);
     }
 
@@ -219,7 +220,7 @@ export class Synth {
       // Send delay output to main music bus (wet)
       this.delayNode.connect(this.musicGain);
     } catch (e) {
-      // ignore if not available
+      console.warn('[AUDIO] Failed to create delay node:', e);
     }
 
     // subtle LFO for gentle detune/chorus movement
@@ -232,6 +233,7 @@ export class Synth {
       this.lfo.connect(this.lfoGain);
       this.lfo.start();
     } catch (e) {
+      console.warn('[AUDIO] Failed to create LFO:', e);
       this.lfo = null;
       this.lfoGain = null;
     }
@@ -293,7 +295,7 @@ export class Synth {
         idx++;
       }, 180);
     } catch (e) {
-      // ignore
+      console.warn('[AUDIO] Failed to create arpeggiator:', e);
     }
 
     // finally connect the submix to the music bus if not connected earlier
@@ -321,7 +323,9 @@ export class Synth {
     if (this.arpOsc) {
       try {
         this.arpOsc.stop();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.arpOsc = null;
     }
     if (this.arpInterval) {
@@ -332,7 +336,9 @@ export class Synth {
     if (this.lfo) {
       try {
         this.lfo.stop();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.lfo = null;
     }
     this.lfoGain = null;
@@ -340,27 +346,35 @@ export class Synth {
     if (this.delayFeedback) {
       try {
         this.delayFeedback.disconnect();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.delayFeedback = null;
     }
     if (this.delayNode) {
       try {
         this.delayNode.disconnect();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.delayNode = null;
     }
 
     if (this.bgmFilter) {
       try {
         this.bgmFilter.disconnect();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.bgmFilter = null;
     }
 
     if (this.bgmGain) {
       try {
         this.bgmGain.disconnect();
-      } catch (e) {}
+      } catch {
+        /* silent */
+      }
       this.bgmGain = null;
     }
 

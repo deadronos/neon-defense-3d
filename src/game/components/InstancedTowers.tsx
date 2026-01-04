@@ -209,4 +209,3 @@ export const InstancedTowers: React.FC = () => {
     </group>
   );
 };
-
