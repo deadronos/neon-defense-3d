@@ -351,6 +351,8 @@ export const buildRuntimeFromCheckpoint = (
     ) as UiState['upgrades'],
     selectedEntityId: null,
     selectedTower: null,
+    // Increment session nonce to force a full scene remount
+    sessionNonce: (previousUi.sessionNonce || 0) + 1,
   };
 
   if (save.settings?.quality) {
