@@ -186,6 +186,8 @@ export interface TowerEntity {
   targetId: string | null;
   /** Upgrade level of the tower. */
   level: number;
+  /** Active synergies affecting this tower. */
+  activeSynergies?: ActiveSynergy[];
 }
 
 /**
@@ -225,6 +227,7 @@ export enum TileType {
 /**
  * Represents the current state of the wave system.
  */
+
 export type WavePhase = 'preparing' | 'spawning' | 'active' | 'completed';
 
 export interface WaveState {
@@ -235,4 +238,16 @@ export interface WaveState {
   enemiesRemainingToSpawn: number;
   /** Seconds remaining in current phase (if applicable). */
   timer: number;
+}
+
+export enum SynergyType {
+  SYNCHRONIZED_FIRE = 'SYNCHRONIZED_FIRE',
+  TRIANGULATION = 'TRIANGULATION',
+  COVER_FIRE_SOURCE = 'COVER_FIRE_SOURCE',
+  COVER_FIRE_RECEIVER = 'COVER_FIRE_RECEIVER',
+}
+
+export interface ActiveSynergy {
+  type: SynergyType;
+  partnerId: string;
 }

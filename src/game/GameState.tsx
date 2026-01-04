@@ -36,6 +36,7 @@ import {
   serializeCheckpoint,
 } from './persistence';
 import { createInitialRenderState, syncRenderState } from './renderStateUtils';
+import { writeEnemyWorldPosition } from './engine/selectors';
 import {
   buildEnemyTypeMap,
   toEffectEntity,
@@ -45,6 +46,7 @@ import {
   toWaveState,
 } from './transforms';
 import { getTowerStats } from './utils';
+import { calculateSynergies } from './synergies';
 
 type RuntimeState = {
   engine: EngineState;
@@ -87,15 +89,27 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
         lastFired: 0,
       };
 
+
+      const newTowers = [...state.engine.towers, nextTower];
+      const synergies = calculateSynergies(newTowers);
+      const synergedTowers = newTowers.map((t) => ({
+        ...t,
+        activeSynergies: synergies.get(t.id),
+      }));
+
       return {
-        engine: applyEnginePatch(afterId, { towers: [...afterId.towers, nextTower] }),
+        engine: applyEnginePatch(afterId, { towers: synergedTowers }),
         ui: uiReducer(state.ui, { type: 'spendMoney', amount: config.cost }),
       };
     }
     case 'upgradeTower': {
       const tower = state.engine.towers.find((t) => t.id === action.id);
       if (!tower) return state;
-      const stats = getTowerStats(tower.type as TowerType, tower.level, state.ui.upgrades);
+      const stats = getTowerStats(
+        tower.type as TowerType,
+        tower.level,
+        { upgrades: state.ui.upgrades, activeSynergies: tower.activeSynergies }
+      );
       if (state.ui.money < stats.upgradeCost) return state;
       const nextTowers = state.engine.towers.map((t) =>
         t.id === action.id ? { ...t, level: t.level + 1 } : t,
@@ -110,9 +124,17 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
       if (!tower) return state;
       const config = TOWER_CONFIGS[tower.type as TowerType];
       const refund = Math.floor((config?.cost ?? 0) * 0.7);
+
+      const filteredTowers = state.engine.towers.filter((t) => t.id !== action.id);
+      const synergies = calculateSynergies(filteredTowers);
+      const synergedTowers = filteredTowers.map((t) => ({
+        ...t,
+        activeSynergies: synergies.get(t.id),
+      }));
+
       return {
         engine: applyEnginePatch(state.engine, {
-          towers: state.engine.towers.filter((t) => t.id !== action.id),
+          towers: synergedTowers,
         }),
         ui: { ...state.ui, money: state.ui.money + refund, selectedEntityId: null },
       };
@@ -283,7 +305,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const state = runtimeRef.current;
       const tower = state.engine.towers.find((t) => t.id === id);
       if (tower) {
-        const stats = getTowerStats(tower.type as TowerType, tower.level, state.ui.upgrades);
+        const stats = getTowerStats(
+          tower.type as TowerType,
+          tower.level,
+          { upgrades: state.ui.upgrades, activeSynergies: tower.activeSynergies }
+        );
         if (state.ui.money >= stats.upgradeCost) {
           playSFX('build'); // Reuse build sound for upgrade
         } else {

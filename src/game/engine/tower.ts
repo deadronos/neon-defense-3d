@@ -34,26 +34,8 @@ const MIN_COOLDOWN_MULTIPLIER = 0.1;
 /** Default projectile speed in world units per second. */
 const PROJECTILE_SPEED = 20;
 
-const getTowerStats = (towerType: string, level: number) => {
-  const config = TOWER_CONFIGS[towerType as keyof typeof TOWER_CONFIGS];
-  const baseDamage = config?.damage ?? 0;
-  const baseRange = config?.range ?? 0;
-  const baseCooldown = config?.cooldown ?? 1;
-  const freezeDuration = config?.freezeDuration;
-  const splashRadius = config?.splashRadius;
-
-  return {
-    damage: baseDamage * (1 + (level - 1) * DAMAGE_SCALE_PER_LEVEL),
-    range: baseRange * (1 + (level - 1) * RANGE_SCALE_PER_LEVEL),
-    cooldownMs:
-      Math.max(
-        MIN_COOLDOWN_MULTIPLIER,
-        baseCooldown * (1 - (level - 1) * COOLDOWN_REDUCTION_PER_LEVEL),
-      ) * 1000,
-    freezeDuration,
-    splashRadius,
-  };
-};
+import { getTowerStats } from '../utils';
+import type { TowerType } from '../../types';
 
 const selectTowerWorldPosition = (tower: EngineTower, tileSize: number): EngineVector3 => [
   tower.gridPosition[0] * tileSize,
@@ -113,8 +95,12 @@ export const stepTowers = (
     const tower = state.towers[index];
     if (!tower) continue;
 
-    const stats = getTowerStats(tower.type, tower.level);
-    if (context.nowMs - tower.lastFired < stats.cooldownMs) continue;
+    const stats = getTowerStats(tower.type as TowerType, tower.level, {
+      activeSynergies: tower.activeSynergies,
+    });
+    const cooldownMs = stats.cooldown * 1000;
+
+    if (context.nowMs - tower.lastFired < cooldownMs) continue;
 
     const towerPos = selectTowerWorldPosition(tower, tileSize);
     const rangeSquared = stats.range * stats.range;
