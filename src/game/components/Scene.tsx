@@ -11,8 +11,8 @@ import { InstancedExplosions } from './Effects';
 import { InstancedEnemies } from './Enemies';
 import { GameLoopBridge } from './GameLoop';
 import { InstancedTowers } from './InstancedTowers';
-import { SynergyLinks } from './SynergyLinks'; // New import
 import { InstancedProjectiles } from './Projectiles';
+import { SynergyLinks } from './SynergyLinks'; // New import
 // import { Tower } from './Tower'; // Keep for ref? No, replacing usage.
 import { InstancedTrails } from './Trails';
 import { World } from './World';

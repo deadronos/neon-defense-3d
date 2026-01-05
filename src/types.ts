@@ -56,6 +56,12 @@ export interface GameState {
    * a full remount of the game scene components.
    */
   sessionNonce: number;
+  /** Kill streak / announcer payload (null when hidden). */
+  announcement: {
+    text: string;
+    subtext?: string;
+    id: number;
+  } | null;
 }
 
 export enum UpgradeType {

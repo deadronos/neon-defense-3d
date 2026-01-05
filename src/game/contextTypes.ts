@@ -49,6 +49,7 @@ export interface GameContextProps {
   gameSpeed: number;
   setGameSpeed: (speed: number) => void;
   renderStateRef: MutableRefObject<RenderState>;
+  clearAnnouncement: () => void;
 }
 
 export interface GameUiContextProps {
@@ -75,6 +76,7 @@ export interface GameUiContextProps {
   skipWave: () => void;
   gameSpeed: number;
   setGameSpeed: (speed: number) => void;
+  clearAnnouncement: () => void;
 }
 
 export interface RenderStateContextProps {

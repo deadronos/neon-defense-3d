@@ -1,15 +1,20 @@
 import { describe, it, expect } from 'vitest';
 
-import { createInitialRenderState, syncRenderState } from '../../game/renderStateUtils';
 import { TILE_SIZE, MAP_LAYOUTS } from '../../constants';
 import type { EngineState } from '../../game/engine/types';
+import { createInitialRenderState, syncRenderState } from '../../game/renderStateUtils';
+import type { EnemyConfig } from '../../types';
 
-const pathWaypoints = MAP_LAYOUTS[0].map((row, z) => row.map((_, x) => [x, z] as [number, number])[0]).filter(Boolean);
+const pathWaypoints = MAP_LAYOUTS[0]
+  .map((row, z) => row.map((_, x) => [x, z] as [number, number])[0])
+  .filter(Boolean);
 
 describe('renderStateUtils.syncRenderState', () => {
   it('syncs enemies, towers, projectiles, and effects into render state', () => {
     const renderState = createInitialRenderState();
-    const enemyTypeMap = new Map<string, any>([[ 'Drone', { speed: 2.5, hp: 50, shield: 0, reward: 10, color: '#ff0055', scale: 0.4 } ]]);
+    const enemyTypeMap = new Map<string, EnemyConfig>([
+      ['Drone', { speed: 2.5, hp: 50, shield: 0, reward: 10, color: '#ff0055', scale: 0.4 }],
+    ]);
 
     const engineState: EngineState = {
       enemies: [
@@ -42,7 +47,15 @@ describe('renderStateUtils.syncRenderState', () => {
         },
       ],
       effects: [
-        { id: 'fx1', type: 'explosion', position: [1, 0, 1], color: '#fff', scale: 1, duration: 100, createdAt: Date.now() },
+        {
+          id: 'fx1',
+          type: 'explosion',
+          position: [1, 0, 1],
+          color: '#fff',
+          scale: 1,
+          duration: 100,
+          createdAt: Date.now(),
+        },
       ],
       wave: null,
       idCounters: { enemy: 0, tower: 0, projectile: 0, effect: 0 },
@@ -75,15 +88,33 @@ describe('renderStateUtils.syncRenderState', () => {
 
   it('removes previous positions when entities are no longer present', () => {
     const renderState = createInitialRenderState();
-    const enemyTypeMap = new Map<string, any>([[ 'Drone', { speed: 2.5, hp: 50, shield: 0, reward: 10, color: '#ff0055', scale: 0.4 } ]]);
+    const enemyTypeMap = new Map<string, EnemyConfig>([
+      ['Drone', { speed: 2.5, hp: 50, shield: 0, reward: 10, color: '#ff0055', scale: 0.4 }],
+    ]);
 
-    const engineStateA: EngineState = { enemies: [{ id: 'e1', type: 'Drone', pathIndex: 0, progress: 0.1, hp: 50 }], towers: [], projectiles: [], effects: [], wave: null, idCounters: { enemy: 0, tower: 0, projectile: 0, effect: 0 }, pendingEvents: [] };
-    syncRenderState(engineStateA, renderState, { enemyTypeMap, pathWaypoints, tileSize: TILE_SIZE });
+    const engineStateA: EngineState = {
+      enemies: [{ id: 'e1', type: 'Drone', pathIndex: 0, progress: 0.1, hp: 50 }],
+      towers: [],
+      projectiles: [],
+      effects: [],
+      wave: null,
+      idCounters: { enemy: 0, tower: 0, projectile: 0, effect: 0 },
+      pendingEvents: [],
+    };
+    syncRenderState(engineStateA, renderState, {
+      enemyTypeMap,
+      pathWaypoints,
+      tileSize: TILE_SIZE,
+    });
     expect(renderState.previousEnemyPositions.has('e1')).toBe(true);
 
     // Now sync with empty enemies
     const engineStateB = { ...engineStateA, enemies: [] };
-    syncRenderState(engineStateB, renderState, { enemyTypeMap, pathWaypoints, tileSize: TILE_SIZE });
+    syncRenderState(engineStateB, renderState, {
+      enemyTypeMap,
+      pathWaypoints,
+      tileSize: TILE_SIZE,
+    });
 
     expect(renderState.enemies.length).toBe(0);
     expect(renderState.previousEnemyPositions.has('e1')).toBe(false);

@@ -1,21 +1,10 @@
-import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { describe, it, vi } from 'vitest';
 
 import { AudioProvider } from '../../../game/audio/AudioManager';
 import { synth } from '../../../game/audio/Synth';
-
-const Harness = () => {
-  return (
-    <AudioProvider>
-      <div>
-        <div data-testid="isMusic">{String(synth.isPlayingMusic ?? false)}</div>
-        <button onClick={() => (window as any).toggleMusicButton?.click()}>Toggle</button>
-      </div>
-    </AudioProvider>
-  );
-};
 
 // We'll wire into the real provider via DOM button in tests
 describe('AudioManager defensive behavior', () => {
@@ -29,12 +18,11 @@ describe('AudioManager defensive behavior', () => {
         <div>
           <button
             onClick={() => {
-              const audio = (window as any).__audioInstance;
               // Simulate calling toggleMusic via provider; provider exports toggle on value but we can't import here easily
               // So call synth.startMusic directly via toggle flow: attempt to call start and then check state
               try {
                 synth.startMusic();
-              } catch (e) {
+              } catch {
                 // expected; provider should have caught this in real flow
               }
             }}
@@ -67,10 +55,10 @@ describe('AudioManager defensive behavior', () => {
             onClick={async () => {
               try {
                 synth.startMusic();
-              } catch (e) {}
+              } catch {}
               try {
                 synth.stopMusic();
-              } catch (e) {}
+              } catch {}
             }}
           >
             ToggleBoth

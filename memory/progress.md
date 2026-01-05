@@ -4,6 +4,7 @@
 
 - Project scaffolding and developer scripts (`dev`, `build`, `test`, `e2e`) are present and configured.
 - Core gameplay loop, wave manager, tower placement, projectile collisions, and rendering are implemented under `src/game`.
+- GameState refactor: runtime/render/gameSpeed moved into Zustand stores with provider wiring.
 - Performance-oriented rendering: enemies and projectiles use instanced meshes to handle many entities efficiently.
 - Instanced entity coloring works reliably (towers/projectiles/enemies use `instanceColor` with vertex colors enabled so colors don’t regress to black).
 - Engine hot paths reuse cached spatial grids and enemy positions to reduce per-tick allocations.
