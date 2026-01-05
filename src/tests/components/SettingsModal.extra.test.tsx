@@ -173,12 +173,12 @@ describe('SettingsModal extras', () => {
     // change values via input event
 
     fireEvent.input(master, { target: { value: '0.6' } });
-    expect(mockSetMaster).toHaveBeenCalled();
+    await waitFor(() => expect(mockSetMaster).toHaveBeenCalled());
 
     fireEvent.input(sfx, { target: { value: '0.9' } });
-    expect(mockSetSfx).toHaveBeenCalled();
+    await waitFor(() => expect(mockSetSfx).toHaveBeenCalled());
 
     fireEvent.input(music, { target: { value: '0.8' } });
-    expect(mockSetMusic).toHaveBeenCalled();
+    await waitFor(() => expect(mockSetMusic).toHaveBeenCalled());
   });
 });
