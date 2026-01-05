@@ -7,13 +7,13 @@ export const KillStreakAnnouncer: React.FC = () => {
   const [current, setCurrent] = useState(gameState.announcement);
 
   useEffect(() => {
-    if (gameState.announcement && gameState.announcement.id !== current?.id) {
+    if (gameState.announcement) {
       setCurrent(gameState.announcement);
       setVisible(true);
       const timer = setTimeout(() => setVisible(false), 2000); // Hide after 2s
       return () => clearTimeout(timer);
     }
-  }, [gameState.announcement, current]);
+  }, [gameState.announcement]);
 
   if (!visible || !current) return null;
 
