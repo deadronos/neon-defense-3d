@@ -36,11 +36,19 @@ vi.mock('../../game/GameState', () => ({
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
 
+// quick load log to detect scheduling/hang issues
+console.log('[test startup] SettingsModal.behavior.export loaded');
+
 describe('SettingsModal behavior — export/import', () => {
   beforeEach(() => {
+    console.log('[test beforeEach] SettingsModal.behavior.export');
     vi.clearAllMocks();
     exportJsonValue = '{"foo":true}';
     hasCheckpoint = true;
+  });
+
+  it('sanity - this file runs', () => {
+    expect(true).toBe(true);
   });
 
   it('refresh updates export JSON shown in textarea', async () => {

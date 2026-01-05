@@ -37,13 +37,21 @@ vi.mock('../../game/GameState', () => ({
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
 
+// quick load log to detect scheduling/hang issues
+console.log('[test startup] SettingsModal.behavior.reset loaded');
+
 describe('SettingsModal behavior — reset & factory', () => {
   beforeEach(() => {
+    console.log('[test beforeEach] SettingsModal.behavior.reset');
     vi.clearAllMocks();
     exportJsonValue = '{"foo":true}';
     hasCheckpoint = true;
     resetCheckpointMock.mockReset();
     factoryResetMock.mockReset();
+  });
+
+  it('sanity - this file runs', () => {
+    expect(true).toBe(true);
   });
 
   it('shows reset error when resetCheckpoint returns error', async () => {
