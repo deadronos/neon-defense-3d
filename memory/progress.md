@@ -20,6 +20,7 @@
 - Create design documents for larger features (Tech Tree, Sector progression) and store them in `memory/designs/`.
 - Establish a CI job that runs `npm test` and optionally Playwright screenshot checks for visual regressions.
 - **Documentation backlog:** Create & link designs/tasks for recently merged features that lacked docs (KillStreakAnnouncer, Synergy system, Upgrades support, CanvasErrorBoundary, currentMapIndex) — see TASK017..TASK021.
+- **Tests added:** Added unit tests for `renderStateUtils`, `transforms`, and `Synth`. Coverage improved (overall statements ~83.7%, lines ~85.3%).
 - Track performance benchmarks and create a small profiling checklist for frame-time regressions.
 
 ## Known issues / technical debt

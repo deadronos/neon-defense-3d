@@ -35,6 +35,7 @@
 - Do a manual gameplay parity pass (movement, firing cadence, rewards, victory after wave 10).
 - Verify dynamic DPR behavior on a range of devices and consider exposing tuning to a graphics setting.
 - Consider extending cached vector usage into render selectors if GC pressure persists.
+- Add more unit tests for low coverage areas and keep improving branch coverage (recently added tests for `renderStateUtils`, `transforms`, and `Synth` — coverage improved to ~83.7% statements / ~85.3% lines).
 
 ## Open decisions
 
