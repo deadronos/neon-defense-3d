@@ -1,6 +1,8 @@
 import React, { useMemo } from 'react';
+
 import { useAudio } from '../../game/audio/AudioManager';
 import { useGame } from '../../game/GameState';
+
 import { SettingsAudioSection } from './settings/SettingsAudioSection';
 import { SettingsExportImportSection } from './settings/SettingsExportImportSection';
 import { SettingsQualitySection } from './settings/SettingsQualitySection';

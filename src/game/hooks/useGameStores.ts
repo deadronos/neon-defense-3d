@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import type { StoreApi } from 'zustand';
 import { useStore } from 'zustand';
+
 import { createGameSpeedStore } from '../stores/gameSpeedStore';
 import type { GameSpeedStoreState } from '../stores/gameSpeedStore';
 import { createRenderStateStore } from '../stores/renderStateStore';
@@ -8,7 +9,7 @@ import type { RenderStateStoreState } from '../stores/renderStateStore';
 import { createRuntimeStore } from '../stores/runtimeStore';
 import type { RuntimeStoreState } from '../stores/runtimeStore';
 
-const ensureStoreRef = <T,>(factory: () => StoreApi<T>, ref: { current: StoreApi<T> | null }) => {
+const ensureStoreRef = <T>(factory: () => StoreApi<T>, ref: { current: StoreApi<T> | null }) => {
   if (!ref.current) {
     ref.current = factory();
   }

@@ -1,6 +1,6 @@
+import { migrateSave } from './migrate';
 import type { SaveV1 } from './types';
 import { CHECKPOINT_STORAGE_KEY_V1 } from './types';
-import { migrateSave } from './migrate';
 
 export const saveCheckpoint = (save: SaveV1): { ok: boolean; error?: string } => {
   try {

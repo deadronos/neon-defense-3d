@@ -1,6 +1,8 @@
 import { createContext, useContext, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
+
 import type { GameState } from '../types';
+
 import { useAudio } from './audio/AudioManager';
 import type {
   GameContextProps,
@@ -244,10 +246,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     ],
   );
 
-  const renderStateValue = useMemo(
-    () => buildRenderStateValue(renderStateRef),
-    [renderStateRef],
-  );
+  const renderStateValue = useMemo(() => buildRenderStateValue(renderStateRef), [renderStateRef]);
 
   const worldValue = useMemo(
     () =>

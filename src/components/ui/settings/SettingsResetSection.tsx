@@ -14,8 +14,8 @@ export const SettingsResetSection: React.FC<SettingsResetSectionProps> = ({
   <section className="bg-black/20 border border-[#0f3460] rounded p-5">
     <h3 className="text-lg font-bold text-white mb-2">Reset</h3>
     <p className="text-gray-400 text-sm mb-4">
-      Reset Checkpoint reloads the last autosaved checkpoint. Factory Reset clears all
-      progress/meta and deletes the checkpoint (Quality is preserved).
+      Reset Checkpoint reloads the last autosaved checkpoint. Factory Reset clears all progress/meta
+      and deletes the checkpoint (Quality is preserved).
     </p>
 
     <div className="flex flex-col md:flex-row gap-3">

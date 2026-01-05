@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+
 import { MAP_LAYOUTS, generatePath, getMapGrid } from '../../constants';
 import type { EngineEnemy, EngineVector2 } from '../engine/types';
 import type { RuntimeStoreState } from '../stores/runtimeStore';
@@ -21,7 +22,9 @@ export const useDerivedEntities = (runtime: RuntimeStoreState['runtime']) => {
 
   const enemies = useMemo(
     () =>
-      runtime.engine.enemies.map((enemy) => toEnemyEntity(enemy, enemyTypeMap, enginePathWaypoints)),
+      runtime.engine.enemies.map((enemy) =>
+        toEnemyEntity(enemy, enemyTypeMap, enginePathWaypoints),
+      ),
     [runtime.engine.enemies, enemyTypeMap, enginePathWaypoints],
   );
 

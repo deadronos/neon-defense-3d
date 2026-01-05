@@ -1,7 +1,8 @@
 import { MAP_LAYOUTS, getMapGrid } from '../../constants';
 import { TileType } from '../../types';
-import type { MigrateResult, Quality, SaveV1 } from './types';
+
 import { knownTowerTypes, knownUpgradeKeys } from './constants';
+import type { MigrateResult, Quality, SaveV1 } from './types';
 import { clampMin, coerceInt, isRecord } from './utils';
 import { validateSave } from './validation';
 

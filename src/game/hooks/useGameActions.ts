@@ -1,15 +1,21 @@
 import { useCallback } from 'react';
 import type { MutableRefObject } from 'react';
+
 import { MAP_LAYOUTS, TILE_SIZE, generatePath } from '../../constants';
-import type { GraphicsQuality, TowerType } from '../../types';
-import { TileType, UpgradeType } from '../../types';
+import type { GraphicsQuality, TowerType, UpgradeType } from '../../types';
+import { TileType } from '../../types';
+import {
+  buildRuntimeFromCheckpoint,
+  clearCheckpoint,
+  loadCheckpoint,
+  serializeCheckpoint,
+} from '../persistence';
+import type { SaveV1 } from '../persistence';
+import { syncRenderState } from '../renderStateUtils';
 import type { RenderStateStoreState } from '../stores/renderStateStore';
 import type { RuntimeStoreState } from '../stores/runtimeStore';
 import type { buildEnemyTypeMap } from '../transforms';
-import { buildRuntimeFromCheckpoint, clearCheckpoint, loadCheckpoint, serializeCheckpoint } from '../persistence';
-import { syncRenderState } from '../renderStateUtils';
 import { getTowerStats } from '../utils';
-import type { SaveV1 } from '../persistence';
 
 type PlaySfx = (id: string) => void;
 

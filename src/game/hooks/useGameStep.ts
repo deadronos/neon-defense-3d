@@ -1,13 +1,14 @@
 import { useCallback, useRef } from 'react';
 import type { MutableRefObject } from 'react';
+
 import { TILE_SIZE } from '../../constants';
 import { UpgradeType } from '../../types';
-import type { EngineVector2 } from '../engine/types';
 import { stepEngine } from '../engine/step';
 import type { EngineCache } from '../engine/step';
+import type { EngineVector2 } from '../engine/types';
+import { syncRenderState } from '../renderStateUtils';
 import type { RenderStateStoreState } from '../stores/renderStateStore';
 import type { RuntimeStoreState } from '../stores/runtimeStore';
-import { syncRenderState } from '../renderStateUtils';
 import type { buildEnemyTypeMap } from '../transforms';
 
 type PlaySfx = (id: string) => void;

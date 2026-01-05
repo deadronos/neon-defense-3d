@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import type { MutableRefObject } from 'react';
-import type { RuntimeStoreState } from '../stores/runtimeStore';
+
 import { loadCheckpoint, saveCheckpoint, serializeCheckpoint } from '../persistence';
+import type { RuntimeStoreState } from '../stores/runtimeStore';
 
 export const useAutosaveCheckpoint = (
   runtime: RuntimeStoreState['runtime'],
