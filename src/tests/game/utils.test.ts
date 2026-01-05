@@ -27,7 +27,7 @@ describe('getTowerStats', () => {
 
   it('applies global damage upgrade', () => {
     const upgrades = { [UpgradeType.GLOBAL_DAMAGE]: 2 }; // 10% increase
-    const stats = getTowerStats(TowerType.Basic, 1, upgrades);
+    const stats = getTowerStats(TowerType.Basic, 1, { upgrades });
     const base = TOWER_CONFIGS[TowerType.Basic];
 
     expect(stats.damage).toBeCloseTo(base.damage * 1.1);
@@ -35,7 +35,7 @@ describe('getTowerStats', () => {
 
   it('applies global range upgrade', () => {
     const upgrades = { [UpgradeType.GLOBAL_RANGE]: 4 }; // 20% increase
-    const stats = getTowerStats(TowerType.Basic, 1, upgrades);
+    const stats = getTowerStats(TowerType.Basic, 1, { upgrades });
     const base = TOWER_CONFIGS[TowerType.Basic];
 
     expect(stats.range).toBeCloseTo(base.range * 1.2);
