@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { TOWER_CONFIGS } from '../../../constants';
 import { createInitialEngineState } from '../../../game/engine/state';
 import { stepTowers } from '../../../game/engine/tower';
+import type { EngineVector2 } from '../../../game/engine/types';
 import { TowerType } from '../../../types';
 
 const path: [number, number][] = [
@@ -234,7 +235,7 @@ describe('engine stepTowers', () => {
       state,
       longPath,
       { deltaMs: 16, nowMs: basicCooldownMs + 1, rng: () => 0.5 },
-      { tileSize: 1 }
+      { tileSize: 1 },
     );
     expect(resultNoUpgrade.patch.projectiles).toBeUndefined();
 
@@ -242,15 +243,15 @@ describe('engine stepTowers', () => {
     const resultWithUpgrade = stepTowers(
       state,
       longPath,
-      { 
-        deltaMs: 16, 
-        nowMs: basicCooldownMs + 1, 
+      {
+        deltaMs: 16,
+        nowMs: basicCooldownMs + 1,
         rng: () => 0.5,
-        upgrades: { 'GLOBAL_RANGE': 1 }
+        upgrades: { GLOBAL_RANGE: 1 },
       },
-      { tileSize: 1 }
+      { tileSize: 1 },
     );
-    
+
     // Check if it fired
     expect(resultWithUpgrade.patch.projectiles).toHaveLength(1);
     expect(resultWithUpgrade.patch.projectiles?.[0]?.targetId).toBe('enemy-far');

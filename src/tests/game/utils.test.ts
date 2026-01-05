@@ -42,7 +42,7 @@ describe('getTowerStats', () => {
   });
 
   it('applies SYNCHRONIZED_FIRE synergy (reduces cooldown)', () => {
-    const synergies = [{ type: SynergyType.SYNCHRONIZED_FIRE }];
+    const synergies = [{ type: SynergyType.SYNCHRONIZED_FIRE, partnerId: 'ally-1' }];
     const stats = getTowerStats(TowerType.Basic, 1, { activeSynergies: synergies });
     const base = TOWER_CONFIGS[TowerType.Basic];
 
@@ -50,7 +50,7 @@ describe('getTowerStats', () => {
   });
 
   it('applies TRIANGULATION synergy (range + damage)', () => {
-    const synergies = [{ type: SynergyType.TRIANGULATION }];
+    const synergies = [{ type: SynergyType.TRIANGULATION, partnerId: 'ally-1' }];
     const stats = getTowerStats(TowerType.Basic, 1, { activeSynergies: synergies });
     const base = TOWER_CONFIGS[TowerType.Basic];
 
@@ -59,8 +59,8 @@ describe('getTowerStats', () => {
   });
 
   it('applies COVER_FIRE_SOURCE and COVER_FIRE_RECEIVER synergies', () => {
-    const src = [{ type: SynergyType.COVER_FIRE_SOURCE }];
-    const rcv = [{ type: SynergyType.COVER_FIRE_RECEIVER }];
+    const src = [{ type: SynergyType.COVER_FIRE_SOURCE, partnerId: 'ally-1' }];
+    const rcv = [{ type: SynergyType.COVER_FIRE_RECEIVER, partnerId: 'ally-1' }];
     const base = TOWER_CONFIGS[TowerType.Basic];
 
     const sstats = getTowerStats(TowerType.Basic, 1, { activeSynergies: src });
@@ -71,7 +71,10 @@ describe('getTowerStats', () => {
   });
 
   it('stacks multiple synergies correctly', () => {
-    const synergies = [{ type: SynergyType.SYNCHRONIZED_FIRE }, { type: SynergyType.TRIANGULATION }];
+    const synergies = [
+      { type: SynergyType.SYNCHRONIZED_FIRE, partnerId: 'ally-1' },
+      { type: SynergyType.TRIANGULATION, partnerId: 'ally-2' },
+    ];
     const stats = getTowerStats(TowerType.Basic, 1, { activeSynergies: synergies });
     const base = TOWER_CONFIGS[TowerType.Basic];
 
@@ -86,8 +89,10 @@ describe('getTowerStats', () => {
     const statsNoSynergy = getTowerStats(TowerType.Basic, highLevel);
     expect(statsNoSynergy.cooldown).toBeCloseTo(0.1);
 
-    const synergies = [{ type: SynergyType.SYNCHRONIZED_FIRE }];
-    const statsWithSynergy = getTowerStats(TowerType.Basic, highLevel, { activeSynergies: synergies });
+    const synergies = [{ type: SynergyType.SYNCHRONIZED_FIRE, partnerId: 'ally-1' }];
+    const statsWithSynergy = getTowerStats(TowerType.Basic, highLevel, {
+      activeSynergies: synergies,
+    });
     // clamp happens to 0.1 then divided by 1.15
     expect(statsWithSynergy.cooldown).toBeCloseTo(0.1 / 1.15);
   });

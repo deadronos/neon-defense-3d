@@ -119,8 +119,9 @@ export const stepEnemies = (
         break;
       }
 
-      const segLen = segmentLengths?.[searchIndex] ?? Math.hypot(s2[0] - s1[0], s2[1] - s1[1]) * tileSize;
-      
+      const segLen =
+        segmentLengths?.[searchIndex] ?? Math.hypot(s2[0] - s1[0], s2[1] - s1[1]) * tileSize;
+
       if (segLen <= 0.0001) {
         // ...
         searchIndex++;

@@ -3,8 +3,12 @@
 ## Current focus
 
 - Improving runtime performance in engine/render hot paths and adaptive rendering quality.
+- Refactoring GameState into Zustand stores for maintainability.
+- Refactoring monolithic modules (GameState, SettingsModal, persistence) into smaller helpers.
 
 ## Recent changes (code highlights)
+- **State:** Split GameState into Zustand stores (runtime/render/gameSpeed) and moved the runtime reducer into a store module.
+- **Refactor:** Extracted GameState logic into hooks/context builders, split SettingsModal into sections with an import/export hook, and modularized persistence helpers under `src/game/persistence/`.
 
 - Implemented fixed-timestep simulation loop with render interpolation in the render bridge.
 - Batched world tiles into an instanced mesh with a single grid overlay and hover updates.
@@ -31,6 +35,8 @@
 - **New features:** Added `KillStreakAnnouncer` (UI announcer), Synergy system (tower synergies + `SynergyLinks` visuals), upgrades support in engine step functions, `CanvasErrorBoundary` for robust rendering failure handling, and `currentMapIndex` for map selection and management.
 
 ## Next steps
+- Decide whether to clean existing lint warnings in tests/engine modules.
+- Run unit tests for GameState/persistence after the store refactor.
 
 - Do a manual gameplay parity pass (movement, firing cadence, rewards, victory after wave 10).
 - Verify dynamic DPR behavior on a range of devices and consider exposing tuning to a graphics setting.
@@ -41,3 +47,4 @@
 
 - Visual fidelity vs. performance: whether to reintroduce expensive effects (trails, per-entity lights) via instancing or shaders.
 - Sector/progression balancing: decide wave lengths and reward curves for persistent campaign progression.
+

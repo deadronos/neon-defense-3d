@@ -1,4 +1,5 @@
-import { SynergyType, ActiveSynergy, TowerType } from '../types';
+import type { ActiveSynergy } from '../types';
+import { SynergyType, TowerType } from '../types';
 
 export interface SynergyDef {
   id: SynergyType;
@@ -33,10 +34,13 @@ export const SYNERGIES: Record<SynergyType, SynergyDef> = {
  * Calculates active synergies for all towers.
  */
 export const calculateSynergies = (
-  towers: { id: string; type: string; gridPosition: readonly [number, number] }[]
+  towers: { id: string; type: string; gridPosition: readonly [number, number] }[],
 ): Map<string, ActiveSynergy[]> => {
   const synergyMap = new Map<string, ActiveSynergy[]>();
-  const towerMap = new Map<string, { id: string; type: string; gridPosition: readonly [number, number] }>();
+  const towerMap = new Map<
+    string,
+    { id: string; type: string; gridPosition: readonly [number, number] }
+  >();
   const gridMap = new Map<string, string>(); // "x,z" -> towerId
 
   towers.forEach((t) => {
@@ -47,7 +51,12 @@ export const calculateSynergies = (
 
   const getNeighbors = (x: number, z: number) => {
     const neighborIds: string[] = [];
-    const offsets = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+    const offsets = [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ];
     offsets.forEach(([dx, dz]) => {
       const id = gridMap.get(`${x + dx},${z + dz}`);
       if (id) neighborIds.push(id);

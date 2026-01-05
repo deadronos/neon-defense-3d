@@ -1,5 +1,6 @@
-import type { EngineEvent } from './events';
 import type { ActiveSynergy } from '../../types';
+
+import type { EngineEvent } from './events';
 
 export type EngineVector2 = readonly [number, number];
 export type EngineVector3 = readonly [number, number, number];

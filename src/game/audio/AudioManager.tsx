@@ -42,7 +42,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Keep playing state if stop failed and surface a non-fatal warning
         // so tests can assert the state remains true when synth.stopMusic throws.
         // Logging is intentionally non-fatal.
-        // eslint-disable-next-line no-console
+
         console.warn('AudioManager: stopMusic failed', e);
       }
     } else {
@@ -52,7 +52,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       } catch (e) {
         // If starting music fails, ensure state remains false and surface a warning
         // so tests can assert deterministic behavior.
-        // eslint-disable-next-line no-console
+
         console.warn('AudioManager: startMusic failed', e);
         setIsMusicPlaying(false);
       }
@@ -65,7 +65,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       synth.setMasterVolume(val);
     } catch (e) {
       // Non-fatal: log and continue
-      // eslint-disable-next-line no-console
+
       console.warn('AudioManager: setMasterVolume failed', e);
     }
   };
@@ -75,7 +75,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       synth.setSFXVolume(val);
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.warn('AudioManager: setSFXVolume failed', e);
     }
   };
@@ -85,7 +84,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     try {
       synth.setMusicVolume(val);
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.warn('AudioManager: setMusicVolume failed', e);
     }
   };

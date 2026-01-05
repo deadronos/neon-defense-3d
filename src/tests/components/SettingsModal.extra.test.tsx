@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { describe, it, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, vi, beforeEach } from 'vitest';
 
 // Mock audio hook (we only need volume values for inputs)
 vi.mock('../../game/audio/AudioManager', () => ({
@@ -14,15 +14,14 @@ vi.mock('../../game/audio/AudioManager', () => ({
     setMusicVolume: vi.fn(),
     playSFX: vi.fn(),
   }),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  AudioProvider: ({ children }: any) => <>{children}</>,
+  AudioProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
-import { GameProvider } from '../../game/GameState';
-import * as persistence from '../../game/persistence';
 import * as audioModule from '../../game/audio/AudioManager';
-
+import { GameProvider } from '../../game/GameState';
+import type { MigrateResult, SaveV1 } from '../../game/persistence';
+import * as persistence from '../../game/persistence';
 
 describe('SettingsModal extras', () => {
   beforeEach(() => {
@@ -32,7 +31,7 @@ describe('SettingsModal extras', () => {
 
   it('copies export JSON to clipboard (success)', async () => {
     const user = userEvent.setup();
-    const writeSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined as any);
+    const writeSpy = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
 
     render(
       <GameProvider>
@@ -67,7 +66,7 @@ describe('SettingsModal extras', () => {
     const user = userEvent.setup();
     const origCreate = document.createElement.bind(document);
     let clickSpy: ReturnType<typeof vi.spyOn> | undefined = undefined;
-    vi.spyOn(document, 'createElement').mockImplementation((tagName: any) => {
+    vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
       const el = origCreate(tagName) as HTMLElement;
       if (tagName === 'a') {
         // Spy on the anchor's click method so the DOM appendChild still accepts it
@@ -94,15 +93,30 @@ describe('SettingsModal extras', () => {
   it('shows warnings when migrateSave returns warnings', async () => {
     const user = userEvent.setup();
 
-    const sample = {
+    const sample: SaveV1 = {
       schemaVersion: 1,
       timestamp: new Date().toISOString(),
-      ui: { currentMapIndex: 0, money: 100, lives: 20, researchPoints: 0, upgrades: {} },
+      ui: {
+        currentMapIndex: 0,
+        money: 100,
+        lives: 20,
+        totalEarned: 0,
+        totalSpent: 0,
+        totalDamageDealt: 0,
+        totalCurrencyEarned: 0,
+        researchPoints: 0,
+        upgrades: {},
+      },
       checkpoint: { waveToStart: 1, towers: [] },
-    } as any;
+    };
 
     // Spy migrateSave to return a ready save with warnings
-    vi.spyOn(persistence, 'migrateSave').mockReturnValue({ ok: true, save: sample, warnings: ['warn1'], errors: [] } as any);
+    vi.spyOn(persistence, 'migrateSave').mockReturnValue({
+      ok: true,
+      save: sample,
+      warnings: ['warn1'],
+      errors: [],
+    } as MigrateResult);
 
     render(
       <GameProvider>
@@ -135,10 +149,8 @@ describe('SettingsModal extras', () => {
     // Create a file-like object whose text() rejects
     const badFile = new File(['{}'], 'bad.json', { type: 'application/json' });
     // Mock File.prototype.text for this test to simulate read failure
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const origText = (File.prototype as any).text;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (File.prototype as any).text = function () {
+    const origText = File.prototype.text;
+    File.prototype.text = function () {
       return Promise.reject(new Error('readfail'));
     };
 
@@ -147,8 +159,7 @@ describe('SettingsModal extras', () => {
     await waitFor(() => expect(screen.getByText(/failed to read file/i)).toBeInTheDocument());
 
     // Restore prototype
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (File.prototype as any).text = origText;
+    File.prototype.text = origText;
   });
 
   it('audio sliders call useAudio setters', async () => {
@@ -159,10 +170,12 @@ describe('SettingsModal extras', () => {
     );
 
     // retrieve the instance returned by the mocked useAudio as used by the component
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mockUse = (audioModule.useAudio as any).mock;
-    const lastResult = mockUse.results[mockUse.results.length - 1];
-    const { 
+    const mockUse = audioModule.useAudio as unknown as {
+      mock: { results: Array<{ value: ReturnType<typeof audioModule.useAudio> }> };
+    };
+    // the vi mock stores call/return data under `.mock.results`
+    const lastResult = mockUse.mock.results[mockUse.mock.results.length - 1];
+    const {
       setMasterVolume: mockSetMaster,
       setSFXVolume: mockSetSfx,
       setMusicVolume: mockSetMusic,

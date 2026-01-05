@@ -1,4 +1,6 @@
 import { MAP_HEIGHT, MAP_WIDTH, TOWER_CONFIGS } from '../../constants';
+import type { TowerType } from '../../types';
+import { getTowerStats } from '../utils';
 
 import { writeEnemyWorldPosition } from './selectors';
 import { buildSpatialGrid, forEachNearbyEnemy } from './spatial';
@@ -23,19 +25,8 @@ const DEFAULT_TILE_SIZE = 2;
 const TOWER_HEIGHT_Y = 0.5;
 const PROJECTILE_SPAWN_OFFSET_Y = 1.5;
 
-/** Damage increase per tower level (25% per level). */
-const DAMAGE_SCALE_PER_LEVEL = 0.25;
-/** Range increase per tower level (10% per level). */
-const RANGE_SCALE_PER_LEVEL = 0.1;
-/** Cooldown reduction per tower level (5% faster per level). */
-const COOLDOWN_REDUCTION_PER_LEVEL = 0.05;
-/** Minimum cooldown multiplier to prevent instant firing. */
-const MIN_COOLDOWN_MULTIPLIER = 0.1;
 /** Default projectile speed in world units per second. */
 const PROJECTILE_SPEED = 20;
-
-import { getTowerStats } from '../utils';
-import type { TowerType } from '../../types';
 
 const selectTowerWorldPosition = (tower: EngineTower, tileSize: number): EngineVector3 => [
   tower.gridPosition[0] * tileSize,

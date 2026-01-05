@@ -110,14 +110,10 @@ export const InstancedTowers: React.FC = () => {
 
       if (rangeMeshRef.current) {
         if (tower.id === selectedEntityId) {
-          const stats = getTowerStats(
-            tower.type,
-            tower.level,
-            {
-              upgrades: gameState.upgrades as { [key in UpgradeType]?: number },
-              activeSynergies: tower.activeSynergies,
-            },
-          );
+          const stats = getTowerStats(tower.type, tower.level, {
+            upgrades: gameState.upgrades as { [key in UpgradeType]?: number },
+            activeSynergies: tower.activeSynergies,
+          });
           dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
           dummy.position.y += 0.1;
           dummy.rotation.set(Math.PI / 2, 0, 0);

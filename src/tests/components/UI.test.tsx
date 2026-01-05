@@ -1,13 +1,20 @@
-import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { describe, it, vi } from 'vitest';
 
 // Mock the useGame hook to simulate victory flow
 vi.mock('../../game/GameState', () => {
   return {
     useGame: () => ({
-      gameState: { gameStatus: 'victory', researchPoints: 5, wave: 10, money: 100, lives: 1, upgrades: {} },
+      gameState: {
+        gameStatus: 'victory',
+        researchPoints: 5,
+        wave: 10,
+        money: 100,
+        lives: 1,
+        upgrades: {},
+      },
       startGame: vi.fn(),
       resetGame: vi.fn(),
       selectedTower: null,
@@ -27,7 +34,6 @@ vi.mock('../../game/GameState', () => {
 });
 
 import { UI } from '../../components/UI';
-import { TechTreeModal } from '../../components/TechTreeModal';
 
 describe('UI component (victory flow)', () => {
   it('shows VictoryPopup and opens TechTreeModal with action calling startNextSector', async () => {

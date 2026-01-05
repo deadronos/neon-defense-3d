@@ -33,7 +33,7 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
           const canAfford = money >= config.cost;
 
           // Display base stats, assume level 1 and active upgrades
-          const stats = getTowerStats(type, 1, upgrades);
+          const stats = getTowerStats(type, 1, { upgrades });
 
           const ariaLabel = isSelected
             ? `Deselect ${config.name}`
