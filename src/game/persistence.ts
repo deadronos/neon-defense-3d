@@ -6,6 +6,7 @@ import { createInitialEngineState, allocateId, applyEnginePatch } from './engine
 import type { EngineState } from './engine/types';
 import type { UiState } from './engine/uiReducer';
 import { createInitialWaveState } from './engine/wave';
+import { calculateSynergies } from './synergies';
 
 export type Quality = GraphicsQuality;
 
@@ -396,6 +397,14 @@ export const buildRuntimeFromCheckpoint = (
       ],
     });
   }
+
+  const synergies = calculateSynergies(engine.towers);
+  const synergedTowers = engine.towers.map((t) => ({
+    ...t,
+    activeSynergies: synergies.get(t.id),
+  }));
+
+  engine = applyEnginePatch(engine, { towers: synergedTowers });
 
   return { engine, ui: nextUi };
 };

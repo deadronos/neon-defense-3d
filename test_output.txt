@@ -1,0 +1,93 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.16 [39m[90mD:/GitHub/neon-defense-3d[39m
+
+[90mstdout[2m | src/tests/game/engine/engine-step.test.ts[2m > [22m[2mengine stepEngine[2m > [22m[2mmerges events from wave and enemies while keeping wave enemy counts in sync
+[22m[39mTest: merges events - events: {
+  "immediate": [
+    {
+      "type": "WaveStarted",
+      "wave": 1
+    }
+  ],
+  "deferred": []
+}
+
+[90mstdout[2m | src/tests/game/engine/engine-step.test.ts[2m > [22m[2mengine stepEngine[2m > [22m[2mprojectile hits enemy, deals damage, and grants money on kill
+[22m[39mTest: projectile hits - events: [
+  {
+    "type": "EnemyKilled",
+    "enemyId": "e1",
+    "reward": 10
+  },
+  {
+    "type": "DamageDealt",
+    "amount": 10
+  }
+]
+
+ [31m❯[39m src/tests/game/engine/engine-step.test.ts [2m([22m[2m5 tests[22m[2m | [22m[31m2 failed[39m[2m)[22m[32m 12[2mms[22m[39m
+     [32m✓[39m spawns enemies for the wave and advances them in the same tick[32m 2[2mms[22m[39m
+[31m     [31m×[31m merges events from wave and enemies while keeping wave enemy counts in sync[39m[32m 8[2mms[22m[39m
+     [32m✓[39m tower fires projectile when enemy is in range[32m 1[2mms[22m[39m
+     [32m✓[39m projectile hits enemy, deals damage, and grants money on kill[32m 1[2mms[22m[39m
+[31m     [31m×[31m handles large delta times gracefully without crashing[39m[32m 1[2mms[22m[39m
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/tests/game/engine/engine-step.test.ts > engine stepEngine > merges events from wave and enemies while keeping wave enemy counts in sync
+AssertionError: expected [ { type: 'WaveStarted', wave: 1 } ] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
+-   ObjectContaining {
++ [
++   {
+      "type": "WaveStarted",
+      "wave": 1,
+-   },
+-   ObjectContaining {
+-     "amount": 1,
+-     "source": "enemy-leak",
+-     "type": "LivesLost",
+    },
+  ]
+
+ ❯ src/tests/game/engine/engine-step.test.ts:76:37
+     74|     console.log('Test: merges events - events:', JSON.stringify(result…
+     75| 
+     76|     expect(result.events.immediate).toEqual(expect.arrayContaining([
+       |                                     ^
+     77|       expect.objectContaining({ type: 'WaveStarted', wave: 1 }),
+     78|       expect.objectContaining({ type: 'LivesLost', amount: 1, source: …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/tests/game/engine/engine-step.test.ts > engine stepEngine > handles large delta times gracefully without crashing
+
+AssertionError: expected [] to deep equally contain ObjectContaining {"type": "LivesLost"}
+
+- Expected: 
+ObjectContaining {
+  "type": "LivesLost",
+}
+
++ Received: 
+[]
+
+ ❯ src/tests/game/engine/engine-step.test.ts:184:37
+    182| 
+    183|     // Enemy should leak
+    184|     expect(result.events.immediate).toContainEqual(expect.objectContai…
+       |                                     ^
+    185|     expect(result.patch.enemies).toEqual([]);
+    186|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (5)[39m
+[2m   Start at [22m 16:59:57
+[2m   Duration [22m 1.18s[2m (transform 150ms, setup 105ms, import 128ms, tests 12ms, environment 762ms)[22m
+
