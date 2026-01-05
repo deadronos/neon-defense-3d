@@ -3,8 +3,9 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, it, vi, beforeEach } from 'vitest';
 
-import { AudioProvider, useAudio } from '../../../game/audio/AudioManager';
+import { AudioProvider } from '../../../game/audio/AudioManager';
 import { synth } from '../../../game/audio/Synth';
+import { useAudio } from '../../../game/audio/useAudio';
 
 const Harness = () => {
   const audio = useAudio();

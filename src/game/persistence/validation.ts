@@ -1,33 +1,42 @@
 import { isRecord } from './utils';
 
+// eslint-disable-next-line complexity
 const validateUi = (ui: Record<string, unknown>, errors: string[]) => {
   const currentMapIndex = ui.currentMapIndex;
-  if (!Number.isInteger(currentMapIndex) || currentMapIndex < 0) {
+  if (
+    typeof currentMapIndex !== 'number' ||
+    !Number.isInteger(currentMapIndex) ||
+    currentMapIndex < 0
+  ) {
     errors.push('ui.currentMapIndex must be an integer >= 0.');
   }
 
   const money = ui.money;
-  if (!Number.isInteger(money) || money < 0) {
+  if (typeof money !== 'number' || !Number.isInteger(money) || money < 0) {
     errors.push('ui.money must be >= 0.');
   }
 
   const lives = ui.lives;
-  if (!Number.isInteger(lives) || lives < 0) {
+  if (typeof lives !== 'number' || !Number.isInteger(lives) || lives < 0) {
     errors.push('ui.lives must be >= 0.');
   }
 
   const totalEarned = ui.totalEarned;
-  if (!Number.isInteger(totalEarned) || totalEarned < 0) {
+  if (typeof totalEarned !== 'number' || !Number.isInteger(totalEarned) || totalEarned < 0) {
     errors.push('ui.totalEarned must be >= 0.');
   }
 
   const totalSpent = ui.totalSpent;
-  if (!Number.isInteger(totalSpent) || totalSpent < 0) {
+  if (typeof totalSpent !== 'number' || !Number.isInteger(totalSpent) || totalSpent < 0) {
     errors.push('ui.totalSpent must be >= 0.');
   }
 
   const researchPoints = ui.researchPoints;
-  if (!Number.isInteger(researchPoints) || researchPoints < 0) {
+  if (
+    typeof researchPoints !== 'number' ||
+    !Number.isInteger(researchPoints) ||
+    researchPoints < 0
+  ) {
     errors.push('ui.researchPoints must be >= 0.');
   }
 
@@ -36,7 +45,7 @@ const validateUi = (ui: Record<string, unknown>, errors: string[]) => {
 
 const validateCheckpoint = (checkpoint: Record<string, unknown>, errors: string[]) => {
   const waveToStart = checkpoint.waveToStart;
-  if (!Number.isInteger(waveToStart) || waveToStart < 1) {
+  if (typeof waveToStart !== 'number' || !Number.isInteger(waveToStart) || waveToStart < 1) {
     errors.push('checkpoint.waveToStart must be an integer >= 1.');
   }
 

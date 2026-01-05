@@ -101,9 +101,11 @@ export const useExportImportState = ({
 
     const migrated = migrateSave(parsed);
     if (!migrated.ok || !migrated.save) {
+      const errors =
+        migrated.errors && migrated.errors.length > 0 ? migrated.errors : ['Invalid save payload.'];
       setImportPreview({
         status: 'error',
-        errors: (migrated.errors?.length ?? 0) > 0 ? migrated.errors : ['Invalid save payload.'],
+        errors,
       });
       return;
     }
