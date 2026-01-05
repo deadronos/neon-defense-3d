@@ -39,7 +39,7 @@ vi.mock('../../game/GameState', () => ({
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
 
-describe('SettingsModal behavior (reset/factory/refresh)', () => {
+(describe as any).serial('SettingsModal behavior (reset/factory/refresh)', () => {
   beforeEach(() => {
     // Clear mocks but keep module-level vi.mock definitions
     vi.clearAllMocks();
