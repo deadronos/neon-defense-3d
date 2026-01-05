@@ -129,6 +129,33 @@ Source: `src/components/ui/TopBar.tsx`
 - TopBar renders HUD blocks (lives/resources/wave).
 - Top-right currently contains a single button: **“Quality: High/Low”** (toggles graphics preset).
 
+## New Feature Requirements — Recent Additions
+
+### Kill Streak Announcer
+
+1. WHEN the player achieves a kill streak threshold (e.g., 2+ kills within a short interval), THE SYSTEM SHALL display a transient announcement message (e.g., "Double Kill", "Triple Kill") for a configurable visibility timeout.
+   **Acceptance:** The message appears with correct text and auto-clears after its timeout; new announcements reset the timeout and update the text.
+
+### Synergy System (Tower Synergies)
+
+1. WHEN tower placements meet defined proximity or composition rules, THE SYSTEM SHALL add one or more `ActiveSynergy` entries into `GameState.activeSynergies` with deterministic effect modifiers (e.g., rate-of-fire multiplier, range bonus).
+   **Acceptance:** `activeSynergies` reflects detected synergies and applying/removing towers updates the list deterministically.
+
+### Upgrades Support (Engine Extensions)
+
+1. WHEN upgrades are purchased or applied, THE SYSTEM SHALL store upgrade levels in `ui.upgrades` and ensure engine step functions apply deterministic numeric modifiers (multipliers/additions) during simulation steps.
+   **Acceptance:** Tower behavior (range, cooldown, damage) changes per upgrade levels, and save/load preserves upgraded behavior.
+
+### Canvas Error Boundary
+
+1. WHEN an error occurs during 3D rendering or R3F component execution, THE SYSTEM SHALL catch it via a `CanvasErrorBoundary`, show a safe fallback UI, and call a centralized `errorLogger` for diagnostics.
+   **Acceptance:** Fallback UI is displayed and `errorLogger` receives error details; a retry remount restores the canvas if requested.
+
+### Map Indexing (`currentMapIndex`)
+
+1. WHEN the player or system changes `currentMapIndex`, THE SYSTEM SHALL switch to the corresponding map layout and reinitialize map-dependent state (validating index bounds when loading imports).
+   **Acceptance:** Map shown matches `currentMapIndex`; out-of-range indexes are normalized and a warning is emitted on import if normalization was required.
+
 ## New Feature Requirements: Settings + Export/Import + Autosave Checkpoint + Reset
 
 ### Terminology

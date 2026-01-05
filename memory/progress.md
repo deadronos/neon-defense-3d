@@ -19,6 +19,8 @@
 - Add focused unit tests around `useWaveManager`, `useEnemyBehavior`, and `useProjectileBehavior` to lock down deterministic behavior.
 - Create design documents for larger features (Tech Tree, Sector progression) and store them in `memory/designs/`.
 - Establish a CI job that runs `npm test` and optionally Playwright screenshot checks for visual regressions.
+- **Documentation backlog:** Create & link designs/tasks for recently merged features that lacked docs (KillStreakAnnouncer, Synergy system, Upgrades support, CanvasErrorBoundary, currentMapIndex) — see TASK017..TASK021.
+- **Tests added:** Added unit tests for `renderStateUtils`, `transforms`, and `Synth`. Added UI/audio behavior tests (SettingsModal copy/validate/download/export/import-err/factory-reset/reset failure, AudioProvider, `useAudio` error case, UI victory → TechTree action). Added further tests for `SettingsModal` (reset success, no-checkpoint UI, sliders) and Synth startMusic failure branches. Coverage improved (overall statements ~87.4%, lines ~89.1%).
 - Track performance benchmarks and create a small profiling checklist for frame-time regressions.
 
 ## Known issues / technical debt

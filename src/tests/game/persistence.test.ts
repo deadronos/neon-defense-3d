@@ -351,4 +351,45 @@ describe('persistence (Tier-B checkpoint)', () => {
     expect(result.current.towers).toHaveLength(1);
     expect(result.current.isValidPlacement(0, 0)).toBe(false);
   });
+
+  it('restores active synergies between adjacent towers', () => {
+    const previousUi = createInitialUiState();
+    const save: any = {
+      schemaVersion: 1,
+      timestamp: new Date().toISOString(),
+      ui: { ...previousUi, upgrades: {} },
+      checkpoint: {
+        waveToStart: 1,
+        towers: [
+          { type: TowerType.Basic, level: 1, x: 0, z: 0 },
+          { type: TowerType.Basic, level: 1, x: 1, z: 0 },
+        ],
+      },
+    };
+
+    const next = buildRuntimeFromCheckpoint(save, previousUi);
+    
+    expect(next.engine.towers).toHaveLength(2);
+    expect(next.engine.towers[0].activeSynergies).toBeDefined();
+    expect(Array.isArray(next.engine.towers[0].activeSynergies)).toBe(true);
+  });
+
+  it('buildRuntimeFromCheckpoint is resilient against weird coordinates in save', () => {
+    const previousUi = createInitialUiState();
+    const save: any = {
+      schemaVersion: 1,
+      timestamp: new Date().toISOString(),
+      ui: { ...previousUi },
+      checkpoint: {
+        waveToStart: 1,
+        towers: [
+          { type: TowerType.Basic, level: 1, x: 999, z: -50 },
+        ],
+      },
+    };
+    
+    const next = buildRuntimeFromCheckpoint(save, previousUi);
+    expect(next.engine.towers).toHaveLength(1);
+    expect(next.engine.towers[0].gridPosition).toEqual([999, -50]);
+  });
 });
