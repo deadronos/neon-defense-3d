@@ -8,11 +8,16 @@ Neon Defense 3D is an immersive Tower Defense game built using **React 19**, **T
 
 - **3D Gameplay**: Fully 3D environment with dynamic lighting, shadows, and particle effects.
 - **Strategic Depth**:
-  - Three unique tower types: Turret (Balanced), Blaster (Rapid), Railgun (Sniper).
-  - Four enemy types: Drone, Scout, Heavy, and Titan Boss.
-  - Upgrade system for increasing tower damage, range, and fire rate.
+  - **Five unique tower types**:
+    - **Pulse Cannon**: Balanced damage and range.
+    - **Flux Emitter**: Rapid-fire low damage.
+    - **Phase Driver**: Long-range high damage (Sniper).
+    - **Cryo Projector**: Freezes enemies, slowing them down.
+    - **Missile Launcher**: Deals splash damage to clusters.
+  - **Enemy Variety**: Defend against waves of incoming Drones and heavy units.
+  - **Upgrade System**: Increase tower damage, range, and fire rate.
 - **Interactive UI**: Sleek, glass-morphism UI with real-time stats and tooltips.
-- **Wave System**: Progressively difficult waves with varied enemy compositions.
+- **Wave System**: Progressively difficult waves with increasing enemy counts and stats.
 
 ## 🚀 Getting Started
 

@@ -193,4 +193,55 @@ describe('SettingsModal', () => {
       expect(screen.getByTestId('towers')).toHaveTextContent('1');
     });
   });
+
+  it('apply cancelled by user does not change the current run', async () => {
+    const user = userEvent.setup();
+
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(
+      <GameProvider>
+        <Harness open={true} />
+      </GameProvider>,
+    );
+
+    const sample = {
+      schemaVersion: 1,
+      timestamp: new Date().toISOString(),
+      settings: { quality: 'low' },
+      ui: {
+        currentMapIndex: 0,
+        money: 200,
+        lives: 20,
+        totalEarned: 0,
+        totalSpent: 0,
+        totalDamageDealt: 0,
+        totalCurrencyEarned: 0,
+        researchPoints: 0,
+        upgrades: {},
+      },
+      checkpoint: {
+        waveToStart: 1,
+        towers: [{ type: TowerType.Basic, level: 1, x: 0, z: 0 }],
+      },
+    };
+
+    const importArea = screen.getByLabelText(/import checkpoint json/i);
+
+    await user.clear(importArea);
+    await user.click(importArea);
+    await user.paste(JSON.stringify(sample));
+
+    await user.click(screen.getByRole('button', { name: /validate/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/save validated and ready to apply/i)).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /^apply$/i }));
+
+    // Ensure nothing changed.
+    expect(screen.getByTestId('status')).toHaveTextContent('idle');
+    expect(screen.getByTestId('towers')).toHaveTextContent('0');
+  });
 });

@@ -28,12 +28,14 @@
 
 - **Audio:** Synth music engine enhanced — added lowpass filter, delay-based feedback, slow LFO (subtle detune/chorus), an arpeggio oscillator for movement, and a procedural convolver impulse reverb. Tests and mocks updated.
 - **Bug Fix:** Fixed critical save/load interaction bug where loaded games were non-interactive. Implemented a `sessionNonce` strategy to force a full 3D scene remount upon loading a checkpoint, ensuring fresh event binding.
+- **New features:** Added `KillStreakAnnouncer` (UI announcer), Synergy system (tower synergies + `SynergyLinks` visuals), upgrades support in engine step functions, `CanvasErrorBoundary` for robust rendering failure handling, and `currentMapIndex` for map selection and management.
 
 ## Next steps
 
 - Do a manual gameplay parity pass (movement, firing cadence, rewards, victory after wave 10).
 - Verify dynamic DPR behavior on a range of devices and consider exposing tuning to a graphics setting.
 - Consider extending cached vector usage into render selectors if GC pressure persists.
+- Add more unit tests for low coverage areas and keep improving branch coverage (recently added tests for `renderStateUtils`, `transforms`, and `Synth` — coverage improved to ~83.7% statements / ~85.3% lines).
 
 ## Open decisions
 

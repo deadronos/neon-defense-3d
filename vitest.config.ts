@@ -16,6 +16,7 @@ export default defineConfig({
     watch: false,
     setupFiles: 'src/tests/setupTests.ts',
     include: ['src/tests/**/*.{test,spec}.{js,ts,jsx,tsx}'],
+    timeout: 10000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

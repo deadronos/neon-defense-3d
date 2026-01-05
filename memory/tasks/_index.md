@@ -8,6 +8,11 @@
 ## Pending
 
 - [TASK008] Implement Settings Modal + Tier‑B Save/Load/Reset — Wave autosave checkpoints, export/import, resets (2025-12-21)
+- [TASK017] Implement Kill Streak Announcer — add UI announcer, tests for timer/reset (2026-01-05)
+- [TASK018] Add Synergy System — detection, visual links, tests (2026-01-05)
+- [TASK019] Extend Upgrades Support in Engine — deterministic upgrade application + persistence (2026-01-05)
+- [TASK020] Add Canvas Error Boundary & Error Logger — safe fallback + logging (2026-01-05)
+- [TASK021] Document currentMapIndex & tests — map switching behavior and docs (2026-01-05)
 
 ## Completed
 

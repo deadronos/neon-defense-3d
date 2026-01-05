@@ -41,6 +41,7 @@ export const stepEnemies = (
 
   let segmentLengths: number[] | undefined;
   if (cache) {
+    // ... cache logic
     const needsRefresh =
       cache.pathWaypointsRef !== pathWaypoints ||
       cache.pathTileSize !== tileSize ||
@@ -100,25 +101,63 @@ export const stepEnemies = (
       continue;
     }
 
-    const segmentLength =
-      segmentLengths?.[enemy.pathIndex] ?? Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * tileSize;
-    const progressDelta = segmentLength > 0 ? (currentSpeed * deltaSeconds) / segmentLength : 0;
-    let nextProgress = enemy.progress + progressDelta;
-    let nextPathIndex = enemy.pathIndex;
+    let searchIndex = enemy.pathIndex;
+    let searchProgress = enemy.progress;
+    let distanceRemaining = currentSpeed * deltaSeconds;
+    let hasLeaked = false;
 
-    if (nextProgress >= 1) {
-      nextProgress = 0;
-      nextPathIndex += 1;
-      if (nextPathIndex >= pathWaypoints.length - 1) {
-        livesLost += 1;
+    // Safety break to prevent infinite loops in case of zero-length segments or massive deltas
+    let loops = 0;
+    while (distanceRemaining > 0 && loops < 20) {
+      loops++;
+      const s1 = pathWaypoints[searchIndex];
+      const s2 = pathWaypoints[searchIndex + 1];
+      if (!s1 || !s2) {
+        // End of path (should have been caught by nextPathIndex check below, but safety)
+        hasLeaked = true;
+        distanceRemaining = 0;
+        break;
+      }
+
+      const segLen = segmentLengths?.[searchIndex] ?? Math.hypot(s2[0] - s1[0], s2[1] - s1[1]) * tileSize;
+      
+      if (segLen <= 0.0001) {
+        // ...
+        searchIndex++;
+        if (searchIndex >= pathWaypoints.length - 1) {
+          hasLeaked = true;
+          distanceRemaining = 0;
+        }
         continue;
       }
+
+      const distanceToNext = (1 - searchProgress) * segLen;
+
+      if (distanceRemaining >= distanceToNext) {
+        // Complete this segment
+        distanceRemaining -= distanceToNext;
+        searchProgress = 0;
+        searchIndex++;
+        if (searchIndex >= pathWaypoints.length - 1) {
+          hasLeaked = true;
+          distanceRemaining = 0; // Leaked
+        }
+      } else {
+        // Finish on this segment
+        searchProgress += distanceRemaining / segLen;
+        distanceRemaining = 0;
+      }
+    }
+
+    if (hasLeaked) {
+      livesLost += 1;
+      continue;
     }
 
     nextEnemies.push({
       ...enemy,
-      pathIndex: nextPathIndex,
-      progress: nextProgress,
+      pathIndex: searchIndex,
+      progress: searchProgress,
       frozen: nextFrozen,
       abilityActiveTimer: hasDashAbility ? nextActiveTimer : undefined,
       abilityCooldown: hasDashAbility ? nextCooldown : undefined,
