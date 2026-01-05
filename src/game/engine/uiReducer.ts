@@ -27,6 +27,11 @@ export interface UiState {
    * a full remount of the game scene components.
    */
   sessionNonce: number;
+  announcement: {
+    text: string;
+    subtext?: string;
+    id: number;
+  } | null;
 }
 
 export type UiAction =
@@ -40,7 +45,8 @@ export type UiAction =
   | { type: 'setGraphicsQuality'; quality: GraphicsQuality }
   | { type: 'setSelectedTower'; tower: TowerType | null }
   | { type: 'setSelectedEntity'; id: string | null }
-  | { type: 'applyEngineEvents'; events: EngineEvent[] };
+  | { type: 'applyEngineEvents'; events: EngineEvent[] }
+  | { type: 'setAnnouncement'; announcement: UiState['announcement'] };
 
 export const createInitialUiState = (): UiState => ({
   money: 150,
@@ -58,6 +64,7 @@ export const createInitialUiState = (): UiState => ({
   graphicsQuality: 'high',
   upgrades: {},
   sessionNonce: 0,
+  announcement: null,
 });
 
 const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
@@ -182,6 +189,8 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       return { ...state, selectedEntityId: action.id };
     case 'applyEngineEvents':
       return action.events.reduce(reduceEngineEvent, state);
+    case 'setAnnouncement':
+      return { ...state, announcement: action.announcement };
     default:
       return state;
   }

@@ -36,6 +36,7 @@ import {
   serializeCheckpoint,
 } from './persistence';
 import { createInitialRenderState, syncRenderState } from './renderStateUtils';
+import { writeEnemyWorldPosition } from './engine/selectors';
 import {
   buildEnemyTypeMap,
   toEffectEntity,
@@ -45,6 +46,7 @@ import {
   toWaveState,
 } from './transforms';
 import { getTowerStats } from './utils';
+import { calculateSynergies } from './synergies';
 
 type RuntimeState = {
   engine: EngineState;
@@ -87,15 +89,27 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
         lastFired: 0,
       };
 
+
+      const newTowers = [...state.engine.towers, nextTower];
+      const synergies = calculateSynergies(newTowers);
+      const synergedTowers = newTowers.map((t) => ({
+        ...t,
+        activeSynergies: synergies.get(t.id),
+      }));
+
       return {
-        engine: applyEnginePatch(afterId, { towers: [...afterId.towers, nextTower] }),
+        engine: applyEnginePatch(afterId, { towers: synergedTowers }),
         ui: uiReducer(state.ui, { type: 'spendMoney', amount: config.cost }),
       };
     }
     case 'upgradeTower': {
       const tower = state.engine.towers.find((t) => t.id === action.id);
       if (!tower) return state;
-      const stats = getTowerStats(tower.type as TowerType, tower.level, state.ui.upgrades);
+      const stats = getTowerStats(
+        tower.type as TowerType,
+        tower.level,
+        { upgrades: state.ui.upgrades, activeSynergies: tower.activeSynergies }
+      );
       if (state.ui.money < stats.upgradeCost) return state;
       const nextTowers = state.engine.towers.map((t) =>
         t.id === action.id ? { ...t, level: t.level + 1 } : t,
@@ -110,9 +124,17 @@ const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeStat
       if (!tower) return state;
       const config = TOWER_CONFIGS[tower.type as TowerType];
       const refund = Math.floor((config?.cost ?? 0) * 0.7);
+
+      const filteredTowers = state.engine.towers.filter((t) => t.id !== action.id);
+      const synergies = calculateSynergies(filteredTowers);
+      const synergedTowers = filteredTowers.map((t) => ({
+        ...t,
+        activeSynergies: synergies.get(t.id),
+      }));
+
       return {
         engine: applyEnginePatch(state.engine, {
-          towers: state.engine.towers.filter((t) => t.id !== action.id),
+          towers: synergedTowers,
         }),
         ui: { ...state.ui, money: state.ui.money + refund, selectedEntityId: null },
       };
@@ -283,7 +305,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const state = runtimeRef.current;
       const tower = state.engine.towers.find((t) => t.id === id);
       if (tower) {
-        const stats = getTowerStats(tower.type as TowerType, tower.level, state.ui.upgrades);
+        const stats = getTowerStats(
+          tower.type as TowerType,
+          tower.level,
+          { upgrades: state.ui.upgrades, activeSynergies: tower.activeSynergies }
+        );
         if (state.ui.money >= stats.upgradeCost) {
           playSFX('build'); // Reuse build sound for upgrade
         } else {
@@ -382,6 +408,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const [gameSpeed, setGameSpeed] = useState(1);
+  const killStreakRef = useRef({ count: 0, lastTime: 0 });
 
   const step = useCallback(
     (deltaSeconds: number, nowSeconds: number) => {
@@ -397,7 +424,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         snapshot.engine,
         enginePathWaypoints,
         { deltaMs, nowMs, rng: Math.random },
-        { tileSize: TILE_SIZE, greedMultiplier },
+        { tileSize: TILE_SIZE, greedMultiplier, upgrades: snapshot.ui.upgrades },
         engineCacheRef.current,
       );
 
@@ -427,14 +454,61 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         // We should add 'ProjectileFired' event to stepTowers if we want audio for it.
         // For now, let's look at EffectSpawned (explosions/impacts usually create effects or just damage).
 
+        // Kill Streak Logic
+        let killsThisTick = 0;
         allEvents.forEach((e) => {
           if (e.type === 'EffectSpawned') {
-            // EffectSpawned is used for explosions.
             playSFX('impact');
           } else if (e.type === 'ProjectileFired') {
             playSFX('shoot');
+          } else if (e.type === 'EnemyKilled') {
+            killsThisTick++;
           }
         });
+
+        if (killsThisTick > 0) {
+          const streakState = killStreakRef.current;
+          const timeSinceLast = nowSeconds - streakState.lastTime;
+
+          if (timeSinceLast < 1.5) {
+            streakState.count += killsThisTick;
+          } else {
+            streakState.count = killsThisTick;
+          }
+          streakState.lastTime = nowSeconds;
+
+          let announcementText = '';
+          let subtext = '';
+
+          // Determine announcement
+          // Simple thresholds for now
+          if (streakState.count === 2) {
+            announcementText = 'DOUBLE KILL';
+          } else if (streakState.count === 3) {
+            announcementText = 'TRIPLE KILL';
+          } else if (streakState.count === 4) {
+            announcementText = 'QUADRA KILL';
+          } else if (streakState.count === 5) {
+            announcementText = 'PENTA KILL';
+          } else if (streakState.count > 5) {
+            announcementText = 'RAMPAGE';
+            subtext = `${streakState.count} KILLS!`;
+          }
+
+          if (announcementText) {
+            dispatch({
+              type: 'uiAction',
+              action: {
+                type: 'setAnnouncement',
+                announcement: {
+                  text: announcementText,
+                  subtext,
+                  id: Date.now(),
+                },
+              },
+            });
+          }
+        }
       }
 
       // Heuristic for shooting sound:
@@ -453,6 +527,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     ...runtime.ui,
     isPlaying: runtime.ui.gameStatus === 'playing',
   };
+
+  const clearAnnouncement = useCallback(() => {
+    dispatch({ type: 'uiAction', action: { type: 'setAnnouncement', announcement: null } });
+  }, []);
 
   const gameContextValue = useMemo(
     () => ({
@@ -487,6 +565,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       gameSpeed,
       setGameSpeed,
       renderStateRef,
+      clearAnnouncement,
     }),
     [
       gameState,
@@ -520,6 +599,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       gameSpeed,
       setGameSpeed,
       renderStateRef,
+      clearAnnouncement,
     ],
   );
 
@@ -548,6 +628,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       skipWave,
       gameSpeed,
       setGameSpeed,
+      clearAnnouncement,
     }),
     [
       gameState,
@@ -573,6 +654,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       skipWave,
       gameSpeed,
       setGameSpeed,
+      clearAnnouncement,
     ],
   );
 

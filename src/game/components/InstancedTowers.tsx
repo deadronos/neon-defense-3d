@@ -113,7 +113,10 @@ export const InstancedTowers: React.FC = () => {
           const stats = getTowerStats(
             tower.type,
             tower.level,
-            gameState.upgrades as { [key in UpgradeType]?: number },
+            {
+              upgrades: gameState.upgrades as { [key in UpgradeType]?: number },
+              activeSynergies: tower.activeSynergies,
+            },
           );
           dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
           dummy.position.y += 0.1;
