@@ -38,25 +38,22 @@ describe('Synth convolver fallback', () => {
     const s = new Synth();
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    // Make createBiquadFilter throw when startMusic runs
+    // Make s.ctx.createBiquadFilter and createDelay throw when startMusic runs
     // @ts-ignore
-    const OrigAC = global.AudioContext;
-    class BadAC extends OrigAC {
-      createBiquadFilter() {
-        throw new Error('no filter');
-      }
-    }
+    s.ctx.createBiquadFilter = function () {
+      throw new Error('no filter');
+    };
     // @ts-ignore
-    global.AudioContext = BadAC;
+    s.ctx.createDelay = function () {
+      throw new Error('no delay');
+    };
 
     // call startMusic which should catch the filter/delay errors
     expect(() => s.startMusic()).not.toThrow();
-    // Should emit a warning when filter failed
+    // Should emit a warning when filter/delay failed
     expect(warn).toHaveBeenCalled();
 
     // Restore
     warn.mockRestore();
-    // @ts-ignore
-    global.AudioContext = OrigAC;
   });
 });

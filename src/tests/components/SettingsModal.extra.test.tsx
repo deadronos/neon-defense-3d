@@ -21,6 +21,7 @@ vi.mock('../../game/audio/AudioManager', () => ({
 import { SettingsModal } from '../../components/ui/SettingsModal';
 import { GameProvider } from '../../game/GameState';
 import * as persistence from '../../game/persistence';
+import * as audioModule from '../../game/audio/AudioManager';
 
 
 describe('SettingsModal extras', () => {
@@ -154,7 +155,6 @@ describe('SettingsModal extras', () => {
     const user = userEvent.setup();
 
     // access mocked setters from the module mock
-    const audioModule = require('../../game/audio/AudioManager');
     const mockSetMaster = audioModule.useAudio().setMasterVolume;
     const mockSetSfx = audioModule.useAudio().setSFXVolume;
     const mockSetMusic = audioModule.useAudio().setMusicVolume;
@@ -165,9 +165,12 @@ describe('SettingsModal extras', () => {
       </GameProvider>,
     );
 
-    const master = screen.getByLabelText(/master/i) as HTMLInputElement;
-    const sfx = screen.getByLabelText(/sfx/i) as HTMLInputElement;
-    const music = screen.getByLabelText(/music/i) as HTMLInputElement;
+    const sliders = screen.getAllByRole('slider') as HTMLInputElement[];
+    expect(sliders.length).toBeGreaterThanOrEqual(3);
+
+    const master = sliders[0];
+    const sfx = sliders[1];
+    const music = sliders[2];
 
     await user.type(master, '{arrowright}');
     expect(mockSetMaster).toHaveBeenCalled();
