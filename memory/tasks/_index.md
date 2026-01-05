@@ -4,6 +4,7 @@
 - [TASK003] Separate game engine and rendering — Extract pure engine layer + adapters, then migrate context/actions (2025-12-12)
 - [TASK013] Performance hot paths (targeted optimizations) (2026-01-02)
 - [TASK022] Refactor GameState into Zustand stores (2026-01-05)
+- [TASK023] Refactor monolithic modules — split GameState, SettingsModal, persistence (2026-01-05)
 
 ## Pending
 - [TASK008] Implement Settings Modal + Tier‑B Save/Load/Reset — Wave autosave checkpoints, export/import, resets (2025-12-21)

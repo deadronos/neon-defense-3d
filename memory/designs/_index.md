@@ -16,6 +16,7 @@
 - DESIGN023 - Canvas Error Boundary & Error Logger
 - DESIGN024 - Current map indexing & state
 - DESIGN025 - GameState refactor to Zustand stores
+- DESIGN026 - Refactor monolithic modules
 
 ## Completed
 
