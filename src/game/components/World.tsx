@@ -1,4 +1,5 @@
 import type { ThreeEvent } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
@@ -17,6 +18,68 @@ const TILE_COLORS: Record<TileType, string> = {
   [TileType.Spawn]: '#5a1b1b',
   [TileType.Base]: '#3b1b5a',
 };
+
+// Vertex shader for pulsating grid lines
+const gridVertexShader = `
+  varying vec3 vPosition;
+  
+  void main() {
+    vPosition = position;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+// Fragment shader for pulsating grid lines
+const gridFragmentShader = `
+  uniform float uTime;
+  uniform vec3 uColor;
+  uniform float uOpacity;
+  varying vec3 vPosition;
+  
+  void main() {
+    // Create a slow pulse effect (period ~3 seconds)
+    float pulse = sin(uTime * 2.0) * 0.3 + 0.7;
+    
+    // Add subtle position-based variation
+    float posVariation = sin(vPosition.x * 0.5 + vPosition.z * 0.5 + uTime) * 0.15 + 0.85;
+    
+    // Combine pulse and variation
+    float finalOpacity = uOpacity * pulse * posVariation;
+    
+    // Add slight color shift for more "alive" feeling
+    vec3 finalColor = uColor * (0.9 + pulse * 0.2);
+    
+    gl_FragColor = vec4(finalColor, finalOpacity);
+  }
+`;
+
+// Vertex shader for pulsating tiles
+const tileVertexShader = `
+  varying vec3 vPosition;
+  
+  void main() {
+    vPosition = position;
+    vec4 mvPosition = modelViewMatrix * instanceMatrix * vec4(position, 1.0);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+// Fragment shader for pulsating tiles
+const tileFragmentShader = `
+  uniform float uTime;
+  uniform vec3 uBaseColor;
+  varying vec3 vPosition;
+  
+  void main() {
+    // Very subtle pulse (period ~4 seconds)
+    float pulse = sin(uTime * 1.5) * 0.08 + 0.92;
+    
+    // Add minimal brightness variation
+    vec3 finalColor = uBaseColor * pulse;
+    
+    gl_FragColor = vec4(finalColor, 1.0);
+  }
+`;
 
 const createGridGeometry = (width: number, height: number, tileSize: number) => {
   const positions: number[] = [];
@@ -59,9 +122,90 @@ export const World = React.memo(() => {
   const spawnMeshRef = useRef<THREE.InstancedMesh>(null);
   const baseMeshRef = useRef<THREE.InstancedMesh>(null);
   const hoverMeshRef = useRef<THREE.Mesh>(null);
+  const gridMaterialRef = useRef<THREE.ShaderMaterial>(null);
+  const grassMaterialRef = useRef<THREE.ShaderMaterial>(null);
+  const pathMaterialRef = useRef<THREE.ShaderMaterial>(null);
+  const spawnMaterialRef = useRef<THREE.ShaderMaterial>(null);
+  const baseMaterialRef = useRef<THREE.ShaderMaterial>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
   const hoverValidColor = useMemo(() => new THREE.Color('#00ff00'), []);
   const hoverInvalidColor = useMemo(() => new THREE.Color('#ff0000'), []);
+
+  // Create shader materials with time uniforms
+  const gridMaterial = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uColor: { value: new THREE.Color('#00f2ff') },
+          uOpacity: { value: 0.4 },
+        },
+        vertexShader: gridVertexShader,
+        fragmentShader: gridFragmentShader,
+        transparent: true,
+      }),
+    [],
+  );
+
+  const createTileMaterial = useCallback((color: string) => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uTime: { value: 0 },
+        uBaseColor: { value: new THREE.Color(color) },
+      },
+      vertexShader: tileVertexShader,
+      fragmentShader: tileFragmentShader,
+      toneMapped: false,
+    });
+  }, []);
+
+  const grassMaterial = useMemo(
+    () => createTileMaterial(TILE_COLORS[TileType.Grass]),
+    [createTileMaterial],
+  );
+  const pathMaterial = useMemo(
+    () => createTileMaterial(TILE_COLORS[TileType.Path]),
+    [createTileMaterial],
+  );
+  const spawnMaterial = useMemo(
+    () => createTileMaterial(TILE_COLORS[TileType.Spawn]),
+    [createTileMaterial],
+  );
+  const baseMaterial = useMemo(
+    () => createTileMaterial(TILE_COLORS[TileType.Base]),
+    [createTileMaterial],
+  );
+
+  // Update time uniform for animation
+  useFrame((state) => {
+    const time = state.clock.getElapsedTime();
+    if (gridMaterialRef.current) {
+      gridMaterialRef.current.uniforms.uTime.value = time;
+    }
+    if (grassMaterialRef.current) {
+      grassMaterialRef.current.uniforms.uTime.value = time;
+    }
+    if (pathMaterialRef.current) {
+      pathMaterialRef.current.uniforms.uTime.value = time;
+    }
+    if (spawnMaterialRef.current) {
+      spawnMaterialRef.current.uniforms.uTime.value = time;
+    }
+    if (baseMaterialRef.current) {
+      baseMaterialRef.current.uniforms.uTime.value = time;
+    }
+  });
+
+  // Cleanup materials on unmount
+  useEffect(() => {
+    return () => {
+      gridMaterial.dispose();
+      grassMaterial.dispose();
+      pathMaterial.dispose();
+      spawnMaterial.dispose();
+      baseMaterial.dispose();
+    };
+  }, [gridMaterial, grassMaterial, pathMaterial, spawnMaterial, baseMaterial]);
 
   const tilesByType = useMemo(() => {
     const grass: Tile[] = [];
@@ -196,42 +340,46 @@ export const World = React.memo(() => {
     >
       <instancedMesh
         ref={grassMeshRef}
-        args={[TILE_GEOMETRY, undefined, tilesByType.grass.length]}
+        args={[TILE_GEOMETRY, grassMaterial, tilesByType.grass.length]}
+        material={grassMaterial}
         onPointerMove={handlePointerMove(tilesByType.grass)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.grass)}
       >
-        <meshBasicMaterial color={TILE_COLORS[TileType.Grass]} toneMapped={false} />
+        <primitive object={grassMaterial} attach="material" ref={grassMaterialRef} />
       </instancedMesh>
 
       <instancedMesh
         ref={pathMeshRef}
-        args={[TILE_GEOMETRY, undefined, tilesByType.path.length]}
+        args={[TILE_GEOMETRY, pathMaterial, tilesByType.path.length]}
+        material={pathMaterial}
         onPointerMove={handlePointerMove(tilesByType.path)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.path)}
       >
-        <meshBasicMaterial color={TILE_COLORS[TileType.Path]} toneMapped={false} />
+        <primitive object={pathMaterial} attach="material" ref={pathMaterialRef} />
       </instancedMesh>
 
       <instancedMesh
         ref={spawnMeshRef}
-        args={[TILE_GEOMETRY, undefined, tilesByType.spawn.length]}
+        args={[TILE_GEOMETRY, spawnMaterial, tilesByType.spawn.length]}
+        material={spawnMaterial}
         onPointerMove={handlePointerMove(tilesByType.spawn)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.spawn)}
       >
-        <meshBasicMaterial color={TILE_COLORS[TileType.Spawn]} toneMapped={false} />
+        <primitive object={spawnMaterial} attach="material" ref={spawnMaterialRef} />
       </instancedMesh>
 
       <instancedMesh
         ref={baseMeshRef}
-        args={[TILE_GEOMETRY, undefined, tilesByType.base.length]}
+        args={[TILE_GEOMETRY, baseMaterial, tilesByType.base.length]}
+        material={baseMaterial}
         onPointerMove={handlePointerMove(tilesByType.base)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.base)}
       >
-        <meshBasicMaterial color={TILE_COLORS[TileType.Base]} toneMapped={false} />
+        <primitive object={baseMaterial} attach="material" ref={baseMaterialRef} />
       </instancedMesh>
 
       <mesh
@@ -244,8 +392,8 @@ export const World = React.memo(() => {
         <meshBasicMaterial color={hoverValidColor} transparent opacity={0.35} toneMapped={false} />
       </mesh>
 
-      <lineSegments position={[0, 0.02, 0]} geometry={gridGeometry}>
-        <lineBasicMaterial color="#00f2ff" opacity={0.4} transparent />
+      <lineSegments position={[0, 0.02, 0]} geometry={gridGeometry} material={gridMaterial}>
+        <primitive object={gridMaterial} attach="material" ref={gridMaterialRef} />
       </lineSegments>
     </group>
   );
