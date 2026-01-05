@@ -189,4 +189,70 @@ describe('engine stepTowers', () => {
     expect(cryo?.freezeDuration).toBeGreaterThan(0);
     expect(missile?.splashRadius).toBeGreaterThan(0);
   });
+
+  it('fires at extended range with GLOBAL_RANGE upgrade', () => {
+    const longPath: EngineVector2[] = [
+      [0, 0],
+      [10, 0],
+    ];
+
+    // Tower at 0,0. Range 5.
+    // We want enemy at ~5.2 distance.
+    // Path length is 10 (with tileSize 1).
+    // Progress 0.52 => x=5.2.
+    // Tower world y=0.5. Enemy world y=0.
+    // dx=5.2, dy=0.5. d2 = 27.04 + 0.25 = 27.29.
+    // Base Range^2 = 25. No fire.
+    // Upgrade 1 (+5%) => Range 5.25. Range^2 = 27.56. Fire.
+
+    const state = {
+      ...createInitialEngineState(),
+      enemies: [
+        {
+          id: 'enemy-far',
+          type: 'Drone',
+          pathIndex: 0,
+          progress: 0.52, // 5.2 units along the 10-unit path
+          hp: 10,
+          reward: 10,
+          speed: 0,
+        },
+      ],
+      towers: [
+        {
+          id: 'tower-1',
+          type: TowerType.Basic,
+          level: 1,
+          gridPosition: [0, 0] as [number, number],
+          lastFired: 0,
+        },
+      ],
+    };
+
+    // 1. Verify no fire without upgrade
+    const resultNoUpgrade = stepTowers(
+      state,
+      longPath,
+      { deltaMs: 16, nowMs: basicCooldownMs + 1, rng: () => 0.5 },
+      { tileSize: 1 }
+    );
+    expect(resultNoUpgrade.patch.projectiles).toBeUndefined();
+
+    // 2. Verify fire with upgrade (range + 5% per level)
+    const resultWithUpgrade = stepTowers(
+      state,
+      longPath,
+      { 
+        deltaMs: 16, 
+        nowMs: basicCooldownMs + 1, 
+        rng: () => 0.5,
+        upgrades: { 'GLOBAL_RANGE': 1 }
+      },
+      { tileSize: 1 }
+    );
+    
+    // Check if it fired
+    expect(resultWithUpgrade.patch.projectiles).toHaveLength(1);
+    expect(resultWithUpgrade.patch.projectiles?.[0]?.targetId).toBe('enemy-far');
+  });
 });

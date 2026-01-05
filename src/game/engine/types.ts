@@ -99,6 +99,7 @@ export interface EngineTickContext {
   deltaMs: number;
   nowMs: number;
   rng: () => number;
+  upgrades?: { [key: string]: number };
 }
 
 export interface EngineTickResult {

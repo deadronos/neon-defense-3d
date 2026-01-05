@@ -97,6 +97,7 @@ export const stepTowers = (
 
     const stats = getTowerStats(tower.type as TowerType, tower.level, {
       activeSynergies: tower.activeSynergies,
+      upgrades: context.upgrades,
     });
     const cooldownMs = stats.cooldown * 1000;
 

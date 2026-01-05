@@ -44,6 +44,7 @@ export interface StepEngineOptions {
   greedMultiplier?: number;
   prepTimeMs?: number;
   tileSize?: number;
+  upgrades?: { [key: string]: number };
 }
 
 export const stepEngine = (
@@ -53,6 +54,9 @@ export const stepEngine = (
   options: StepEngineOptions = {},
   cache?: EngineCache,
 ): EngineTickResult & { state: EngineState } => {
+  if (options.upgrades) {
+    context.upgrades = options.upgrades;
+  }
   const tileSize = options.tileSize;
   const waveResult = stepWave(state, pathWaypoints, context, { prepTimeMs: options.prepTimeMs });
   let workingState = applyEnginePatch(state, waveResult.patch);

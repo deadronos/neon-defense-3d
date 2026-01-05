@@ -424,7 +424,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         snapshot.engine,
         enginePathWaypoints,
         { deltaMs, nowMs, rng: Math.random },
-        { tileSize: TILE_SIZE, greedMultiplier },
+        { tileSize: TILE_SIZE, greedMultiplier, upgrades: snapshot.ui.upgrades },
         engineCacheRef.current,
       );
 
