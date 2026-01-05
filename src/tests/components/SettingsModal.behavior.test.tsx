@@ -3,6 +3,21 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, vi, beforeEach } from 'vitest';
 
+// Mock AudioManager so SettingsModal can render without real provider
+vi.mock('../../game/audio/AudioManager', () => ({
+  useAudio: vi.fn(() => ({
+    masterVolume: 0.5,
+    sfxVolume: 1,
+    musicVolume: 1,
+    setMasterVolume: vi.fn(),
+    setSFXVolume: vi.fn(),
+    setMusicVolume: vi.fn(),
+    playSFX: vi.fn(),
+  })),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  AudioProvider: ({ children }: any) => <>{children}</>,
+}));
+
 // Mock GameState to control behaviors for SettingsModal
 let exportJsonValue = '{"foo":true}';
 let hasCheckpoint = true;
@@ -18,6 +33,7 @@ vi.mock('../../game/GameState', () => ({
     applyCheckpointSave: vi.fn(),
     exportCheckpointJson: () => ({ json: exportJsonValue, hasCheckpoint }),
   }),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   GameProvider: ({ children }: any) => <>{children}</>,
 }));
 
