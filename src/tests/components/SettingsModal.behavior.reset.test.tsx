@@ -17,23 +17,32 @@ vi.mock('../../game/audio/AudioManager', () => ({
   AudioProvider: ({ children }: any) => <>{children}</>,
 }));
 
-// Mock GameState to control behaviors for SettingsModal
-let exportJsonValue = '{"foo":true}';
-let hasCheckpoint = true;
-const resetCheckpointMock = vi.fn();
-const factoryResetMock = vi.fn();
-
-vi.mock('../../game/GameState', () => ({
-  useGame: () => ({
-    gameState: { graphicsQuality: 'high', waveStartedNonce: 0, gameStatus: 'idle', wave: 1, money: 0, lives: 0, upgrades: {} },
-    setGraphicsQuality: vi.fn(),
-    resetCheckpoint: () => resetCheckpointMock(),
-    factoryReset: () => factoryResetMock(),
-    applyCheckpointSave: vi.fn(),
-    exportCheckpointJson: () => ({ json: exportJsonValue, hasCheckpoint }),
-  }),
-  GameProvider: ({ children }: any) => <>{children}</>,
+const state = vi.hoisted(() => ({
+  exportJsonValue: '{"foo":true}',
+  hasCheckpoint: true,
+  resetCheckpointMock: vi.fn(),
+  factoryResetMock: vi.fn(),
 }));
+
+vi.mock('../../game/GameState', () => {
+  const setGraphicsQuality = vi.fn();
+  const applyCheckpointSave = vi.fn();
+  const exportCheckpointJson = () => ({ json: state.exportJsonValue, hasCheckpoint: state.hasCheckpoint });
+  const resetCheckpoint = () => state.resetCheckpointMock();
+  const factoryReset = () => state.factoryResetMock();
+
+  return {
+    useGame: () => ({
+      gameState: { graphicsQuality: 'high', waveStartedNonce: 0, gameStatus: 'idle', wave: 1, money: 0, lives: 0, upgrades: {} },
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+    }),
+    GameProvider: ({ children }: any) => <>{children}</>,
+  };
+});
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
 
@@ -44,10 +53,10 @@ describe.only('SettingsModal behavior — reset & factory', () => {
   beforeEach(() => {
     console.log('[test beforeEach] SettingsModal.behavior.reset');
     vi.clearAllMocks();
-    exportJsonValue = '{"foo":true}';
-    hasCheckpoint = true;
-    resetCheckpointMock.mockReset();
-    factoryResetMock.mockReset();
+    state.exportJsonValue = '{"foo":true}';
+    state.hasCheckpoint = true;
+    state.resetCheckpointMock.mockReset();
+    state.factoryResetMock.mockReset();
   });
 
   it('sanity - this file runs', () => {
@@ -56,7 +65,7 @@ describe.only('SettingsModal behavior — reset & factory', () => {
 
   it('shows reset error when resetCheckpoint returns error', async () => {
     // make resetCheckpoint return error
-    resetCheckpointMock.mockReturnValue({ ok: false, error: 'No checkpoint present' });
+    state.resetCheckpointMock.mockReturnValue({ ok: false, error: 'No checkpoint present' });
 
     render(<SettingsModal open={true} onClose={() => {}} />);
 
@@ -78,7 +87,7 @@ describe.only('SettingsModal behavior — reset & factory', () => {
     const factoryBtn = screen.getByRole('button', { name: /factory reset/i });
     await user.click(factoryBtn);
 
-    await waitFor(() => expect(factoryResetMock).toHaveBeenCalled(), { timeout: 2000 });
+    await waitFor(() => expect(state.factoryResetMock).toHaveBeenCalled(), { timeout: 2000 });
   });
 
   it('factory reset cancelled does not call factoryReset', async () => {
@@ -90,6 +99,6 @@ describe.only('SettingsModal behavior — reset & factory', () => {
     const factoryBtn = screen.getByRole('button', { name: /factory reset/i });
     await user.click(factoryBtn);
 
-    expect(factoryResetMock).not.toHaveBeenCalled();
+    expect(state.factoryResetMock).not.toHaveBeenCalled();
   });
 });

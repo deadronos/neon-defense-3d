@@ -17,22 +17,33 @@ vi.mock('../../game/audio/AudioManager', () => ({
   AudioProvider: ({ children }: any) => <>{children}</>,
 }));
 
-let exportJsonValue = '{"foo":true}';
-let hasCheckpoint = true;
-const resetCheckpointMock = vi.fn();
-const factoryResetMock = vi.fn();
-
-vi.mock('../../game/GameState', () => ({
-  useGame: () => ({
-    gameState: { graphicsQuality: 'high', waveStartedNonce: 0, gameStatus: 'idle', wave: 1, money: 0, lives: 0, upgrades: {} },
-    setGraphicsQuality: vi.fn(),
-    resetCheckpoint: () => resetCheckpointMock(),
-    factoryReset: () => factoryResetMock(),
-    applyCheckpointSave: vi.fn(),
-    exportCheckpointJson: () => ({ json: exportJsonValue, hasCheckpoint }),
-  }),
-  GameProvider: ({ children }: any) => <>{children}</>,
+const state = vi.hoisted(() => ({
+  exportJsonValue: '{"foo":true}',
+  hasCheckpoint: true,
+  resetCheckpointMock: vi.fn(),
+  factoryResetMock: vi.fn(),
 }));
+
+vi.mock('../../game/GameState', () => {
+  // Define stable functions to prevent infinite useEffect loops
+  const setGraphicsQuality = vi.fn();
+  const applyCheckpointSave = vi.fn();
+  const exportCheckpointJson = () => ({ json: state.exportJsonValue, hasCheckpoint: state.hasCheckpoint });
+  const resetCheckpoint = () => state.resetCheckpointMock();
+  const factoryReset = () => state.factoryResetMock();
+
+  return {
+    useGame: () => ({
+      gameState: { graphicsQuality: 'high', waveStartedNonce: 0, gameStatus: 'idle', wave: 1, money: 0, lives: 0, upgrades: {} },
+      setGraphicsQuality,
+      resetCheckpoint,
+      factoryReset,
+      applyCheckpointSave,
+      exportCheckpointJson,
+    }),
+    GameProvider: ({ children }: any) => <>{children}</>,
+  };
+});
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
 
@@ -43,8 +54,10 @@ describe('SettingsModal behavior — export/import', () => {
   beforeEach(() => {
     console.log('[test beforeEach] SettingsModal.behavior.export');
     vi.clearAllMocks();
-    exportJsonValue = '{"foo":true}';
-    hasCheckpoint = true;
+    state.exportJsonValue = '{"foo":true}';
+    state.hasCheckpoint = true;
+    state.resetCheckpointMock.mockReset();
+    state.factoryResetMock.mockReset();
   });
 
   it('sanity - this file runs', () => {
@@ -58,7 +71,7 @@ describe('SettingsModal behavior — export/import', () => {
     expect(textarea.value).toContain('foo');
 
     // change the underlying export value and click refresh
-    exportJsonValue = '{"foo":false,"new":1}';
+    state.exportJsonValue = '{"foo":false,"new":1}';
 
     const refreshBtn = screen.getByRole('button', { name: /refresh/i });
     const user = userEvent.setup();
@@ -68,8 +81,8 @@ describe('SettingsModal behavior — export/import', () => {
   });
 
   it('reset success refreshes export JSON', async () => {
-    resetCheckpointMock.mockReturnValue({ ok: true });
-    exportJsonValue = '{"refreshed":true}';
+    state.resetCheckpointMock.mockReturnValue({ ok: true });
+    state.exportJsonValue = '{"refreshed":true}';
 
     render(<SettingsModal open={true} onClose={() => {}} />);
 
@@ -83,7 +96,7 @@ describe('SettingsModal behavior — export/import', () => {
   });
 
   it('shows message when no autosaved checkpoint exists', async () => {
-    hasCheckpoint = false;
+    state.hasCheckpoint = false;
 
     render(<SettingsModal open={true} onClose={() => {}} />);
 
@@ -92,6 +105,6 @@ describe('SettingsModal behavior — export/import', () => {
     const reset = screen.getByRole('button', { name: /reset checkpoint/i });
     expect(reset).toBeDisabled();
 
-    hasCheckpoint = true;
+    state.hasCheckpoint = true;
   });
 });
