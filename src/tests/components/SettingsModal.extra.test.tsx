@@ -149,4 +149,33 @@ describe('SettingsModal extras', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (File.prototype as any).text = origText;
   });
+
+  it('audio sliders call useAudio setters', async () => {
+    const user = userEvent.setup();
+
+    // access mocked setters from the module mock
+    const audioModule = require('../../game/audio/AudioManager');
+    const mockSetMaster = audioModule.useAudio().setMasterVolume;
+    const mockSetSfx = audioModule.useAudio().setSFXVolume;
+    const mockSetMusic = audioModule.useAudio().setMusicVolume;
+
+    render(
+      <GameProvider>
+        <SettingsModal open={true} onClose={() => {}} />
+      </GameProvider>,
+    );
+
+    const master = screen.getByLabelText(/master/i) as HTMLInputElement;
+    const sfx = screen.getByLabelText(/sfx/i) as HTMLInputElement;
+    const music = screen.getByLabelText(/music/i) as HTMLInputElement;
+
+    await user.type(master, '{arrowright}');
+    expect(mockSetMaster).toHaveBeenCalled();
+
+    await user.type(sfx, '{arrowright}');
+    expect(mockSetSfx).toHaveBeenCalled();
+
+    await user.type(music, '{arrowright}');
+    expect(mockSetMusic).toHaveBeenCalled();
+  });
 });

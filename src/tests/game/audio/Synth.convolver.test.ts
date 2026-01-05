@@ -33,4 +33,30 @@ describe('Synth convolver fallback', () => {
     s.reverbSend = null;
     expect(() => s.setReverbMix(0.5)).not.toThrow();
   });
+
+  it('startMusic handles filter/delay creation failures gracefully', () => {
+    const s = new Synth();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    // Make createBiquadFilter throw when startMusic runs
+    // @ts-ignore
+    const OrigAC = global.AudioContext;
+    class BadAC extends OrigAC {
+      createBiquadFilter() {
+        throw new Error('no filter');
+      }
+    }
+    // @ts-ignore
+    global.AudioContext = BadAC;
+
+    // call startMusic which should catch the filter/delay errors
+    expect(() => s.startMusic()).not.toThrow();
+    // Should emit a warning when filter failed
+    expect(warn).toHaveBeenCalled();
+
+    // Restore
+    warn.mockRestore();
+    // @ts-ignore
+    global.AudioContext = OrigAC;
+  });
 });
