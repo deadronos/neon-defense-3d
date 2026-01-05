@@ -152,16 +152,21 @@ describe('SettingsModal extras', () => {
   });
 
   it('audio sliders call useAudio setters', async () => {
-    // access mocked setters from the module mock
-    const mockSetMaster = audioModule.useAudio().setMasterVolume;
-    const mockSetSfx = audioModule.useAudio().setSFXVolume;
-    const mockSetMusic = audioModule.useAudio().setMusicVolume;
-
     render(
       <GameProvider>
         <SettingsModal open={true} onClose={() => {}} />
       </GameProvider>,
     );
+
+    // retrieve the instance returned by the mocked useAudio as used by the component
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mockUse = (audioModule.useAudio as any).mock;
+    const lastResult = mockUse.results[mockUse.results.length - 1];
+    const { 
+      setMasterVolume: mockSetMaster,
+      setSFXVolume: mockSetSfx,
+      setMusicVolume: mockSetMusic,
+    } = lastResult.value;
 
     const sliders = screen.getAllByRole('slider') as HTMLInputElement[];
     expect(sliders.length).toBeGreaterThanOrEqual(3);
