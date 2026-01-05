@@ -20,7 +20,7 @@ GameState.tsx currently centralizes runtime state, render state, and session con
 
 ## Progress Tracking
 
-**Overall Status:** In Progress — 70%
+**Overall Status:** In Progress — 90%
 
 ### Subtasks
 | ID  | Description | Status | Updated | Notes |
@@ -28,7 +28,7 @@ GameState.tsx currently centralizes runtime state, render state, and session con
 | 1.1 | Add requirements + design artifacts | Complete | 2026-01-05 | Added DESIGN025 + requirements section. |
 | 1.2 | Implement Zustand store modules | Complete | 2026-01-05 | Added runtime/render/gameSpeed stores. |
 | 1.3 | Refactor GameState.tsx to use stores | Complete | 2026-01-05 | GameProvider now wires Zustand stores. |
-| 1.4 | Update tests/docs + validation notes | Not Started | 2026-01-05 | Tests not run yet. |
+| 1.4 | Update tests/docs + validation notes | In Progress | 2026-01-05 | Tests/typecheck pass; lint still reports existing warnings. |
 
 ## Progress Log
 
@@ -36,3 +36,5 @@ GameState.tsx currently centralizes runtime state, render state, and session con
 - Created DESIGN025 and requirements for the GameState store refactor.
 - Added Zustand store modules for runtime, render state, and game speed.
 - Refactored GameState.tsx to consume the new stores while preserving hook APIs.
+- Fixed typecheck errors in UI/tests/config and reran tests/typecheck.
+- Lint still reports pre-existing warnings in tests/engine modules.

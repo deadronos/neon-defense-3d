@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { TOWER_CONFIGS } from '../../../constants';
 import { createInitialEngineState } from '../../../game/engine/state';
 import { stepTowers } from '../../../game/engine/tower';
+import type { EngineVector2 } from '../../../game/engine/types';
 import { TowerType } from '../../../types';
 
 const path: [number, number][] = [

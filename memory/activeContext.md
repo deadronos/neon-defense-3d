@@ -33,6 +33,7 @@
 - **New features:** Added `KillStreakAnnouncer` (UI announcer), Synergy system (tower synergies + `SynergyLinks` visuals), upgrades support in engine step functions, `CanvasErrorBoundary` for robust rendering failure handling, and `currentMapIndex` for map selection and management.
 
 ## Next steps
+- Decide whether to clean existing lint warnings in tests/engine modules.
 - Run unit tests for GameState/persistence after the store refactor.
 
 - Do a manual gameplay parity pass (movement, firing cadence, rewards, victory after wave 10).

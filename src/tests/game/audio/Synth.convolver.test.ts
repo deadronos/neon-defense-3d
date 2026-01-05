@@ -9,7 +9,7 @@ describe('Synth convolver fallback', () => {
     const OrigAC = global.AudioContext;
 
     class BadAC extends OrigAC {
-      createConvolver() {
+      createConvolver(): ConvolverNode {
         throw new Error('no convolver');
       }
     }

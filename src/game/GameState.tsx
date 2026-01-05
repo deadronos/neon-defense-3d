@@ -14,7 +14,6 @@ import type {
   RenderStateContextProps,
   WorldContextProps,
 } from './contextTypes';
-import { writeEnemyWorldPosition } from './engine/selectors';
 import { stepEngine } from './engine/step';
 import type { EngineCache } from './engine/step';
 import type { EngineEnemy, EngineVector2 } from './engine/types';
