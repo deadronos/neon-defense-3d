@@ -19,6 +19,7 @@ describe('KillStreakAnnouncer', () => {
   it('renders nothing initially', () => {
     useGameMock.mockReturnValue({
       gameState: { announcement: null } as any,
+      clearAnnouncement: vi.fn(),
     } as any);
 
     render(<KillStreakAnnouncer />);
@@ -30,17 +31,20 @@ describe('KillStreakAnnouncer', () => {
       gameState: {
         announcement: { id: 123, text: 'DOUBLE KILL' },
       } as any,
+      clearAnnouncement: vi.fn(),
     } as any);
 
     render(<KillStreakAnnouncer />);
     expect(screen.getByText('DOUBLE KILL')).toBeInTheDocument();
   });
 
-  it('hides announcement after 2 seconds', () => {
+  it('hides announcement after 2 seconds and clears global state', () => {
+    const clearAnnouncementMock = vi.fn();
     useGameMock.mockReturnValue({
       gameState: {
         announcement: { id: 123, text: 'DOUBLE KILL' },
       } as any,
+      clearAnnouncement: clearAnnouncementMock,
     } as any);
 
     render(<KillStreakAnnouncer />);
@@ -51,12 +55,15 @@ describe('KillStreakAnnouncer', () => {
     });
 
     expect(screen.queryByText('DOUBLE KILL')).not.toBeInTheDocument();
+    expect(clearAnnouncementMock).toHaveBeenCalled();
   });
 
   it('resets timer when a new announcement arrives', () => {
+    const clearAnnouncementMock = vi.fn();
     // Initial render with no announcement
     useGameMock.mockReturnValue({
       gameState: { announcement: null } as any,
+      clearAnnouncement: clearAnnouncementMock,
     } as any);
     const { rerender } = render(<KillStreakAnnouncer />);
     
@@ -65,6 +72,7 @@ describe('KillStreakAnnouncer', () => {
       gameState: {
         announcement: { id: 1, text: 'DOUBLE KILL' },
       } as any,
+      clearAnnouncement: clearAnnouncementMock,
     } as any);
     rerender(<KillStreakAnnouncer />);
     
@@ -80,6 +88,7 @@ describe('KillStreakAnnouncer', () => {
       gameState: {
         announcement: { id: 2, text: 'TRIPLE KILL' },
       } as any,
+      clearAnnouncement: clearAnnouncementMock,
     } as any);
     rerender(<KillStreakAnnouncer />);
 
@@ -92,6 +101,7 @@ describe('KillStreakAnnouncer', () => {
 
     // Should still be visible because timer reset
     expect(screen.getByText('TRIPLE KILL')).toBeInTheDocument();
+    expect(clearAnnouncementMock).not.toHaveBeenCalled();
 
     // Advance 0.5s more (Total 2s from second announcement)
     act(() => {
@@ -99,5 +109,6 @@ describe('KillStreakAnnouncer', () => {
     });
 
     expect(screen.queryByText('TRIPLE KILL')).not.toBeInTheDocument();
+    expect(clearAnnouncementMock).toHaveBeenCalled();
   });
 });

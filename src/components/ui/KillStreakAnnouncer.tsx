@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useGame } from '../../game/GameState';
 
 export const KillStreakAnnouncer: React.FC = () => {
-  const { gameState } = useGame();
+  const { gameState, clearAnnouncement } = useGame();
   const [visible, setVisible] = useState(false);
   const [current, setCurrent] = useState(gameState.announcement);
 
@@ -10,10 +10,13 @@ export const KillStreakAnnouncer: React.FC = () => {
     if (gameState.announcement) {
       setCurrent(gameState.announcement);
       setVisible(true);
-      const timer = setTimeout(() => setVisible(false), 2000); // Hide after 2s
+      const timer = setTimeout(() => {
+        setVisible(false);
+        clearAnnouncement();
+      }, 2000); // Hide after 2s
       return () => clearTimeout(timer);
     }
-  }, [gameState.announcement]);
+  }, [gameState.announcement, clearAnnouncement]);
 
   if (!visible || !current) return null;
 

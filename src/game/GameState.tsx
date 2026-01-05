@@ -528,6 +528,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     isPlaying: runtime.ui.gameStatus === 'playing',
   };
 
+  const clearAnnouncement = useCallback(() => {
+    dispatch({ type: 'uiAction', action: { type: 'setAnnouncement', announcement: null } });
+  }, []);
+
   const gameContextValue = useMemo(
     () => ({
       gameState,
@@ -561,6 +565,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       gameSpeed,
       setGameSpeed,
       renderStateRef,
+      clearAnnouncement,
     }),
     [
       gameState,
@@ -594,6 +599,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       gameSpeed,
       setGameSpeed,
       renderStateRef,
+      clearAnnouncement,
     ],
   );
 
@@ -622,6 +628,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       skipWave,
       gameSpeed,
       setGameSpeed,
+      clearAnnouncement,
     }),
     [
       gameState,
@@ -647,6 +654,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       skipWave,
       gameSpeed,
       setGameSpeed,
+      clearAnnouncement,
     ],
   );
 
