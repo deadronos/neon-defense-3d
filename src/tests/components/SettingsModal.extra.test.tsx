@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, it, vi, beforeEach, afterEach } from 'vitest';
@@ -152,8 +152,6 @@ describe('SettingsModal extras', () => {
   });
 
   it('audio sliders call useAudio setters', async () => {
-    const user = userEvent.setup();
-
     // access mocked setters from the module mock
     const mockSetMaster = audioModule.useAudio().setMasterVolume;
     const mockSetSfx = audioModule.useAudio().setSFXVolume;
@@ -172,13 +170,15 @@ describe('SettingsModal extras', () => {
     const sfx = sliders[1];
     const music = sliders[2];
 
-    await user.type(master, '{arrowright}');
+    // change values via change event
+
+    fireEvent.change(master, { target: { value: '0.6' } });
     expect(mockSetMaster).toHaveBeenCalled();
 
-    await user.type(sfx, '{arrowright}');
+    fireEvent.change(sfx, { target: { value: '0.9' } });
     expect(mockSetSfx).toHaveBeenCalled();
 
-    await user.type(music, '{arrowright}');
+    fireEvent.change(music, { target: { value: '0.8' } });
     expect(mockSetMusic).toHaveBeenCalled();
   });
 });
