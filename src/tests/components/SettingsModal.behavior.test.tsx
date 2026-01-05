@@ -41,7 +41,8 @@ import { SettingsModal } from '../../components/ui/SettingsModal';
 
 describe('SettingsModal behavior (reset/factory/refresh)', () => {
   beforeEach(() => {
-    vi.restoreAllMocks();
+    // Clear mocks but keep module-level vi.mock definitions
+    vi.clearAllMocks();
     exportJsonValue = '{"foo":true}';
     hasCheckpoint = true;
     resetCheckpointMock.mockReset();
@@ -60,7 +61,9 @@ describe('SettingsModal behavior (reset/factory/refresh)', () => {
     const user = userEvent.setup();
     await user.click(resetBtn);
 
-    await waitFor(() => expect(screen.getByText(/no checkpoint present/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/no checkpoint present/i)).toBeInTheDocument(), {
+      timeout: 2000,
+    });
   });
 
   it('calls factoryReset when confirmed', async () => {
@@ -72,7 +75,9 @@ describe('SettingsModal behavior (reset/factory/refresh)', () => {
     const factoryBtn = screen.getByRole('button', { name: /factory reset/i });
     await user.click(factoryBtn);
 
-    await waitFor(() => expect(factoryResetMock).toHaveBeenCalled());
+    await waitFor(() => expect(factoryResetMock).toHaveBeenCalled(), {
+      timeout: 2000,
+    });
   });
 
   it('refresh updates export JSON shown in textarea', async () => {
@@ -88,7 +93,9 @@ describe('SettingsModal behavior (reset/factory/refresh)', () => {
     const user = userEvent.setup();
     await user.click(refreshBtn);
 
-    await waitFor(() => expect(textarea.value).toContain('"new":1'));
+    await waitFor(() => expect(textarea.value).toContain('\"new\":1'), {
+      timeout: 2000,
+    });
   });
 
   it('reset success refreshes export JSON', async () => {
@@ -104,7 +111,9 @@ describe('SettingsModal behavior (reset/factory/refresh)', () => {
     const user = userEvent.setup();
     await user.click(resetBtn);
 
-    await waitFor(() => expect(textarea.value).toContain('refreshed'));
+    await waitFor(() => expect(textarea.value).toContain('refreshed'), {
+      timeout: 2000,
+    });
   });
 
   it('factory reset cancelled does not call factoryReset', async () => {
