@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, it, vi, beforeEach } from 'vitest';
+import { describe, it, vi, beforeEach, test } from 'vitest';
 
 // Mock AudioManager so SettingsModal can render without real provider
 vi.mock('../../game/audio/AudioManager', () => ({
@@ -39,7 +39,7 @@ vi.mock('../../game/GameState', () => ({
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
 
-(describe as any).serial('SettingsModal behavior (reset/factory/refresh)', () => {
+describe('SettingsModal behavior (reset/factory/refresh)', () => {
   beforeEach(() => {
     // Clear mocks but keep module-level vi.mock definitions
     vi.clearAllMocks();
@@ -49,7 +49,7 @@ import { SettingsModal } from '../../components/ui/SettingsModal';
     factoryResetMock.mockReset();
   });
 
-  it('shows reset error when resetCheckpoint returns error', async () => {
+  (test as any).serial('shows reset error when resetCheckpoint returns error', async () => {
     // make resetCheckpoint return error
     resetCheckpointMock.mockReturnValue({ ok: false, error: 'No checkpoint present' });
 
@@ -66,7 +66,7 @@ import { SettingsModal } from '../../components/ui/SettingsModal';
     });
   });
 
-  it('calls factoryReset when confirmed', async () => {
+  (test as any).serial('calls factoryReset when confirmed', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     render(<SettingsModal open={true} onClose={() => {}} />);
@@ -80,7 +80,7 @@ import { SettingsModal } from '../../components/ui/SettingsModal';
     });
   });
 
-  it('refresh updates export JSON shown in textarea', async () => {
+  (it as any).serial('refresh updates export JSON shown in textarea', async () => {
     render(<SettingsModal open={true} onClose={() => {}} />);
 
     const textarea = screen.getByLabelText(/exported checkpoint json/i) as HTMLTextAreaElement;
@@ -98,7 +98,7 @@ import { SettingsModal } from '../../components/ui/SettingsModal';
     });
   });
 
-  it('reset success refreshes export JSON', async () => {
+  (it as any).serial('reset success refreshes export JSON', async () => {
     // reset returns ok = true and export changes
     resetCheckpointMock.mockReturnValue({ ok: true });
     exportJsonValue = '{"refreshed":true}';
@@ -116,7 +116,7 @@ import { SettingsModal } from '../../components/ui/SettingsModal';
     });
   });
 
-  it('factory reset cancelled does not call factoryReset', async () => {
+  (it as any).serial('factory reset cancelled does not call factoryReset', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(false);
 
     render(<SettingsModal open={true} onClose={() => {}} />);
@@ -128,7 +128,7 @@ import { SettingsModal } from '../../components/ui/SettingsModal';
     expect(factoryResetMock).not.toHaveBeenCalled();
   });
 
-  it('shows message when no autosaved checkpoint exists', async () => {
+  (it as any).serial('shows message when no autosaved checkpoint exists', async () => {
     hasCheckpoint = false;
 
     render(<SettingsModal open={true} onClose={() => {}} />);
