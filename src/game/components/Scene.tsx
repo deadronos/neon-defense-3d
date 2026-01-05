@@ -11,6 +11,7 @@ import { InstancedExplosions } from './Effects';
 import { InstancedEnemies } from './Enemies';
 import { GameLoopBridge } from './GameLoop';
 import { InstancedTowers } from './InstancedTowers';
+import { SynergyLinks } from './SynergyLinks'; // New import
 import { InstancedProjectiles } from './Projectiles';
 // import { Tower } from './Tower'; // Keep for ref? No, replacing usage.
 import { InstancedTrails } from './Trails';
@@ -38,6 +39,7 @@ export const SceneContent = () => {
       <World />
 
       <group position={[offsetX, 0, offsetZ]}>
+        <SynergyLinks />
         <InstancedTowers />
         {isHigh && <InstancedTrails />}
         <InstancedEnemies />

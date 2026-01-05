@@ -1,4 +1,5 @@
 import type { EngineEvent } from './events';
+import type { ActiveSynergy } from '../../types';
 
 export type EngineVector2 = readonly [number, number];
 export type EngineVector3 = readonly [number, number, number];
@@ -28,6 +29,7 @@ export interface EngineTower {
   gridPosition: EngineVector2;
   lastFired: number;
   targetId?: string;
+  activeSynergies?: ActiveSynergy[];
 }
 
 export interface EngineProjectile {
@@ -97,6 +99,7 @@ export interface EngineTickContext {
   deltaMs: number;
   nowMs: number;
   rng: () => number;
+  upgrades?: { [key: string]: number };
 }
 
 export interface EngineTickResult {
