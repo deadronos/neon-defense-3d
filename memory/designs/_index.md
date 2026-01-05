@@ -10,6 +10,11 @@
 - DESIGN013 - Performance hot paths (targeted optimizations)
 - DESIGN014 - Dynamic resolution scaling
 - DESIGN015 - Test coverage expansion
+- DESIGN020 - Kill Streak Announcer
+- DESIGN021 - Synergy system (tower synergies)
+- DESIGN022 - Upgrades support & engine extensions
+- DESIGN023 - Canvas Error Boundary & Error Logger
+- DESIGN024 - Current map indexing & state
 
 ## Completed
 

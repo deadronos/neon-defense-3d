@@ -28,6 +28,7 @@
 
 - **Audio:** Synth music engine enhanced — added lowpass filter, delay-based feedback, slow LFO (subtle detune/chorus), an arpeggio oscillator for movement, and a procedural convolver impulse reverb. Tests and mocks updated.
 - **Bug Fix:** Fixed critical save/load interaction bug where loaded games were non-interactive. Implemented a `sessionNonce` strategy to force a full 3D scene remount upon loading a checkpoint, ensuring fresh event binding.
+- **New features:** Added `KillStreakAnnouncer` (UI announcer), Synergy system (tower synergies + `SynergyLinks` visuals), upgrades support in engine step functions, `CanvasErrorBoundary` for robust rendering failure handling, and `currentMapIndex` for map selection and management.
 
 ## Next steps
 
