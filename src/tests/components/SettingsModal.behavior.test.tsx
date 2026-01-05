@@ -118,4 +118,19 @@ describe('SettingsModal behavior (reset/factory/refresh)', () => {
 
     expect(factoryResetMock).not.toHaveBeenCalled();
   });
+
+  it('shows message when no autosaved checkpoint exists', async () => {
+    hasCheckpoint = false;
+
+    render(<SettingsModal open={true} onClose={() => {}} />);
+
+    expect(screen.getByText(/no autosaved checkpoint found yet/i)).toBeInTheDocument();
+
+    // Reset button should be disabled when no checkpoint
+    const reset = screen.getByRole('button', { name: /reset checkpoint/i });
+    expect(reset).toBeDisabled();
+
+    // revert
+    hasCheckpoint = true;
+  });
 });
