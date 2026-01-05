@@ -351,3 +351,24 @@ Graphics quality persistence:
 
 4. WHEN rendering instanced enemies, towers, and projectiles, THE SYSTEM SHALL use lower-cost materials (Lambert/Basic) to reduce GPU load.
    **Acceptance:** instanced materials are non-PBR and render correctly at runtime.
+
+---
+
+# Requirements — GameState Store Refactor (Zustand)
+
+**Status:** Draft (living document)
+**Updated:** 2026-01-05
+
+## Functional requirements (EARS)
+
+1. WHEN the GameProvider initializes, THE SYSTEM SHALL create separate Zustand stores for runtime state, render state, and game speed.
+   **Acceptance:** the stores are instantiated once per GameProvider and reused for the session.
+
+2. WHEN runtime actions are dispatched (start/reset/place/upgrade/sell/engine tick), THE SYSTEM SHALL update the runtime store using the existing reducer semantics.
+   **Acceptance:** gameplay behavior matches pre-refactor outcomes for the same inputs.
+
+3. WHEN consumers call `useGame`, `useGameUi`, `useWorld`, or `useRenderState`, THE SYSTEM SHALL preserve the existing public API contracts.
+   **Acceptance:** current components and tests compile without API changes.
+
+4. WHEN a consumer uses these hooks outside `GameProvider`, THE SYSTEM SHALL throw a provider error as before.
+   **Acceptance:** existing provider-guard tests still pass.

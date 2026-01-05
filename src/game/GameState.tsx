@@ -1,17 +1,10 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
+import type { StoreApi } from 'zustand';
+import { useStore } from 'zustand';
 
-import { MAP_LAYOUTS, TILE_SIZE, TOWER_CONFIGS, generatePath, getMapGrid } from '../constants';
-import type { GameState, GraphicsQuality, TowerType, Vector2 } from '../types';
+import { MAP_LAYOUTS, TILE_SIZE, generatePath, getMapGrid } from '../constants';
+import type { GameState, GraphicsQuality, TowerType } from '../types';
 import { TileType, UpgradeType } from '../types';
 
 import { useAudio } from './audio/AudioManager';
@@ -21,12 +14,9 @@ import type {
   RenderStateContextProps,
   WorldContextProps,
 } from './contextTypes';
-import { applyEngineRuntimeAction } from './engine/runtime';
-import { allocateId, applyEnginePatch, createInitialEngineState } from './engine/state';
 import { stepEngine } from './engine/step';
 import type { EngineCache } from './engine/step';
-import type { EngineEnemy, EngineState, EngineVector2 } from './engine/types';
-import { createInitialUiState, uiReducer } from './engine/uiReducer';
+import type { EngineEnemy, EngineVector2 } from './engine/types';
 import type { SaveV1 } from './persistence';
 import {
   buildRuntimeFromCheckpoint,
@@ -35,7 +25,7 @@ import {
   saveCheckpoint,
   serializeCheckpoint,
 } from './persistence';
-import { createInitialRenderState, syncRenderState } from './renderStateUtils';
+import { syncRenderState } from './renderStateUtils';
 import { writeEnemyWorldPosition } from './engine/selectors';
 import {
   buildEnemyTypeMap,
@@ -46,102 +36,18 @@ import {
   toWaveState,
 } from './transforms';
 import { getTowerStats } from './utils';
-import { calculateSynergies } from './synergies';
+import { createGameSpeedStore } from './stores/gameSpeedStore';
+import type { GameSpeedStoreState } from './stores/gameSpeedStore';
+import { createRenderStateStore } from './stores/renderStateStore';
+import type { RenderStateStoreState } from './stores/renderStateStore';
+import { createRuntimeStore } from './stores/runtimeStore';
+import type { RuntimeStoreState } from './stores/runtimeStore';
 
-type RuntimeState = {
-  engine: EngineState;
-  ui: ReturnType<typeof createInitialUiState>;
-};
-
-type RuntimeAction =
-  | Parameters<typeof applyEngineRuntimeAction>[1]
-  | { type: 'resetEngine' }
-  | { type: 'engineSetState'; engine: EngineState }
-  | { type: 'setRuntimeState'; engine: EngineState; ui: ReturnType<typeof createInitialUiState> }
-  | { type: 'factoryReset' }
-  | { type: 'placeTower'; x: number; z: number; towerType: TowerType }
-  | { type: 'upgradeTower'; id: string }
-  | { type: 'sellTower'; id: string };
-
-const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeState => {
-  switch (action.type) {
-    case 'resetEngine':
-      return { ...state, engine: createInitialEngineState() };
-    case 'engineSetState':
-      return { ...state, engine: action.engine };
-    case 'setRuntimeState':
-      return { engine: action.engine, ui: action.ui };
-    case 'factoryReset':
-      return {
-        engine: createInitialEngineState(),
-        ui: uiReducer(state.ui, { type: 'factoryReset' }),
-      };
-    case 'placeTower': {
-      const config = TOWER_CONFIGS[action.towerType];
-      if (!config || state.ui.money < config.cost) return state;
-
-      const { id, state: afterId } = allocateId(state.engine, 'tower');
-      const nextTower = {
-        id,
-        type: action.towerType,
-        level: 1,
-        gridPosition: [action.x, action.z] as Vector2,
-        lastFired: 0,
-      };
-
-
-      const newTowers = [...state.engine.towers, nextTower];
-      const synergies = calculateSynergies(newTowers);
-      const synergedTowers = newTowers.map((t) => ({
-        ...t,
-        activeSynergies: synergies.get(t.id),
-      }));
-
-      return {
-        engine: applyEnginePatch(afterId, { towers: synergedTowers }),
-        ui: uiReducer(state.ui, { type: 'spendMoney', amount: config.cost }),
-      };
-    }
-    case 'upgradeTower': {
-      const tower = state.engine.towers.find((t) => t.id === action.id);
-      if (!tower) return state;
-      const stats = getTowerStats(
-        tower.type as TowerType,
-        tower.level,
-        { upgrades: state.ui.upgrades, activeSynergies: tower.activeSynergies }
-      );
-      if (state.ui.money < stats.upgradeCost) return state;
-      const nextTowers = state.engine.towers.map((t) =>
-        t.id === action.id ? { ...t, level: t.level + 1 } : t,
-      );
-      return {
-        engine: applyEnginePatch(state.engine, { towers: nextTowers }),
-        ui: uiReducer(state.ui, { type: 'spendMoney', amount: stats.upgradeCost }),
-      };
-    }
-    case 'sellTower': {
-      const tower = state.engine.towers.find((t) => t.id === action.id);
-      if (!tower) return state;
-      const config = TOWER_CONFIGS[tower.type as TowerType];
-      const refund = Math.floor((config?.cost ?? 0) * 0.7);
-
-      const filteredTowers = state.engine.towers.filter((t) => t.id !== action.id);
-      const synergies = calculateSynergies(filteredTowers);
-      const synergedTowers = filteredTowers.map((t) => ({
-        ...t,
-        activeSynergies: synergies.get(t.id),
-      }));
-
-      return {
-        engine: applyEnginePatch(state.engine, {
-          towers: synergedTowers,
-        }),
-        ui: { ...state.ui, money: state.ui.money + refund, selectedEntityId: null },
-      };
-    }
-    default:
-      return applyEngineRuntimeAction(state, action);
+const ensureStoreRef = <T,>(factory: () => StoreApi<T>, ref: { current: StoreApi<T> | null }) => {
+  if (!ref.current) {
+    ref.current = factory();
   }
+  return ref.current;
 };
 
 /** Context for managing game state. */
@@ -178,15 +84,22 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { playSFX } = useAudio();
   const enemyTypeMap = useMemo(buildEnemyTypeMap, []);
 
-  const [runtime, dispatch] = useReducer(runtimeReducer, undefined, () => ({
-    engine: createInitialEngineState(),
-    ui: createInitialUiState(),
-  }));
+  const runtimeStoreRef = useRef<StoreApi<RuntimeStoreState> | null>(null);
+  const renderStateStoreRef = useRef<StoreApi<RenderStateStoreState> | null>(null);
+  const gameSpeedStoreRef = useRef<StoreApi<GameSpeedStoreState> | null>(null);
+
+  const runtimeStore = ensureStoreRef(createRuntimeStore, runtimeStoreRef);
+  const renderStateStore = ensureStoreRef(createRenderStateStore, renderStateStoreRef);
+  const gameSpeedStore = ensureStoreRef(createGameSpeedStore, gameSpeedStoreRef);
+
+  const runtime = useStore(runtimeStore, (state) => state.runtime);
+  const dispatch = useStore(runtimeStore, (state) => state.dispatch);
+  const renderStateRef = useStore(renderStateStore, (state) => state.renderStateRef);
+  const gameSpeed = useStore(gameSpeedStore, (state) => state.gameSpeed);
+  const setGameSpeed = useStore(gameSpeedStore, (state) => state.setGameSpeed);
 
   const runtimeRef = useRef(runtime);
   runtimeRef.current = runtime;
-
-  const renderStateRef = useRef(createInitialRenderState());
 
   const lastAutosavedNonceRef = useRef<number>(-1);
 
@@ -407,7 +320,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     [],
   );
 
-  const [gameSpeed, setGameSpeed] = useState(1);
   const killStreakRef = useRef({ count: 0, lastTime: 0 });
 
   const step = useCallback(
@@ -693,3 +605,12 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     </GameContext.Provider>
   );
 };
+
+
+
+
+
+
+
+
+

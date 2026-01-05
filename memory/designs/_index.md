@@ -15,6 +15,7 @@
 - DESIGN022 - Upgrades support & engine extensions
 - DESIGN023 - Canvas Error Boundary & Error Logger
 - DESIGN024 - Current map indexing & state
+- DESIGN025 - GameState refactor to Zustand stores
 
 ## Completed
 
