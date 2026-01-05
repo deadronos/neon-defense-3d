@@ -173,7 +173,8 @@ describe('SettingsModal extras', () => {
     const mockUse = audioModule.useAudio as unknown as {
       mock: { results: Array<{ value: ReturnType<typeof audioModule.useAudio> }> };
     };
-    const lastResult = mockUse.results[mockUse.results.length - 1];
+    // the vi mock stores call/return data under `.mock.results`
+    const lastResult = mockUse.mock.results[mockUse.mock.results.length - 1];
     const {
       setMasterVolume: mockSetMaster,
       setSFXVolume: mockSetSfx,

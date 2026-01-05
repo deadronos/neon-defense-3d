@@ -3,9 +3,9 @@ import React from 'react';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 
 import { KillStreakAnnouncer } from '../../components/ui/KillStreakAnnouncer';
-import * as GameStateModule from '../../game/GameState';
 import type { GameContextProps } from '../../game/contextTypes';
 import { createInitialUiState } from '../../game/engine/uiReducer';
+import * as GameStateModule from '../../game/GameState';
 import type { GameState } from '../../types';
 
 describe('KillStreakAnnouncer', () => {
