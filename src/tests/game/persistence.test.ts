@@ -11,6 +11,7 @@ vi.mock('../../game/audio/AudioManager', () => ({
 import { applyEnginePatch, createInitialEngineState } from '../../game/engine/state';
 import { createInitialUiState } from '../../game/engine/uiReducer';
 import { GameProvider, useGame } from '../../game/GameState';
+import type { SaveV1 } from '../../game/persistence';
 import {
   CHECKPOINT_STORAGE_KEY_V1,
   buildRuntimeFromCheckpoint,
@@ -354,10 +355,20 @@ describe('persistence (Tier-B checkpoint)', () => {
 
   it('restores active synergies between adjacent towers', () => {
     const previousUi = createInitialUiState();
-    const save: any = {
+    const save = {
       schemaVersion: 1,
       timestamp: new Date().toISOString(),
-      ui: { ...previousUi, upgrades: {} },
+      ui: {
+        currentMapIndex: previousUi.currentMapIndex,
+        money: previousUi.money,
+        lives: previousUi.lives,
+        totalEarned: previousUi.totalCurrencyEarned,
+        totalSpent: 0,
+        totalDamageDealt: previousUi.totalDamageDealt,
+        totalCurrencyEarned: previousUi.totalCurrencyEarned,
+        researchPoints: previousUi.researchPoints,
+        upgrades: previousUi.upgrades ?? {},
+      },
       checkpoint: {
         waveToStart: 1,
         towers: [
@@ -365,7 +376,7 @@ describe('persistence (Tier-B checkpoint)', () => {
           { type: TowerType.Basic, level: 1, x: 1, z: 0 },
         ],
       },
-    };
+    } satisfies SaveV1;
 
     const next = buildRuntimeFromCheckpoint(save, previousUi);
 
@@ -376,15 +387,25 @@ describe('persistence (Tier-B checkpoint)', () => {
 
   it('buildRuntimeFromCheckpoint is resilient against weird coordinates in save', () => {
     const previousUi = createInitialUiState();
-    const save: any = {
+    const save = {
       schemaVersion: 1,
       timestamp: new Date().toISOString(),
-      ui: { ...previousUi },
+      ui: {
+        currentMapIndex: previousUi.currentMapIndex,
+        money: previousUi.money,
+        lives: previousUi.lives,
+        totalEarned: previousUi.totalCurrencyEarned,
+        totalSpent: 0,
+        totalDamageDealt: previousUi.totalDamageDealt,
+        totalCurrencyEarned: previousUi.totalCurrencyEarned,
+        researchPoints: previousUi.researchPoints,
+        upgrades: previousUi.upgrades ?? {},
+      },
       checkpoint: {
         waveToStart: 1,
         towers: [{ type: TowerType.Basic, level: 1, x: 999, z: -50 }],
       },
-    };
+    } satisfies SaveV1;
 
     const next = buildRuntimeFromCheckpoint(save, previousUi);
     expect(next.engine.towers).toHaveLength(1);

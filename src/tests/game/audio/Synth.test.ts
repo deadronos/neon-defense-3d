@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
-import { Synth, synth } from '../../../game/audio/Synth';
+import { Synth } from '../../../game/audio/Synth';
 
 describe('Synth', () => {
   it('createImpulseResponse produces a buffer-like object', () => {

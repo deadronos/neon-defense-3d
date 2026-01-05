@@ -4,9 +4,27 @@ import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
 
 import { KillStreakAnnouncer } from '../../components/ui/KillStreakAnnouncer';
 import * as GameStateModule from '../../game/GameState';
+import type { GameContextProps } from '../../game/contextTypes';
+import { createInitialUiState } from '../../game/engine/uiReducer';
+import type { GameState } from '../../types';
 
 describe('KillStreakAnnouncer', () => {
   const useGameMock = vi.spyOn(GameStateModule, 'useGame');
+  const baseUi = createInitialUiState();
+  const baseGameState: GameState = {
+    ...baseUi,
+    isPlaying: baseUi.gameStatus === 'playing',
+    announcement: baseUi.announcement,
+  };
+
+  const buildContext = (
+    announcement: GameState['announcement'],
+    clearAnnouncement = vi.fn(),
+  ): GameContextProps =>
+    ({
+      gameState: { ...baseGameState, announcement },
+      clearAnnouncement,
+    }) as unknown as GameContextProps;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -18,22 +36,14 @@ describe('KillStreakAnnouncer', () => {
   });
 
   it('renders nothing initially', () => {
-    useGameMock.mockReturnValue({
-      gameState: { announcement: null } as any,
-      clearAnnouncement: vi.fn(),
-    } as any);
+    useGameMock.mockReturnValue(buildContext(null));
 
     render(<KillStreakAnnouncer />);
     expect(screen.queryByText('DOUBLE KILL')).not.toBeInTheDocument();
   });
 
   it('shows announcement when set', () => {
-    useGameMock.mockReturnValue({
-      gameState: {
-        announcement: { id: 123, text: 'DOUBLE KILL' },
-      } as any,
-      clearAnnouncement: vi.fn(),
-    } as any);
+    useGameMock.mockReturnValue(buildContext({ id: 123, text: 'DOUBLE KILL' }));
 
     render(<KillStreakAnnouncer />);
     expect(screen.getByText('DOUBLE KILL')).toBeInTheDocument();
@@ -41,12 +51,9 @@ describe('KillStreakAnnouncer', () => {
 
   it('hides announcement after 2 seconds and clears global state', () => {
     const clearAnnouncementMock = vi.fn();
-    useGameMock.mockReturnValue({
-      gameState: {
-        announcement: { id: 123, text: 'DOUBLE KILL' },
-      } as any,
-      clearAnnouncement: clearAnnouncementMock,
-    } as any);
+    useGameMock.mockReturnValue(
+      buildContext({ id: 123, text: 'DOUBLE KILL' }, clearAnnouncementMock),
+    );
 
     render(<KillStreakAnnouncer />);
     expect(screen.getByText('DOUBLE KILL')).toBeInTheDocument();
@@ -62,19 +69,13 @@ describe('KillStreakAnnouncer', () => {
   it('resets timer when a new announcement arrives', () => {
     const clearAnnouncementMock = vi.fn();
     // Initial render with no announcement
-    useGameMock.mockReturnValue({
-      gameState: { announcement: null } as any,
-      clearAnnouncement: clearAnnouncementMock,
-    } as any);
+    useGameMock.mockReturnValue(buildContext(null, clearAnnouncementMock));
     const { rerender } = render(<KillStreakAnnouncer />);
 
     // First announcement
-    useGameMock.mockReturnValue({
-      gameState: {
-        announcement: { id: 1, text: 'DOUBLE KILL' },
-      } as any,
-      clearAnnouncement: clearAnnouncementMock,
-    } as any);
+    useGameMock.mockReturnValue(
+      buildContext({ id: 1, text: 'DOUBLE KILL' }, clearAnnouncementMock),
+    );
     rerender(<KillStreakAnnouncer />);
 
     expect(screen.getByText('DOUBLE KILL')).toBeInTheDocument();
@@ -85,12 +86,9 @@ describe('KillStreakAnnouncer', () => {
     });
 
     // Change announcement
-    useGameMock.mockReturnValue({
-      gameState: {
-        announcement: { id: 2, text: 'TRIPLE KILL' },
-      } as any,
-      clearAnnouncement: clearAnnouncementMock,
-    } as any);
+    useGameMock.mockReturnValue(
+      buildContext({ id: 2, text: 'TRIPLE KILL' }, clearAnnouncementMock),
+    );
     rerender(<KillStreakAnnouncer />);
 
     expect(screen.getByText('TRIPLE KILL')).toBeInTheDocument();

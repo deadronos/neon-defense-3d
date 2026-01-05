@@ -1,8 +1,7 @@
 import { useFrame } from '@react-three/fiber';
-import React, { useMemo, useRef } from 'react';
+import React, { useRef } from 'react';
 import * as THREE from 'three';
 
-import { TILE_SIZE } from '../../constants';
 import { SynergyType } from '../../types';
 import { useRenderState } from '../GameState';
 

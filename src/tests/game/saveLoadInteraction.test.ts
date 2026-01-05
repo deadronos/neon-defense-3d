@@ -2,7 +2,6 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { GameProvider, useGame } from '../../game/GameState';
-import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from '../../game/persistence';
 import type { SaveV1 } from '../../game/persistence';
 import { TowerType } from '../../types';
 
@@ -99,8 +98,7 @@ describe('Save/Load Interaction Bug Reproduction', () => {
 
     // 6. Verify Interaction: Can we place a NEW tower at (1,0)?
     // First check validity
-    const isValid = result.current.isValidPlacement(1, 0);
-    expect(isValid).toBe(true);
+    expect(result.current.isValidPlacement(1, 0)).toBe(true);
 
     act(() => {
       result.current.placeTower(1, 0, TowerType.Basic);
@@ -170,10 +168,10 @@ describe('Save/Load Interaction Bug Reproduction', () => {
     expect(result.current.towers).toHaveLength(1);
 
     // 6. Interact
-    const isValid = result.current.isValidPlacement(6, 6);
     // If Map 1 has grass at 6,6
     // We can just rely on `isValidPlacement` result. If false, maybe it's wall.
     // But if `isValidPlacement` returns true, then logic works.
+    expect(result.current.isValidPlacement(6, 6)).toBe(true);
     expect(result.current.renderStateRef.current.gridOccupancy.size).toBe(1);
     // Check occupancy of old tower
     expect(result.current.renderStateRef.current.gridOccupancy.has('0,7')).toBe(true);

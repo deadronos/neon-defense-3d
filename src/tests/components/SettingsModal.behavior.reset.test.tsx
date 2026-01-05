@@ -14,7 +14,7 @@ vi.mock('../../game/audio/AudioManager', () => ({
     setMusicVolume: vi.fn(),
     playSFX: vi.fn(),
   })),
-  AudioProvider: ({ children }: any) => <>{children}</>,
+  AudioProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 const state = vi.hoisted(() => ({
@@ -51,7 +51,7 @@ vi.mock('../../game/GameState', () => {
       applyCheckpointSave,
       exportCheckpointJson,
     }),
-    GameProvider: ({ children }: any) => <>{children}</>,
+    GameProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   };
 });
 
@@ -60,7 +60,7 @@ import { SettingsModal } from '../../components/ui/SettingsModal';
 // quick load log to detect scheduling/hang issues
 console.log('[test startup] SettingsModal.behavior.reset loaded');
 
-describe.only('SettingsModal behavior — reset & factory', () => {
+describe('SettingsModal behavior — reset & factory', () => {
   beforeEach(() => {
     console.log('[test beforeEach] SettingsModal.behavior.reset');
     vi.clearAllMocks();

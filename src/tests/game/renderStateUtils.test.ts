@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { TILE_SIZE, MAP_LAYOUTS } from '../../constants';
 import type { EngineState } from '../../game/engine/types';
 import { createInitialRenderState, syncRenderState } from '../../game/renderStateUtils';
+import type { EnemyConfig } from '../../types';
 
 const pathWaypoints = MAP_LAYOUTS[0]
   .map((row, z) => row.map((_, x) => [x, z] as [number, number])[0])
@@ -11,7 +12,7 @@ const pathWaypoints = MAP_LAYOUTS[0]
 describe('renderStateUtils.syncRenderState', () => {
   it('syncs enemies, towers, projectiles, and effects into render state', () => {
     const renderState = createInitialRenderState();
-    const enemyTypeMap = new Map<string, any>([
+    const enemyTypeMap = new Map<string, EnemyConfig>([
       ['Drone', { speed: 2.5, hp: 50, shield: 0, reward: 10, color: '#ff0055', scale: 0.4 }],
     ]);
 
@@ -87,7 +88,7 @@ describe('renderStateUtils.syncRenderState', () => {
 
   it('removes previous positions when entities are no longer present', () => {
     const renderState = createInitialRenderState();
-    const enemyTypeMap = new Map<string, any>([
+    const enemyTypeMap = new Map<string, EnemyConfig>([
       ['Drone', { speed: 2.5, hp: 50, shield: 0, reward: 10, color: '#ff0055', scale: 0.4 }],
     ]);
 

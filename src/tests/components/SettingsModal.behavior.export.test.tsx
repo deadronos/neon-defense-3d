@@ -14,7 +14,7 @@ vi.mock('../../game/audio/AudioManager', () => ({
     setMusicVolume: vi.fn(),
     playSFX: vi.fn(),
   })),
-  AudioProvider: ({ children }: any) => <>{children}</>,
+  AudioProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 const state = vi.hoisted(() => ({
@@ -52,7 +52,7 @@ vi.mock('../../game/GameState', () => {
       applyCheckpointSave,
       exportCheckpointJson,
     }),
-    GameProvider: ({ children }: any) => <>{children}</>,
+    GameProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
   };
 });
 

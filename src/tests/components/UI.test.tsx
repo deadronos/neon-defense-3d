@@ -33,7 +33,6 @@ vi.mock('../../game/GameState', () => {
   };
 });
 
-import { TechTreeModal } from '../../components/TechTreeModal';
 import { UI } from '../../components/UI';
 
 describe('UI component (victory flow)', () => {
