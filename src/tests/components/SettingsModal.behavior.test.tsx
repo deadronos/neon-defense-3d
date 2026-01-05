@@ -90,4 +90,32 @@ describe('SettingsModal behavior (reset/factory/refresh)', () => {
 
     await waitFor(() => expect(textarea.value).toContain('"new":1'));
   });
+
+  it('reset success refreshes export JSON', async () => {
+    // reset returns ok = true and export changes
+    resetCheckpointMock.mockReturnValue({ ok: true });
+    exportJsonValue = '{"refreshed":true}';
+
+    render(<SettingsModal open={true} onClose={() => {}} />);
+
+    const textarea = screen.getByLabelText(/exported checkpoint json/i) as HTMLTextAreaElement;
+    const resetBtn = screen.getByRole('button', { name: /reset checkpoint/i });
+
+    const user = userEvent.setup();
+    await user.click(resetBtn);
+
+    await waitFor(() => expect(textarea.value).toContain('refreshed'));
+  });
+
+  it('factory reset cancelled does not call factoryReset', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<SettingsModal open={true} onClose={() => {}} />);
+
+    const user = userEvent.setup();
+    const factoryBtn = screen.getByRole('button', { name: /factory reset/i });
+    await user.click(factoryBtn);
+
+    expect(factoryResetMock).not.toHaveBeenCalled();
+  });
 });
