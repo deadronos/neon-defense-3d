@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+
 import { Synth } from '../../../game/audio/Synth';
 
 describe('Synth convolver fallback', () => {

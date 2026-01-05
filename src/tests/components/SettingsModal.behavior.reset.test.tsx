@@ -1,6 +1,6 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { describe, it, vi, beforeEach } from 'vitest';
 
 // Mock AudioManager so SettingsModal can render without real provider
@@ -27,13 +27,24 @@ const state = vi.hoisted(() => ({
 vi.mock('../../game/GameState', () => {
   const setGraphicsQuality = vi.fn();
   const applyCheckpointSave = vi.fn();
-  const exportCheckpointJson = () => ({ json: state.exportJsonValue, hasCheckpoint: state.hasCheckpoint });
+  const exportCheckpointJson = () => ({
+    json: state.exportJsonValue,
+    hasCheckpoint: state.hasCheckpoint,
+  });
   const resetCheckpoint = () => state.resetCheckpointMock();
   const factoryReset = () => state.factoryResetMock();
 
   return {
     useGame: () => ({
-      gameState: { graphicsQuality: 'high', waveStartedNonce: 0, gameStatus: 'idle', wave: 1, money: 0, lives: 0, upgrades: {} },
+      gameState: {
+        graphicsQuality: 'high',
+        waveStartedNonce: 0,
+        gameStatus: 'idle',
+        wave: 1,
+        money: 0,
+        lives: 0,
+        upgrades: {},
+      },
       setGraphicsQuality,
       resetCheckpoint,
       factoryReset,
@@ -75,7 +86,9 @@ describe.only('SettingsModal behavior — reset & factory', () => {
     const user = userEvent.setup();
     await user.click(resetBtn);
 
-    await waitFor(() => expect(screen.getByText(/no checkpoint present/i)).toBeInTheDocument(), { timeout: 2000 });
+    await waitFor(() => expect(screen.getByText(/no checkpoint present/i)).toBeInTheDocument(), {
+      timeout: 2000,
+    });
   });
 
   it('calls factoryReset when confirmed', async () => {

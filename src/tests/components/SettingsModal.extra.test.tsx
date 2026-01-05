@@ -19,10 +19,9 @@ vi.mock('../../game/audio/AudioManager', () => ({
 }));
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
+import * as audioModule from '../../game/audio/AudioManager';
 import { GameProvider } from '../../game/GameState';
 import * as persistence from '../../game/persistence';
-import * as audioModule from '../../game/audio/AudioManager';
-
 
 describe('SettingsModal extras', () => {
   beforeEach(() => {
@@ -102,7 +101,12 @@ describe('SettingsModal extras', () => {
     } as any;
 
     // Spy migrateSave to return a ready save with warnings
-    vi.spyOn(persistence, 'migrateSave').mockReturnValue({ ok: true, save: sample, warnings: ['warn1'], errors: [] } as any);
+    vi.spyOn(persistence, 'migrateSave').mockReturnValue({
+      ok: true,
+      save: sample,
+      warnings: ['warn1'],
+      errors: [],
+    } as any);
 
     render(
       <GameProvider>
@@ -162,7 +166,7 @@ describe('SettingsModal extras', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const mockUse = (audioModule.useAudio as any).mock;
     const lastResult = mockUse.results[mockUse.results.length - 1];
-    const { 
+    const {
       setMasterVolume: mockSetMaster,
       setSFXVolume: mockSetSfx,
       setMusicVolume: mockSetMusic,

@@ -14,6 +14,7 @@ import type {
   RenderStateContextProps,
   WorldContextProps,
 } from './contextTypes';
+import { writeEnemyWorldPosition } from './engine/selectors';
 import { stepEngine } from './engine/step';
 import type { EngineCache } from './engine/step';
 import type { EngineEnemy, EngineVector2 } from './engine/types';
@@ -26,7 +27,12 @@ import {
   serializeCheckpoint,
 } from './persistence';
 import { syncRenderState } from './renderStateUtils';
-import { writeEnemyWorldPosition } from './engine/selectors';
+import { createGameSpeedStore } from './stores/gameSpeedStore';
+import type { GameSpeedStoreState } from './stores/gameSpeedStore';
+import { createRenderStateStore } from './stores/renderStateStore';
+import type { RenderStateStoreState } from './stores/renderStateStore';
+import { createRuntimeStore } from './stores/runtimeStore';
+import type { RuntimeStoreState } from './stores/runtimeStore';
 import {
   buildEnemyTypeMap,
   toEffectEntity,
@@ -36,12 +42,6 @@ import {
   toWaveState,
 } from './transforms';
 import { getTowerStats } from './utils';
-import { createGameSpeedStore } from './stores/gameSpeedStore';
-import type { GameSpeedStoreState } from './stores/gameSpeedStore';
-import { createRenderStateStore } from './stores/renderStateStore';
-import type { RenderStateStoreState } from './stores/renderStateStore';
-import { createRuntimeStore } from './stores/runtimeStore';
-import type { RuntimeStoreState } from './stores/runtimeStore';
 
 const ensureStoreRef = <T,>(factory: () => StoreApi<T>, ref: { current: StoreApi<T> | null }) => {
   if (!ref.current) {
@@ -218,11 +218,10 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       const state = runtimeRef.current;
       const tower = state.engine.towers.find((t) => t.id === id);
       if (tower) {
-        const stats = getTowerStats(
-          tower.type as TowerType,
-          tower.level,
-          { upgrades: state.ui.upgrades, activeSynergies: tower.activeSynergies }
-        );
+        const stats = getTowerStats(tower.type as TowerType, tower.level, {
+          upgrades: state.ui.upgrades,
+          activeSynergies: tower.activeSynergies,
+        });
         if (state.ui.money >= stats.upgradeCost) {
           playSFX('build'); // Reuse build sound for upgrade
         } else {
@@ -605,12 +604,3 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     </GameContext.Provider>
   );
 };
-
-
-
-
-
-
-
-
-

@@ -368,7 +368,7 @@ describe('persistence (Tier-B checkpoint)', () => {
     };
 
     const next = buildRuntimeFromCheckpoint(save, previousUi);
-    
+
     expect(next.engine.towers).toHaveLength(2);
     expect(next.engine.towers[0].activeSynergies).toBeDefined();
     expect(Array.isArray(next.engine.towers[0].activeSynergies)).toBe(true);
@@ -382,12 +382,10 @@ describe('persistence (Tier-B checkpoint)', () => {
       ui: { ...previousUi },
       checkpoint: {
         waveToStart: 1,
-        towers: [
-          { type: TowerType.Basic, level: 1, x: 999, z: -50 },
-        ],
+        towers: [{ type: TowerType.Basic, level: 1, x: 999, z: -50 }],
       },
     };
-    
+
     const next = buildRuntimeFromCheckpoint(save, previousUi);
     expect(next.engine.towers).toHaveLength(1);
     expect(next.engine.towers[0].gridPosition).toEqual([999, -50]);

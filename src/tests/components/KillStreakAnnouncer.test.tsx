@@ -1,6 +1,7 @@
 import { render, screen, act } from '@testing-library/react';
 import React from 'react';
 import { beforeEach, describe, it, expect, vi, afterEach } from 'vitest';
+
 import { KillStreakAnnouncer } from '../../components/ui/KillStreakAnnouncer';
 import * as GameStateModule from '../../game/GameState';
 
@@ -27,7 +28,7 @@ describe('KillStreakAnnouncer', () => {
   });
 
   it('shows announcement when set', () => {
-     useGameMock.mockReturnValue({
+    useGameMock.mockReturnValue({
       gameState: {
         announcement: { id: 123, text: 'DOUBLE KILL' },
       } as any,
@@ -66,25 +67,25 @@ describe('KillStreakAnnouncer', () => {
       clearAnnouncement: clearAnnouncementMock,
     } as any);
     const { rerender } = render(<KillStreakAnnouncer />);
-    
+
     // First announcement
-     useGameMock.mockReturnValue({
+    useGameMock.mockReturnValue({
       gameState: {
         announcement: { id: 1, text: 'DOUBLE KILL' },
       } as any,
       clearAnnouncement: clearAnnouncementMock,
     } as any);
     rerender(<KillStreakAnnouncer />);
-    
+
     expect(screen.getByText('DOUBLE KILL')).toBeInTheDocument();
 
     // Advance 1s (halfway)
     act(() => {
       vi.advanceTimersByTime(1000);
     });
-    
+
     // Change announcement
-     useGameMock.mockReturnValue({
+    useGameMock.mockReturnValue({
       gameState: {
         announcement: { id: 2, text: 'TRIPLE KILL' },
       } as any,

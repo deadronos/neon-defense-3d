@@ -1,6 +1,6 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 import { describe, it, vi, beforeEach } from 'vitest';
 
 // Same module mocks as other SettingsModal tests
@@ -28,13 +28,24 @@ vi.mock('../../game/GameState', () => {
   // Define stable functions to prevent infinite useEffect loops
   const setGraphicsQuality = vi.fn();
   const applyCheckpointSave = vi.fn();
-  const exportCheckpointJson = () => ({ json: state.exportJsonValue, hasCheckpoint: state.hasCheckpoint });
+  const exportCheckpointJson = () => ({
+    json: state.exportJsonValue,
+    hasCheckpoint: state.hasCheckpoint,
+  });
   const resetCheckpoint = () => state.resetCheckpointMock();
   const factoryReset = () => state.factoryResetMock();
 
   return {
     useGame: () => ({
-      gameState: { graphicsQuality: 'high', waveStartedNonce: 0, gameStatus: 'idle', wave: 1, money: 0, lives: 0, upgrades: {} },
+      gameState: {
+        graphicsQuality: 'high',
+        waveStartedNonce: 0,
+        gameStatus: 'idle',
+        wave: 1,
+        money: 0,
+        lives: 0,
+        upgrades: {},
+      },
       setGraphicsQuality,
       resetCheckpoint,
       factoryReset,

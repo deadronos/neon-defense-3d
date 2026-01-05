@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+
 import { Synth, synth } from '../../../game/audio/Synth';
 
 describe('Synth', () => {

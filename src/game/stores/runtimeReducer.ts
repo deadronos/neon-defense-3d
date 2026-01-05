@@ -1,13 +1,13 @@
 import { TOWER_CONFIGS } from '../../constants';
 import type { TowerType, Vector2 } from '../../types';
-import { calculateSynergies } from '../synergies';
-import { getTowerStats } from '../utils';
 import { applyEngineRuntimeAction } from '../engine/runtime';
 import type { EngineRuntimeAction, EngineRuntimeState } from '../engine/runtime';
 import { allocateId, applyEnginePatch, createInitialEngineState } from '../engine/state';
 import type { EngineState } from '../engine/types';
 import { createInitialUiState, uiReducer } from '../engine/uiReducer';
 import type { UiState } from '../engine/uiReducer';
+import { calculateSynergies } from '../synergies';
+import { getTowerStats } from '../utils';
 
 export interface RuntimeState extends EngineRuntimeState {
   engine: EngineState;

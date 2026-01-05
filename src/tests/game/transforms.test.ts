@@ -1,8 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { buildEnemyTypeMap, toWaveState, toEnemyEntity, toProjectileEntity, toTowerEntity } from '../../game/transforms';
-import { MAP_LAYOUTS, TILE_SIZE } from '../../constants';
 
-const pathWaypoints = MAP_LAYOUTS[0].map((row, z) => row.map((_, x) => [x, z] as [number, number])[0]).filter(Boolean);
+import { MAP_LAYOUTS, TILE_SIZE } from '../../constants';
+import {
+  buildEnemyTypeMap,
+  toWaveState,
+  toEnemyEntity,
+  toProjectileEntity,
+  toTowerEntity,
+} from '../../game/transforms';
+
+const pathWaypoints = MAP_LAYOUTS[0]
+  .map((row, z) => row.map((_, x) => [x, z] as [number, number])[0])
+  .filter(Boolean);
 
 describe('transforms', () => {
   it('buildEnemyTypeMap contains Drone entry', () => {
@@ -14,7 +23,14 @@ describe('transforms', () => {
   });
 
   it('toWaveState converts engine wave to UI wave state', () => {
-    const wave = { wave: 3, phase: 'active' as const, enemiesRemainingToSpawn: 5, enemiesAlive: 2, timerMs: 2500, spawnIntervalMs: 2000 };
+    const wave = {
+      wave: 3,
+      phase: 'active' as const,
+      enemiesRemainingToSpawn: 5,
+      enemiesAlive: 2,
+      timerMs: 2500,
+      spawnIntervalMs: 2000,
+    };
     const ws = toWaveState(wave as any);
     expect(ws).not.toBeNull();
     expect(ws?.timer).toBeCloseTo(2.5);
@@ -32,7 +48,15 @@ describe('transforms', () => {
   it('toProjectileEntity computes position when target provided', () => {
     const enemy = { id: 'e1', type: 'Drone', pathIndex: 0, progress: 0.0, hp: 20 } as any;
     const enemiesById = new Map<string, any>([['e1', enemy]]);
-    const projectile = { id: 'p1', origin: [0, 1, 0] as any, targetId: 'e1', speed: 1, progress: 0.5, damage: 10, color: '#fff' } as any;
+    const projectile = {
+      id: 'p1',
+      origin: [0, 1, 0] as any,
+      targetId: 'e1',
+      speed: 1,
+      progress: 0.5,
+      damage: 10,
+      color: '#fff',
+    } as any;
     const ent = toProjectileEntity(projectile, enemiesById as any, pathWaypoints as any);
     expect(ent.position.length).toBe(3);
   });

@@ -2,9 +2,9 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 import { GameProvider, useGame } from '../../game/GameState';
-import { TowerType } from '../../types';
 import { saveCheckpoint, loadCheckpoint, clearCheckpoint } from '../../game/persistence';
 import type { SaveV1 } from '../../game/persistence';
+import { TowerType } from '../../types';
 
 // Mock Audio
 vi.mock('../../game/audio/AudioManager', () => ({
@@ -54,77 +54,77 @@ describe('Save/Load Interaction Bug Reproduction', () => {
     const towerIdOriginal = result.current.towers[0].id;
 
     // 3. Save Game
-    // We can't easily trigger the exact autosave effect from useful hooks, 
-    // but specific components export the save logic. 
+    // We can't easily trigger the exact autosave effect from useful hooks,
+    // but specific components export the save logic.
     // Or we can use `exportCheckpointJson` logic or just call serialize manually?
-    // `useGame` exposes `applyCheckpointSave`, but not `save`. 
+    // `useGame` exposes `applyCheckpointSave`, but not `save`.
     // Wait, the effect in GameState triggers `saveCheckpoint`.
-    // Let's manually trigger a save via the internal logic if exposed, 
+    // Let's manually trigger a save via the internal logic if exposed,
     // OR just use serializeCheckpoint helper if we can access passing the internal state?
     // Actully `useGame` doesn't expose `serialize`.
-    
+
     // However, `GameState` effect autosaves on `waveStartedNonce`.
     // We can trigger that event? No, avoiding engine internals.
     // Let's inspect `persistence.ts` exports. We can use `serializeCheckpoint` if we had the state.
     // We have `result.current.gameState` (UI) but not Engine.
     // `exportCheckpointJson` uses `loadCheckpoint` OR serializes live state.
-    
+
     let validSaveJson = '';
     act(() => {
-        const res = result.current.exportCheckpointJson();
-        validSaveJson = res.json;
+      const res = result.current.exportCheckpointJson();
+      validSaveJson = res.json;
     });
-    
+
     const saveObj = JSON.parse(validSaveJson) as SaveV1;
     expect(saveObj.checkpoint.towers).toHaveLength(1);
 
     // 4. Reset Game (Clear state)
     act(() => {
-        result.current.factoryReset(); 
-        // This clears checkpoint too, so we must restore the "Saved" one to localStorage manually
-        // or passing it to applyCheckpointSave.
+      result.current.factoryReset();
+      // This clears checkpoint too, so we must restore the "Saved" one to localStorage manually
+      // or passing it to applyCheckpointSave.
     });
     expect(result.current.towers).toHaveLength(0);
     expect(result.current.gameState.gameStatus).toBe('idle');
 
     // 5. Load Game
     act(() => {
-        result.current.applyCheckpointSave(saveObj);
-        // Force a step to sync render state? 
-        // applyCheckpointSave calls syncRenderState internally, but let's see.
+      result.current.applyCheckpointSave(saveObj);
+      // Force a step to sync render state?
+      // applyCheckpointSave calls syncRenderState internally, but let's see.
     });
-    
+
     expect(result.current.gameState.gameStatus).toBe('playing');
     expect(result.current.towers).toHaveLength(1);
-    
+
     // 6. Verify Interaction: Can we place a NEW tower at (1,0)?
     // First check validity
     const isValid = result.current.isValidPlacement(1, 0);
     expect(isValid).toBe(true);
-    
+
     act(() => {
-        result.current.placeTower(1, 0, TowerType.Basic);
-        result.current.step(0.016, 2);
+      result.current.placeTower(1, 0, TowerType.Basic);
+      result.current.step(0.016, 2);
     });
-    
+
     expect(result.current.towers).toHaveLength(2);
-    
+
     // 7. Verify Interaction: Selection
     // Selecting the old tower (which has a NEW ID after load!)
     // We need to find the new ID at (0,0)
-    const towerAt00 = result.current.towers.find(t => t.gridPos[0] === 0 && t.gridPos[1] === 0);
+    const towerAt00 = result.current.towers.find((t) => t.gridPos[0] === 0 && t.gridPos[1] === 0);
     expect(towerAt00).toBeDefined();
     expect(towerAt00).toBeDefined();
     expect(towerAt00?.id).toBe(towerIdOriginal); // IDs are deterministic (reset to tower-1)
-    
+
     act(() => {
-        // "Click" the map tile or calling setSelectedEntityId directly?
-        // World.tsx: handlePointerDown -> look up gridOccupancy -> setSelectedEntityId.
-        // We can check if `gridOccupancy` has the tower.
-        const key = '0,0';
-        const occ = result.current.renderStateRef.current.gridOccupancy.get(key);
-        expect(occ).toBeDefined();
-        expect(occ?.id).toBe(towerAt00?.id);
+      // "Click" the map tile or calling setSelectedEntityId directly?
+      // World.tsx: handlePointerDown -> look up gridOccupancy -> setSelectedEntityId.
+      // We can check if `gridOccupancy` has the tower.
+      const key = '0,0';
+      const occ = result.current.renderStateRef.current.gridOccupancy.get(key);
+      expect(occ).toBeDefined();
+      expect(occ?.id).toBe(towerAt00?.id);
     });
   });
 
@@ -148,22 +148,22 @@ describe('Save/Load Interaction Bug Reproduction', () => {
     // 3. Export
     let validSaveJson = '';
     act(() => {
-        const res = result.current.exportCheckpointJson();
-        validSaveJson = res.json;
+      const res = result.current.exportCheckpointJson();
+      validSaveJson = res.json;
     });
     const saveObj = JSON.parse(validSaveJson) as SaveV1;
     expect(saveObj.ui.currentMapIndex).toBe(1);
 
     // 4. Reset
     act(() => {
-        result.current.factoryReset();
+      result.current.factoryReset();
     });
     expect(result.current.gameState.currentMapIndex).toBe(0);
 
     // 5. Load
     act(() => {
-        result.current.applyCheckpointSave(saveObj);
-        result.current.step(0.016, 1);
+      result.current.applyCheckpointSave(saveObj);
+      result.current.step(0.016, 1);
     });
 
     expect(result.current.gameState.currentMapIndex).toBe(1);
