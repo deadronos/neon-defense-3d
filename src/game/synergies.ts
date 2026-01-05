@@ -43,11 +43,11 @@ export const calculateSynergies = (
   >();
   const gridMap = new Map<string, string>(); // "x,z" -> towerId
 
-  towers.forEach((t) => {
+  for (const t of towers) {
     towerMap.set(t.id, t);
     gridMap.set(`${t.gridPosition[0]},${t.gridPosition[1]}`, t.id);
     synergyMap.set(t.id, []);
-  });
+  }
 
   const getNeighbors = (x: number, z: number) => {
     const neighborIds: string[] = [];
@@ -57,20 +57,20 @@ export const calculateSynergies = (
       [1, 0],
       [-1, 0],
     ];
-    offsets.forEach(([dx, dz]) => {
+    for (const [dx, dz] of offsets) {
       const id = gridMap.get(`${x + dx},${z + dz}`);
       if (id) neighborIds.push(id);
-    });
+    }
     return neighborIds;
   };
 
-  towers.forEach((tower) => {
+  for (const tower of towers) {
     const neighbors = getNeighbors(tower.gridPosition[0], tower.gridPosition[1]);
     const active: ActiveSynergy[] = [];
 
-    neighbors.forEach((nid) => {
+    for (const nid of neighbors) {
       const neighbor = towerMap.get(nid);
-      if (!neighbor) return;
+      if (!neighbor) continue;
 
       // 1. Synchronized Fire (Rapid + Rapid)
       if (tower.type === TowerType.Rapid && neighbor.type === TowerType.Rapid) {
@@ -94,10 +94,10 @@ export const calculateSynergies = (
       if (neighbor.type === TowerType.Basic) {
         active.push({ type: SynergyType.COVER_FIRE_RECEIVER, partnerId: nid });
       }
-    });
+    }
 
     synergyMap.set(tower.id, active);
-  });
+  }
 
   return synergyMap;
 };

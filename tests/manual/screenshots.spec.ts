@@ -1,8 +1,8 @@
 // Manual baseline screenshot test
 // Run on demand: `npm run e2e:baseline` or
 // Windows: `set "CAPTURE_BASELINE=1" && npm run e2e:baseline`
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { test, expect } from '@playwright/test';
 

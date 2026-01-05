@@ -77,7 +77,7 @@ export const useGameStep = ({
 
         // Kill Streak Logic
         let killsThisTick = 0;
-        allEvents.forEach((e) => {
+        for (const e of allEvents) {
           if (e.type === 'EffectSpawned') {
             playSFX('impact');
           } else if (e.type === 'ProjectileFired') {
@@ -85,7 +85,7 @@ export const useGameStep = ({
           } else if (e.type === 'EnemyKilled') {
             killsThisTick++;
           }
-        });
+        }
 
         if (killsThisTick > 0) {
           const streakState = killStreakRef.current;

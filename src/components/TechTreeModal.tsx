@@ -59,7 +59,7 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLab
                 {Math.floor(gameState.researchPoints)}
               </div>
             </div>
-            {onClose && (
+            {onClose ? (
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-white transition-colors"
@@ -80,7 +80,7 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLab
                   />
                 </svg>
               </button>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -123,15 +123,15 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLab
 
         {/* Footer */}
         <div className="p-6 border-t border-[#0f3460] flex justify-end bg-[#1a1a2e] gap-4">
-          {onClose && !onAction && (
+          {onClose && !onAction ? (
             <button
               onClick={onClose}
               className="px-6 py-3 text-[#00f2ff] hover:text-white hover:bg-[#00f2ff]/10 rounded transition-colors font-bold"
             >
               CLOSE
             </button>
-          )}
-          {onAction && (
+          ) : null}
+          {onAction ? (
             <button
               onClick={onAction}
               className="group relative px-8 py-3 bg-[#e94560] hover:bg-[#ff5777] text-white font-bold rounded overflow-hidden shadow-[0_0_20px_rgba(233,69,96,0.3)] transition-all"
@@ -152,7 +152,7 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLab
                 </svg>
               </span>
             </button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

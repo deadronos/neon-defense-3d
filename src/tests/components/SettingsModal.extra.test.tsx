@@ -67,7 +67,7 @@ describe('SettingsModal extras', () => {
     const origCreate = document.createElement.bind(document);
     let clickSpy: ReturnType<typeof vi.spyOn> | undefined = undefined;
     vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-      const el = origCreate(tagName) as HTMLElement;
+      const el = origCreate(tagName);
       if (tagName === 'a') {
         // Spy on the anchor's click method so the DOM appendChild still accepts it
         clickSpy = vi.spyOn(el, 'click');
@@ -143,7 +143,7 @@ describe('SettingsModal extras', () => {
     );
 
     // Find the hidden input directly
-    const input = document.querySelector('input[type=file]') as HTMLInputElement | null;
+    const input = document.querySelector('input[type=file]');
     expect(input).not.toBeNull();
 
     // Create a file-like object whose text() rejects
@@ -181,7 +181,7 @@ describe('SettingsModal extras', () => {
       setMusicVolume: mockSetMusic,
     } = lastResult.value;
 
-    const sliders = screen.getAllByRole('slider') as HTMLInputElement[];
+    const sliders = screen.getAllByRole('slider');
     expect(sliders.length).toBeGreaterThanOrEqual(3);
 
     const master = sliders[0];

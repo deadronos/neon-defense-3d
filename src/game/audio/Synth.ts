@@ -36,8 +36,8 @@ export class Synth {
       const impulse = this.createImpulseResponse(2.5, 2.0); // 2.5s impulse, longish decay for synthwave
       this.convolver.buffer = impulse;
       this.convolver.connect(this.musicGain); // wet goes to music bus
-    } catch (e) {
-      console.warn('[AUDIO] Failed to create convolver/reverb:', e);
+    } catch (err) {
+      console.warn('[AUDIO] Failed to create convolver/reverb:', err);
       this.convolver = null;
     }
 
@@ -198,8 +198,8 @@ export class Synth {
       this.bgmGain.connect(this.bgmFilter);
       // Feed both dry and wet
       this.bgmFilter.connect(this.musicGain);
-    } catch (e) {
-      console.warn('[AUDIO] Failed to create lowpass filter, using direct connection:', e);
+    } catch (err) {
+      console.warn('[AUDIO] Failed to create lowpass filter, using direct connection:', err);
       this.bgmGain.connect(this.musicGain);
     }
 
@@ -219,8 +219,8 @@ export class Synth {
       this.delayFeedback.connect(this.delayNode);
       // Send delay output to main music bus (wet)
       this.delayNode.connect(this.musicGain);
-    } catch (e) {
-      console.warn('[AUDIO] Failed to create delay node:', e);
+    } catch (err) {
+      console.warn('[AUDIO] Failed to create delay node:', err);
     }
 
     // subtle LFO for gentle detune/chorus movement
@@ -232,8 +232,8 @@ export class Synth {
       this.lfoGain.gain.value = 8; // detune amount in cents
       this.lfo.connect(this.lfoGain);
       this.lfo.start();
-    } catch (e) {
-      console.warn('[AUDIO] Failed to create LFO:', e);
+    } catch (err) {
+      console.warn('[AUDIO] Failed to create LFO:', err);
       this.lfo = null;
       this.lfoGain = null;
     }
@@ -294,8 +294,8 @@ export class Synth {
         }, 140);
         idx++;
       }, 180);
-    } catch (e) {
-      console.warn('[AUDIO] Failed to create arpeggiator:', e);
+    } catch (err) {
+      console.warn('[AUDIO] Failed to create arpeggiator:', err);
     }
 
     // finally connect the submix to the music bus if not connected earlier
@@ -317,7 +317,7 @@ export class Synth {
   }
 
   stopMusic() {
-    this.bgmNodes.forEach((n) => n.stop());
+    for (const n of this.bgmNodes) n.stop();
     this.bgmNodes = [];
 
     if (this.arpOsc) {

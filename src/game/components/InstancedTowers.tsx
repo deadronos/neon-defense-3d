@@ -61,7 +61,7 @@ export const InstancedTowers: React.FC = () => {
 
     for (let i = 0; i < renderCount; i++) {
       const tower = towers[i];
-      const baseColor = TOWER_CONFIGS[tower.type as keyof typeof TOWER_CONFIGS]?.color ?? '#00ff00';
+      const baseColor = TOWER_CONFIGS[tower.type]?.color ?? '#00ff00';
       const colorObj = getCachedColor(baseColor);
 
       if (baseMeshRef.current) {

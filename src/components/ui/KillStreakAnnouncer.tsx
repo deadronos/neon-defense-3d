@@ -33,14 +33,14 @@ export const KillStreakAnnouncer: React.FC = () => {
       >
         {current.text}
       </h1>
-      {current.subtext && (
+      {current.subtext ? (
         <div
           className="text-2xl font-bold text-yellow-400 mt-2 animate-pulse"
           style={{ textShadow: '0 0 10px #ffaa00' }}
         >
           {current.subtext}
         </div>
-      )}
+      ) : null}
     </div>
   );
 };

@@ -18,7 +18,7 @@ export const getTowerStats = (
   let fireRateMult = 1.0;
 
   // Apply Synergies
-  activeSynergies.forEach((s) => {
+  for (const s of activeSynergies) {
     switch (s.type) {
       case SynergyType.SYNCHRONIZED_FIRE:
         fireRateMult += 0.15;
@@ -34,7 +34,7 @@ export const getTowerStats = (
         rangeMult += 0.05;
         break;
     }
-  });
+  }
 
   // Cooldown is uniform 1/FireRate.
   // Base cooldown is reduced by level. Then we divide by fireRateMult.

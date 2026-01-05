@@ -71,9 +71,9 @@ describe('old save migration issue', () => {
     const map2 = MAP_LAYOUTS[1];
     console.log('MAP_2 dimensions:', map2[0].length, 'x', map2.length);
     console.log('MAP_2 layout:');
-    map2.forEach((row, z) => {
+    for (const [z, row] of map2.entries()) {
       console.log(`  z=${z}:`, row.join(' '));
-    });
+    }
 
     const grid = getMapGrid(map2);
     // Check which of the old save's tower positions are valid on current MAP_2
@@ -91,7 +91,7 @@ describe('old save migration issue', () => {
     }
 
     console.log('Invalid tower positions:', invalidPositions.length);
-    invalidPositions.forEach((pos) => console.log('  ', pos));
+    for (const pos of invalidPositions) console.log('  ', pos);
   });
 
   it('migrateSave should report warnings for invalid tower positions', () => {

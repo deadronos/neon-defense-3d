@@ -38,22 +38,22 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         synth.stopMusic();
         setIsMusicPlaying(false);
-      } catch (e) {
+      } catch (err) {
         // Keep playing state if stop failed and surface a non-fatal warning
         // so tests can assert the state remains true when synth.stopMusic throws.
         // Logging is intentionally non-fatal.
 
-        console.warn('AudioManager: stopMusic failed', e);
+        console.warn('AudioManager: stopMusic failed', err);
       }
     } else {
       try {
         synth.startMusic();
         setIsMusicPlaying(true);
-      } catch (e) {
+      } catch (err) {
         // If starting music fails, ensure state remains false and surface a warning
         // so tests can assert deterministic behavior.
 
-        console.warn('AudioManager: startMusic failed', e);
+        console.warn('AudioManager: startMusic failed', err);
         setIsMusicPlaying(false);
       }
     }
@@ -63,10 +63,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setMasterVolumeState(val);
     try {
       synth.setMasterVolume(val);
-    } catch (e) {
+    } catch (err) {
       // Non-fatal: log and continue
 
-      console.warn('AudioManager: setMasterVolume failed', e);
+      console.warn('AudioManager: setMasterVolume failed', err);
     }
   };
 
@@ -74,8 +74,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setSfxVolumeState(val);
     try {
       synth.setSFXVolume(val);
-    } catch (e) {
-      console.warn('AudioManager: setSFXVolume failed', e);
+    } catch (err) {
+      console.warn('AudioManager: setSFXVolume failed', err);
     }
   };
 
@@ -83,8 +83,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setMusicVolumeState(val);
     try {
       synth.setMusicVolume(val);
-    } catch (e) {
-      console.warn('AudioManager: setMusicVolume failed', e);
+    } catch (err) {
+      console.warn('AudioManager: setMusicVolume failed', err);
     }
   };
 

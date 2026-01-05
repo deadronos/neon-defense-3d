@@ -1,6 +1,5 @@
 import { engineReducer } from './state';
-import type { EngineTickResult } from './types';
-import type { EngineState } from './types';
+import type { EngineTickResult, EngineState } from './types';
 import type { UiState, UiAction } from './uiReducer';
 import { uiReducer } from './uiReducer';
 
@@ -30,7 +29,7 @@ export const applyEngineRuntimeAction = (
       return { engine: nextEngine, ui: state.ui };
     }
     case 'skipWave': {
-      if (state.engine.wave && state.engine.wave.phase === 'preparing') {
+      if (state.engine.wave?.phase === 'preparing') {
         return {
           ...state,
           engine: {

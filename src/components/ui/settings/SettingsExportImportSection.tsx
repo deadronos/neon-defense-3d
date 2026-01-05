@@ -132,7 +132,7 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
             </div>
           )}
 
-          {importPreview.status === 'ready' && importPreview.hasWarnings && (
+          {importPreview.status === 'ready' && importPreview.hasWarnings ? (
             <div className="bg-yellow-900/20 border border-yellow-500/40 rounded p-3 text-sm text-yellow-100">
               <div className="font-bold mb-1">Warnings (import will still work)</div>
               <ul className="list-disc pl-5 space-y-1">
@@ -141,7 +141,7 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
                 ))}
               </ul>
             </div>
-          )}
+          ) : null}
 
           {importPreview.status === 'ready' && !importPreview.hasWarnings && (
             <div className="bg-emerald-900/20 border border-emerald-500/40 rounded p-3 text-sm text-emerald-100">
@@ -152,6 +152,6 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
       </div>
     </div>
 
-    {copyStatus && <div className="mt-4 text-xs text-gray-300 font-mono">{copyStatus}</div>}
+    {copyStatus ? <div className="mt-4 text-xs text-gray-300 font-mono">{copyStatus}</div> : null}
   </section>
 );

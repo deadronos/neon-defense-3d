@@ -21,8 +21,8 @@ const mockUseAudio = useAudio as any;
 
 const findFirstBuildableSpot = (grid: TileType[][]): Vector2 | null => {
   for (let z = 0; z < grid.length; z++) {
-    for (let x = 0; x < grid[0]!.length; x++) {
-      if (grid[z]![x] === TileType.Grass) return [x, z];
+    for (let x = 0; x < grid[0].length; x++) {
+      if (grid[z][x] === TileType.Grass) return [x, z];
     }
   }
   return null;

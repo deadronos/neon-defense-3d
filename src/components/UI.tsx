@@ -97,16 +97,16 @@ export const UI = () => {
 
       <SettingsModal open={showSettings} onClose={() => setShowSettings(false)} />
 
-      {showBuildMenu && (
+      {showBuildMenu ? (
         <BuildMenu
           selectedTower={selectedTower}
           onSelectTower={setSelectedTower}
           money={gameState.money}
           upgrades={gameState.upgrades}
         />
-      )}
+      ) : null}
 
-      {selectedTowerEntity && (
+      {selectedTowerEntity ? (
         <UpgradeInspector
           selectedTowerEntity={selectedTowerEntity}
           upgrades={gameState.upgrades}
@@ -115,7 +115,7 @@ export const UI = () => {
           onUpgrade={upgradeTower}
           onSell={sellTower}
         />
-      )}
+      ) : null}
     </div>
   );
 };

@@ -78,7 +78,7 @@ describe('SettingsModal behavior — export/import', () => {
   it('refresh updates export JSON shown in textarea', async () => {
     render(<SettingsModal open={true} onClose={() => {}} />);
 
-    const textarea = screen.getByLabelText(/exported checkpoint json/i) as HTMLTextAreaElement;
+    const textarea = screen.getByLabelText(/exported checkpoint json/i);
     expect(textarea.value).toContain('foo');
 
     // change the underlying export value and click refresh
@@ -97,7 +97,7 @@ describe('SettingsModal behavior — export/import', () => {
 
     render(<SettingsModal open={true} onClose={() => {}} />);
 
-    const textarea = screen.getByLabelText(/exported checkpoint json/i) as HTMLTextAreaElement;
+    const textarea = screen.getByLabelText(/exported checkpoint json/i);
     const resetBtn = screen.getByRole('button', { name: /reset checkpoint/i });
 
     const user = userEvent.setup();

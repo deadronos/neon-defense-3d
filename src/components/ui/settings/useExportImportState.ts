@@ -75,13 +75,13 @@ export const useExportImportState = ({
     try {
       await navigator.clipboard.writeText(exportJson);
       setCopyStatus('Copied to clipboard.');
-    } catch (e) {
-      setCopyStatus(`Copy failed: ${e instanceof Error ? e.message : String(e)}`);
+    } catch (err) {
+      setCopyStatus(`Copy failed: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
   const onDownloadExport = () => {
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const stamp = new Date().toISOString().replace(/[.:]/g, '-');
     downloadJson(exportJson, `neon-defense-3d-checkpoint-${stamp}.json`);
   };
 
@@ -91,10 +91,10 @@ export const useExportImportState = ({
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw);
-    } catch (e) {
+    } catch (err) {
       setImportPreview({
         status: 'error',
-        errors: [`Invalid JSON: ${e instanceof Error ? e.message : String(e)}`],
+        errors: [`Invalid JSON: ${err instanceof Error ? err.message : String(err)}`],
       });
       return;
     }
@@ -153,10 +153,10 @@ export const useExportImportState = ({
       const text = await file.text();
       setImportText(text);
       previewImport(text);
-    } catch (e) {
+    } catch (err) {
       setImportPreview({
         status: 'error',
-        errors: [`Failed to read file: ${e instanceof Error ? e.message : String(e)}`],
+        errors: [`Failed to read file: ${err instanceof Error ? err.message : String(err)}`],
       });
     }
   };

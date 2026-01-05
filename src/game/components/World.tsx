@@ -213,8 +213,8 @@ export const World = React.memo(() => {
     const spawn: Tile[] = [];
     const base: Tile[] = [];
 
-    mapGrid.forEach((row, z) => {
-      row.forEach((type, x) => {
+    for (const [z, row] of mapGrid.entries()) {
+      for (const [x, type] of row.entries()) {
         const tile = { x, z, type };
         switch (type) {
           case TileType.Path:
@@ -231,8 +231,8 @@ export const World = React.memo(() => {
             grass.push(tile);
             break;
         }
-      });
-    });
+      }
+    }
 
     return { grass, path, spawn, base };
   }, [mapGrid]);

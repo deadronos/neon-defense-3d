@@ -34,29 +34,29 @@ export const SynergyLinks: React.FC = () => {
 
     // Map needed to find partner positions
     const towerMap = new Map<string, (typeof towers)[0]>();
-    towers.forEach((t) => towerMap.set(t.id, t));
+    for (const t of towers) towerMap.set(t.id, t);
 
     const processedLinks = new Set<string>();
 
-    towers.forEach((tower) => {
+    for (const tower of towers) {
       // Tower Position
       const tPos = tower.position; // [x, y, z] is world pos?
       // In toTowerEntity: [grid * TILE, 0.5, grid * TILE]
       // We want lines to be a bit higher, say y=1.0 to clear base meshes.
       const y = 1.0;
 
-      if (!tower.activeSynergies) return;
+      if (!tower.activeSynergies) continue;
 
-      tower.activeSynergies.forEach((syn) => {
+      for (const syn of tower.activeSynergies) {
         // Unique key for strict undirected graph: sort IDs
         const ids = [tower.id, syn.partnerId].sort();
         const linkKey = `${ids[0]}-${ids[1]}-${syn.type}`;
 
-        if (processedLinks.has(linkKey)) return;
+        if (processedLinks.has(linkKey)) continue;
         processedLinks.add(linkKey);
 
         const partner = towerMap.get(syn.partnerId);
-        if (!partner) return;
+        if (!partner) continue;
 
         // Add line segment
         // From
@@ -86,8 +86,8 @@ export const SynergyLinks: React.FC = () => {
         // Push colors for both vertices
         colors.push(r, g, b);
         colors.push(r, g, b);
-      });
-    });
+      }
+    }
 
     // Update geometry
     const geo = geometryRef.current;

@@ -27,12 +27,12 @@ export const StarField = React.memo(({ count = 2000 }: { count?: number }) => {
 
   React.useLayoutEffect(() => {
     if (!mesh.current) return;
-    particles.forEach((particle, i) => {
+    for (const [i, particle] of particles.entries()) {
       dummy.position.copy(particle.position);
       dummy.scale.set(particle.scale, particle.scale, particle.scale);
       dummy.updateMatrix();
-      mesh.current!.setMatrixAt(i, dummy.matrix);
-    });
+      mesh.current.setMatrixAt(i, dummy.matrix);
+    }
     mesh.current.instanceMatrix.needsUpdate = true;
   }, [particles, dummy]);
 

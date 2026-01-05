@@ -87,26 +87,25 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
           </div>
 
           {/* Active Synergies */}
-          {selectedTowerEntity.activeSynergies &&
-            selectedTowerEntity.activeSynergies.length > 0 && (
-              <div className="mt-4 border-t border-gray-800 pt-2">
-                <div className="text-gray-500 uppercase tracking-widest text-[9px] mb-1">
-                  Active Synergies
-                </div>
-                <div className="flex flex-col gap-1">
-                  {selectedTowerEntity.activeSynergies.map((s, i) => {
-                    const def = SYNERGIES[s.type];
-                    return (
-                      <div key={i} className="flex items-center gap-2 text-xs text-cyan-300">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 box-shadow-glow" />
-                        <span className="font-bold">{def?.name}</span>
-                        <span className="text-cyan-600/80">- {def?.description}</span>
-                      </div>
-                    );
-                  })}
-                </div>
+          {selectedTowerEntity.activeSynergies && selectedTowerEntity.activeSynergies.length > 0 ? (
+            <div className="mt-4 border-t border-gray-800 pt-2">
+              <div className="text-gray-500 uppercase tracking-widest text-[9px] mb-1">
+                Active Synergies
               </div>
-            )}
+              <div className="flex flex-col gap-1">
+                {selectedTowerEntity.activeSynergies.map((s, i) => {
+                  const def = SYNERGIES[s.type];
+                  return (
+                    <div key={i} className="flex items-center gap-2 text-xs text-cyan-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 box-shadow-glow" />
+                      <span className="font-bold">{def?.name}</span>
+                      <span className="text-cyan-600/80">- {def?.description}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {/* Actions */}

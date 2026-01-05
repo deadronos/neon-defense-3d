@@ -250,7 +250,7 @@ describe('persistence (Tier-B checkpoint)', () => {
         for (let x = 0; x < result.current.mapGrid[0].length; x++) {
           if (x === 0 && z === 0) continue;
           if (
-            result.current.mapGrid[z]![x] === TileType.Grass &&
+            result.current.mapGrid[z][x] === TileType.Grass &&
             result.current.isValidPlacement(x, z)
           ) {
             return { x, z };
@@ -334,7 +334,7 @@ describe('persistence (Tier-B checkpoint)', () => {
     // Sell the tower and tick to update gridOccupancy
     const towerId = result.current.towers[0]?.id;
     expect(towerId).toBeDefined();
-    act(() => result.current.sellTower(towerId!));
+    act(() => result.current.sellTower(towerId));
     act(() => result.current.step(0.016, 5.116)); // trigger syncRenderState
 
     // Now (0,0) should be free
