@@ -29,9 +29,10 @@ describe('AudioManager edge cases', () => {
     );
 
     const user = userEvent.setup();
-    await user.click(screen.getByText('Toggle'));
+    await expect(user.click(screen.getByText('Toggle'))).rejects.toThrow('startfail');
 
-    await waitFor(() => expect(screen.getByTestId('isMusic')).toHaveTextContent('false'));
+    // Ensure state didn't flip
+    expect(screen.getByTestId('isMusic')).toHaveTextContent('false');
 
     startSpy.mockRestore();
   });
@@ -55,10 +56,10 @@ describe('AudioManager edge cases', () => {
     await waitFor(() => expect(screen.getByTestId('isMusic')).toHaveTextContent('true'));
 
     // Now attempt to stop; synth.stopMusic throws
-    await user.click(screen.getByText('Toggle'));
+    await expect(user.click(screen.getByText('Toggle'))).rejects.toThrow('stopfail');
 
     // isMusic should remain true
-    await waitFor(() => expect(screen.getByTestId('isMusic')).toHaveTextContent('true'));
+    expect(screen.getByTestId('isMusic')).toHaveTextContent('true');
 
     startSpy.mockRestore();
     stopSpy.mockRestore();
