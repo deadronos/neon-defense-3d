@@ -5,8 +5,14 @@
 // Setup file for Vitest + Testing Library
 import '@testing-library/jest-dom';
 
+const env = globalThis as unknown as {
+  matchMedia?: unknown;
+  ResizeObserver?: unknown;
+  AudioContext?: unknown;
+};
+
 // Mock `matchMedia` for tests (common for some components expecting it)
-if (!globalThis.matchMedia) {
+if (typeof env.matchMedia !== 'function') {
   Object.defineProperty(globalThis, 'matchMedia', {
     value: (query: string) => ({
       matches: false,
@@ -29,68 +35,74 @@ class ResizeObserverMock {
   disconnect() {}
 }
 
-// @ts-ignore
-global.ResizeObserver = global.ResizeObserver || ResizeObserverMock;
+if (typeof env.ResizeObserver !== 'function') {
+  Object.defineProperty(globalThis, 'ResizeObserver', {
+    value: ResizeObserverMock,
+    configurable: true,
+  });
+}
 
 // Mock Web Audio API
-if (!global.AudioContext) {
-  // @ts-ignore
-  global.AudioContext = class {
-    state = 'suspended';
-    createGain() {
-      return { connect: () => {}, gain: { value: 0 } };
-    }
-    createOscillator() {
-      return {
-        connect: () => {},
-        start: () => {},
-        stop: () => {},
-        type: 'sine',
-        frequency: { value: 0 },
-        detune: { value: 0 },
-      };
-    }
+if (typeof env.AudioContext !== 'function') {
+  Object.defineProperty(globalThis, 'AudioContext', {
+    value: class {
+      state = 'suspended';
+      createGain() {
+        return { connect: () => {}, gain: { value: 0 } };
+      }
+      createOscillator() {
+        return {
+          connect: () => {},
+          start: () => {},
+          stop: () => {},
+          type: 'sine',
+          frequency: { value: 0 },
+          detune: { value: 0 },
+        };
+      }
 
-    createBiquadFilter() {
-      return {
-        type: 'lowpass',
-        frequency: { value: 1000 },
-        Q: { value: 1 },
-        connect: () => {},
-        disconnect: () => {},
-      };
-    }
+      createBiquadFilter() {
+        return {
+          type: 'lowpass',
+          frequency: { value: 1000 },
+          Q: { value: 1 },
+          connect: () => {},
+          disconnect: () => {},
+        };
+      }
 
-    createDelay() {
-      return {
-        delayTime: { value: 0 },
-        connect: () => {},
-        disconnect: () => {},
-      };
-    }
-    createConvolver() {
-      return {
-        buffer: null,
-        connect: () => {},
-        disconnect: () => {},
-      };
-    }
-    createBufferSource() {
-      return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null };
-    }
-    createBuffer(_channels: number, length: number, _sampleRate: number) {
-      return { getChannelData: () => new Float32Array(length) };
-    }
-    resume() {
-      return Promise.resolve();
-    }
-    get destination() {
-      return {};
-    }
-    get sampleRate() {
-      return 44100;
-    }
-  };
+      createDelay() {
+        return {
+          delayTime: { value: 0 },
+          connect: () => {},
+          disconnect: () => {},
+        };
+      }
+      createConvolver() {
+        return {
+          buffer: null,
+          connect: () => {},
+          disconnect: () => {},
+        };
+      }
+      createBufferSource() {
+        return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null };
+      }
+      createBuffer(_channels: number, length: number, _sampleRate: number) {
+        return { getChannelData: () => new Float32Array(length) };
+      }
+      resume() {
+        return Promise.resolve();
+      }
+      get destination() {
+        return {};
+      }
+      get sampleRate() {
+        return 44100;
+      }
+    },
+    configurable: true,
+  });
 }
 
 // Mock useAudio in tests automatically?

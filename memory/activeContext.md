@@ -10,6 +10,7 @@
 - **State:** Split GameState into Zustand stores (runtime/render/gameSpeed) and moved the runtime reducer into a store module.
 - **Refactor:** Extracted GameState logic into hooks/context builders, split SettingsModal into sections with an import/export hook, and modularized persistence helpers under `src/game/persistence/`.
 - **Lint:** Fixed new ESLint rule failures (async handler promises, hook deps) and replaced `enum` exports with `as const` value objects + union types in `src/types.ts`.
+- **Lint:** Cleaned remaining warnings; `npm run lint` now reports 0 problems (moved `useGame*` hooks into `src/game/gameContexts.ts`, updated tests/mocks, and normalized line endings via Prettier).
 
 - Implemented fixed-timestep simulation loop with render interpolation in the render bridge.
 - Batched world tiles into an instanced mesh with a single grid overlay and hover updates.

@@ -4,7 +4,7 @@ import React from 'react';
 import * as THREE from 'three';
 
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
-import { useGameUi } from '../GameState';
+import { useGameUi } from '../gameContexts';
 import { StarField } from '../StarField';
 
 import { InstancedExplosions } from './Effects';

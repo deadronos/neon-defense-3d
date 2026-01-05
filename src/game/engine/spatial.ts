@@ -30,13 +30,15 @@ export const buildSpatialGrid = (
   enemyPositionPool?: EngineMutableVector3[],
 ): SpatialGrid => {
   const size = width * height;
-  const grid: SpatialGrid = reuseGrid?.length === size ? reuseGrid : new Array<EngineEnemy[]>(size);
+  const reused = reuseGrid?.length === size ? reuseGrid : undefined;
+  const grid: SpatialGrid = reused ?? new Array<EngineEnemy[]>(size);
 
-  for (let i = 0; i < size; i++) {
-    const cell = grid[i];
-    if (cell) {
-      cell.length = 0;
-    } else {
+  if (reused) {
+    for (let i = 0; i < size; i++) {
+      grid[i].length = 0;
+    }
+  } else {
+    for (let i = 0; i < size; i++) {
       grid[i] = [];
     }
   }

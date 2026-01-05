@@ -93,13 +93,16 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
                 Active Synergies
               </div>
               <div className="flex flex-col gap-1">
-                {selectedTowerEntity.activeSynergies.map((s, i) => {
+                {selectedTowerEntity.activeSynergies.map((s) => {
                   const def = SYNERGIES[s.type];
                   return (
-                    <div key={i} className="flex items-center gap-2 text-xs text-cyan-300">
+                    <div
+                      key={`${s.type}:${s.partnerId}`}
+                      className="flex items-center gap-2 text-xs text-cyan-300"
+                    >
                       <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 box-shadow-glow" />
-                      <span className="font-bold">{def?.name}</span>
-                      <span className="text-cyan-600/80">- {def?.description}</span>
+                      <span className="font-bold">{def.name}</span>
+                      <span className="text-cyan-600/80">- {def.description}</span>
                     </div>
                   );
                 })}
@@ -147,7 +150,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
 
           {(() => {
             const config = TOWER_CONFIGS[selectedTowerEntity.type];
-            const refund = Math.floor((config?.cost ?? 0) * 0.7);
+            const refund = Math.floor(config.cost * 0.7);
             return (
               <button
                 onClick={() => onSell(selectedTowerEntity.id)}

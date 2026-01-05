@@ -13,8 +13,8 @@ export const getTowerStats = (
   const base = TOWER_CONFIGS[type];
   const { upgrades = {}, activeSynergies = [] } = context;
 
-  let dmgMult = 1 + (upgrades[UpgradeType.GLOBAL_DAMAGE] || 0) * 0.05;
-  let rangeMult = 1 + (upgrades[UpgradeType.GLOBAL_RANGE] || 0) * 0.05;
+  let dmgMult = 1 + (upgrades[UpgradeType.GLOBAL_DAMAGE] ?? 0) * 0.05;
+  let rangeMult = 1 + (upgrades[UpgradeType.GLOBAL_RANGE] ?? 0) * 0.05;
   let fireRateMult = 1.0;
 
   // Apply Synergies

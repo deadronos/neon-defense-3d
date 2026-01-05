@@ -15,7 +15,7 @@ test.describe('Manual baseline screenshots', () => {
     fs.mkdirSync(outDir, { recursive: true });
 
     // Log console messages from the page to the Node console
-    page.on('console', (msg) => console.log(`[PAGE ${msg.type().toUpperCase()}] ${msg.text()}`));
+    page.on('console', (msg) => console.warn(`[PAGE ${msg.type().toUpperCase()}] ${msg.text()}`));
     page.on('pageerror', (err) => console.error('[PAGE ERROR]', err));
     page.on('requestfailed', (req) =>
       console.warn('[REQUEST FAILED]', req.url(), req.failure()?.errorText),
@@ -27,7 +27,7 @@ test.describe('Manual baseline screenshots', () => {
     // Screenshot the welcome splash
     const welcomePath = path.join(outDir, 'welcome.png');
     await page.screenshot({ path: welcomePath, fullPage: true });
-    console.log(`Saved welcome screenshot: ${welcomePath}`);
+    console.warn(`Saved welcome screenshot: ${welcomePath}`);
 
     // Try to click the INITIATE button to start the game (if present)
     const initiateButton = page.getByRole('button', { name: 'INITIATE' });
@@ -54,6 +54,6 @@ test.describe('Manual baseline screenshots', () => {
     // Screenshot the first map
     const firstmapPath = path.join(outDir, 'firstmap.png');
     await page.screenshot({ path: firstmapPath, fullPage: true });
-    console.log(`Saved firstmap screenshot: ${firstmapPath}`);
+    console.warn(`Saved firstmap screenshot: ${firstmapPath}`);
   });
 });

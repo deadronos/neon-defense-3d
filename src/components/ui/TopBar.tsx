@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useAudio } from '../../game/audio/AudioManager';
+import { useAudio } from '../../game/audio/useAudio';
 import type { WaveState } from '../../types';
 
 interface TopBarProps {

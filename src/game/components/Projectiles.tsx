@@ -2,7 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-import { useRenderState } from '../GameState';
+import { useRenderState } from '../gameContexts';
 
 import { ensureInstanceColor, TEMP_COLOR } from './instancing/instancedUtils';
 

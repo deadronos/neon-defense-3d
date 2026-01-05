@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, it, vi, beforeEach } from 'vitest';
 
-// Mock AudioManager so SettingsModal can render without real provider
-vi.mock('../../game/audio/AudioManager', () => ({
+// Mock useAudio so SettingsModal can render without real provider
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: vi.fn(() => ({
     masterVolume: 0.5,
     sfxVolume: 1,
@@ -14,7 +14,6 @@ vi.mock('../../game/audio/AudioManager', () => ({
     setMusicVolume: vi.fn(),
     playSFX: vi.fn(),
   })),
-  AudioProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 const state = vi.hoisted(() => ({
@@ -24,45 +23,38 @@ const state = vi.hoisted(() => ({
   factoryResetMock: vi.fn(),
 }));
 
-vi.mock('../../game/GameState', () => {
-  const setGraphicsQuality = vi.fn();
-  const applyCheckpointSave = vi.fn();
-  const exportCheckpointJson = () => ({
-    json: state.exportJsonValue,
-    hasCheckpoint: state.hasCheckpoint,
-  });
-  const resetCheckpoint = () => state.resetCheckpointMock();
-  const factoryReset = () => state.factoryResetMock();
-
-  return {
-    useGame: () => ({
-      gameState: {
-        graphicsQuality: 'high',
-        waveStartedNonce: 0,
-        gameStatus: 'idle',
-        wave: 1,
-        money: 0,
-        lives: 0,
-        upgrades: {},
-      },
-      setGraphicsQuality,
-      resetCheckpoint,
-      factoryReset,
-      applyCheckpointSave,
-      exportCheckpointJson,
-    }),
-    GameProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  };
+const setGraphicsQuality = vi.fn();
+const applyCheckpointSave = vi.fn();
+const exportCheckpointJson = () => ({
+  json: state.exportJsonValue,
+  hasCheckpoint: state.hasCheckpoint,
 });
+const resetCheckpoint = () => state.resetCheckpointMock();
+const factoryReset = () => state.factoryResetMock();
+
+vi.mock('../../game/gameContexts', () => ({
+  useGame: () => ({
+    gameState: {
+      graphicsQuality: 'high',
+      waveStartedNonce: 0,
+      gameStatus: 'idle',
+      wave: 1,
+      money: 0,
+      lives: 0,
+      upgrades: {},
+    },
+    setGraphicsQuality,
+    resetCheckpoint,
+    factoryReset,
+    applyCheckpointSave,
+    exportCheckpointJson,
+  }),
+}));
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
 
-// quick load log to detect scheduling/hang issues
-console.log('[test startup] SettingsModal.behavior.reset loaded');
-
 describe('SettingsModal behavior — reset & factory', () => {
   beforeEach(() => {
-    console.log('[test beforeEach] SettingsModal.behavior.reset');
     vi.clearAllMocks();
     state.exportJsonValue = '{"foo":true}';
     state.hasCheckpoint = true;

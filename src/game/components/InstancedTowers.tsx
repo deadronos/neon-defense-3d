@@ -5,12 +5,13 @@ import * as THREE from 'three';
 
 import { TOWER_CONFIGS } from '../../constants';
 import type { UpgradeType } from '../../types';
-import { useGameUi, useRenderState } from '../GameState';
+import { useGameUi, useRenderState } from '../gameContexts';
 import { getTowerStats } from '../utils';
 
 import { createComplexTowerBase } from './instancing/geometryUtils';
 import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
+// eslint-disable-next-line max-lines-per-function
 export const InstancedTowers: React.FC = () => {
   const { setSelectedEntityId, selectedEntityId, gameState } = useGameUi();
   const renderStateRef = useRenderState();
@@ -43,6 +44,7 @@ export const InstancedTowers: React.FC = () => {
     return colorCache.current.get(colorStr)!;
   };
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity, complexity
   useFrame(({ clock }) => {
     const towers = renderStateRef.current.towers;
     const count = 100;
@@ -61,7 +63,7 @@ export const InstancedTowers: React.FC = () => {
 
     for (let i = 0; i < renderCount; i++) {
       const tower = towers[i];
-      const baseColor = TOWER_CONFIGS[tower.type]?.color ?? '#00ff00';
+      const baseColor = TOWER_CONFIGS[tower.type].color;
       const colorObj = getCachedColor(baseColor);
 
       if (baseMeshRef.current) {
@@ -157,10 +159,9 @@ export const InstancedTowers: React.FC = () => {
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     if (e.instanceId === undefined) return;
-    const tower = renderStateRef.current.towers[e.instanceId];
-    if (tower) {
-      setSelectedEntityId(tower.id);
-    }
+    const tower = renderStateRef.current.towers.at(e.instanceId);
+    if (tower === undefined) return;
+    setSelectedEntityId(tower.id);
   };
 
   if (!baseGeometry) return null;

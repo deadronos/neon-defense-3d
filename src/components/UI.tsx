@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { useGame } from '../game/GameState';
+import { useGame } from '../game/gameContexts';
 
 import { TechTreeModal } from './TechTreeModal';
 import { BuildMenu } from './ui/BuildMenu';

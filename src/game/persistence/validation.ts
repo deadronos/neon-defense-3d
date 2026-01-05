@@ -1,36 +1,63 @@
-import type { SaveV1 } from './types';
 import { isRecord } from './utils';
 
-export const validateSave = (save: SaveV1): { ok: boolean; errors: string[] } => {
+const validateUi = (ui: Record<string, unknown>, errors: string[]) => {
+  const currentMapIndex = ui.currentMapIndex;
+  if (!Number.isInteger(currentMapIndex) || currentMapIndex < 0) {
+    errors.push('ui.currentMapIndex must be an integer >= 0.');
+  }
+
+  const money = ui.money;
+  if (!Number.isInteger(money) || money < 0) {
+    errors.push('ui.money must be >= 0.');
+  }
+
+  const lives = ui.lives;
+  if (!Number.isInteger(lives) || lives < 0) {
+    errors.push('ui.lives must be >= 0.');
+  }
+
+  const totalEarned = ui.totalEarned;
+  if (!Number.isInteger(totalEarned) || totalEarned < 0) {
+    errors.push('ui.totalEarned must be >= 0.');
+  }
+
+  const totalSpent = ui.totalSpent;
+  if (!Number.isInteger(totalSpent) || totalSpent < 0) {
+    errors.push('ui.totalSpent must be >= 0.');
+  }
+
+  const researchPoints = ui.researchPoints;
+  if (!Number.isInteger(researchPoints) || researchPoints < 0) {
+    errors.push('ui.researchPoints must be >= 0.');
+  }
+
+  if (!isRecord(ui.upgrades)) errors.push('ui.upgrades must be an object.');
+};
+
+const validateCheckpoint = (checkpoint: Record<string, unknown>, errors: string[]) => {
+  const waveToStart = checkpoint.waveToStart;
+  if (!Number.isInteger(waveToStart) || waveToStart < 1) {
+    errors.push('checkpoint.waveToStart must be an integer >= 1.');
+  }
+
+  if (!Array.isArray(checkpoint.towers)) errors.push('checkpoint.towers must be an array.');
+};
+
+export const validateSave = (save: unknown): { ok: boolean; errors: string[] } => {
   const errors: string[] = [];
 
+  if (!isRecord(save)) return { ok: false, errors: ['Save must be an object.'] };
+
   if (save.schemaVersion !== 1) errors.push('Unsupported schemaVersion.');
-  if (!save.timestamp || typeof save.timestamp !== 'string') errors.push('Missing timestamp.');
+  if (typeof save.timestamp !== 'string') errors.push('Missing timestamp.');
 
-  if (!save.ui) errors.push('Missing ui section.');
-  if (!save.checkpoint) errors.push('Missing checkpoint section.');
+  const ui = save.ui;
+  if (!isRecord(ui)) errors.push('Missing ui section.');
+  else validateUi(ui, errors);
 
-  if (save.ui) {
-    if (!Number.isInteger(save.ui.currentMapIndex) || save.ui.currentMapIndex < 0)
-      errors.push('ui.currentMapIndex must be an integer >= 0.');
-    if (!Number.isInteger(save.ui.money) || save.ui.money < 0)
-      errors.push('ui.money must be >= 0.');
-    if (!Number.isInteger(save.ui.lives) || save.ui.lives < 0)
-      errors.push('ui.lives must be >= 0.');
-    if (!Number.isInteger(save.ui.totalEarned) || save.ui.totalEarned < 0)
-      errors.push('ui.totalEarned must be >= 0.');
-    if (!Number.isInteger(save.ui.totalSpent) || save.ui.totalSpent < 0)
-      errors.push('ui.totalSpent must be >= 0.');
-    if (!Number.isInteger(save.ui.researchPoints) || save.ui.researchPoints < 0)
-      errors.push('ui.researchPoints must be >= 0.');
-    if (!isRecord(save.ui.upgrades)) errors.push('ui.upgrades must be an object.');
-  }
-
-  if (save.checkpoint) {
-    if (!Number.isInteger(save.checkpoint.waveToStart) || save.checkpoint.waveToStart < 1)
-      errors.push('checkpoint.waveToStart must be an integer >= 1.');
-    if (!Array.isArray(save.checkpoint.towers)) errors.push('checkpoint.towers must be an array.');
-  }
+  const checkpoint = save.checkpoint;
+  if (!isRecord(checkpoint)) errors.push('Missing checkpoint section.');
+  else validateCheckpoint(checkpoint, errors);
 
   return { ok: errors.length === 0, errors };
 };

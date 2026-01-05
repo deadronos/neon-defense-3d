@@ -1,10 +1,13 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { GameProvider, useGame } from '../../game/GameState';
+/* eslint-disable max-lines-per-function */
+
+import { useGame } from '../../game/gameContexts';
+import { GameProvider } from '../../game/GameState';
 import { TowerType } from '../../types';
 
-vi.mock('../../game/audio/AudioManager', () => ({
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: () => ({
     playSFX: vi.fn(),
   }),

@@ -4,7 +4,8 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { UI } from './components/UI';
 import { AudioProvider } from './game/audio/AudioManager';
 import { GameCanvas } from './game/GameCanvas';
-import { GameProvider, useGame } from './game/GameState';
+import { useGame } from './game/gameContexts';
+import { GameProvider } from './game/GameState';
 
 /**
  * The inner content of the application.

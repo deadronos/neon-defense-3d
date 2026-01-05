@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import * as THREE from 'three';
 
 import { SynergyType } from '../../types';
-import { useRenderState } from '../GameState';
+import { useRenderState } from '../gameContexts';
 
 const SYNERGY_COLORS: Record<SynergyType, THREE.Color> = {
   [SynergyType.SYNCHRONIZED_FIRE]: new THREE.Color('#00f2ff'), // Cyan
@@ -24,6 +24,7 @@ export const SynergyLinks: React.FC = () => {
   // We can use a shader material or just animate colors/opacity.
   // For MVP: LineSegments with vertex colors.
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useFrame(({ clock }) => {
     if (!geometryRef.current) return;
 
@@ -66,7 +67,7 @@ export const SynergyLinks: React.FC = () => {
 
         // Color
         // If pulsing, we can mod luminance.
-        const baseColor = SYNERGY_COLORS[syn.type] ?? new THREE.Color(1, 1, 1);
+        const baseColor = SYNERGY_COLORS[syn.type];
 
         // Pulse logic
         let intensity = 1.0;

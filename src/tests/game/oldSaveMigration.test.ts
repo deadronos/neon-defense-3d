@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../game/audio/AudioManager', () => ({
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: () => ({
     playSFX: vi.fn(),
   }),
@@ -8,7 +8,6 @@ vi.mock('../../game/audio/AudioManager', () => ({
 
 import { MAP_LAYOUTS, getMapGrid } from '../../constants';
 import { migrateSave } from '../../game/persistence';
-import { TileType } from '../../types';
 
 describe('old save migration issue', () => {
   const problematicSave = {
@@ -67,46 +66,23 @@ describe('old save migration issue', () => {
     },
   };
 
-  it('should show current MAP_2 layout structure', () => {
+  it('MAP_2 layout dimensions are consistent', () => {
     const map2 = MAP_LAYOUTS[1];
-    console.log('MAP_2 dimensions:', map2[0].length, 'x', map2.length);
-    console.log('MAP_2 layout:');
-    for (const [z, row] of map2.entries()) {
-      console.log(`  z=${z}:`, row.join(' '));
-    }
+    expect(map2.length).toBeGreaterThan(0);
+    const width = map2[0]?.length ?? 0;
+    expect(width).toBeGreaterThan(0);
+    for (const row of map2) expect(row.length).toBe(width);
 
     const grid = getMapGrid(map2);
-    // Check which of the old save's tower positions are valid on current MAP_2
-    const invalidPositions: string[] = [];
-    for (const tower of problematicSave.checkpoint.towers) {
-      const { x, z } = tower;
-      if (z < 0 || z >= grid.length || x < 0 || x >= grid[0].length) {
-        invalidPositions.push(`${tower.type} at (${x},${z}) - OUT OF BOUNDS`);
-        continue;
-      }
-      const tile = grid[z][x];
-      if (tile !== TileType.Grass) {
-        invalidPositions.push(`${tower.type} at (${x},${z}) - NOT GRASS (tile=${tile})`);
-      }
-    }
-
-    console.log('Invalid tower positions:', invalidPositions.length);
-    for (const pos of invalidPositions) console.log('  ', pos);
+    expect(grid.length).toBe(map2.length);
+    expect(grid[0]?.length ?? 0).toBe(width);
   });
 
   it('migrateSave should report warnings for invalid tower positions', () => {
     const result = migrateSave(problematicSave);
 
-    console.log('Migration result ok:', result.ok);
-    console.log('Towers remaining:', result.save?.checkpoint.towers.length);
-    console.log('Warnings:', result.warnings);
-
-    if (result.warnings.length > 0) {
-      expect(result.warnings.length).toBeGreaterThan(0);
-      console.log('Expected: Some towers were dropped due to map layout changes');
-    }
-
     // The migration should succeed even if some towers are dropped
     expect(result.ok).toBe(true);
+    expect(result.warnings.length).toBeGreaterThan(0);
   });
 });

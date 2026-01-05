@@ -30,6 +30,24 @@ const PROJECTILE_PROGRESS_RATE = 3; // Matches legacy behavior: progress += delt
 const EFFECT_DURATION_SECONDS = 0.8;
 const DEFAULT_EFFECT_SCALE = 0.4;
 
+const isPositiveNumber = (value: number | undefined): value is number =>
+  value !== undefined && value > 0;
+
+const addHit = (hits: Map<string, number>, enemyId: string, damage: number) => {
+  hits.set(enemyId, (hits.get(enemyId) ?? 0) + damage);
+};
+
+const applyFreeze = (
+  freezeHits: Map<string, number>,
+  enemyId: string,
+  freezeDuration: number | undefined,
+) => {
+  if (!isPositiveNumber(freezeDuration)) return;
+  const current = freezeHits.get(enemyId) ?? 0;
+  freezeHits.set(enemyId, Math.max(current, freezeDuration));
+};
+
+/* eslint-disable max-lines-per-function, sonarjs/cognitive-complexity, complexity */
 export const stepProjectiles = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -78,7 +96,7 @@ export const stepProjectiles = (
 
   const ensureEnemyPosition = (enemy: EngineEnemy): EngineVector3 => {
     const existing = enemyPositions.get(enemy.id);
-    if (existing) {
+    if (existing !== undefined) {
       writeEnemyWorldPosition(existing, enemy, pathWaypoints, tileSize);
       return existing;
     }
@@ -98,7 +116,7 @@ export const stepProjectiles = (
 
     const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;
     if (nextProgress >= 1) {
-      if (projectile.splashRadius) {
+      if (isPositiveNumber(projectile.splashRadius)) {
         // We can look up the target position directly if it exists, otherwise compute it.
         const impactPos = enemyPositions.get(target.id) ?? ensureEnemyPosition(target);
 
@@ -128,11 +146,8 @@ export const stepProjectiles = (
             (enemy) => {
               const pos = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy);
               if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
-                hits.set(enemy.id, (hits.get(enemy.id) ?? 0) + projectile.damage);
-                if (projectile.freezeDuration) {
-                  const current = freezeHits.get(enemy.id) ?? 0;
-                  freezeHits.set(enemy.id, Math.max(current, projectile.freezeDuration));
-                }
+                addHit(hits, enemy.id, projectile.damage);
+                applyFreeze(freezeHits, enemy.id, projectile.freezeDuration);
                 frameTotalDamage += projectile.damage;
               }
             },
@@ -142,21 +157,15 @@ export const stepProjectiles = (
             const pos = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy);
 
             if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
-              hits.set(enemy.id, (hits.get(enemy.id) ?? 0) + projectile.damage);
-              if (projectile.freezeDuration) {
-                const current = freezeHits.get(enemy.id) ?? 0;
-                freezeHits.set(enemy.id, Math.max(current, projectile.freezeDuration));
-              }
+              addHit(hits, enemy.id, projectile.damage);
+              applyFreeze(freezeHits, enemy.id, projectile.freezeDuration);
               frameTotalDamage += projectile.damage;
             }
           }
         }
       } else {
-        hits.set(projectile.targetId, (hits.get(projectile.targetId) ?? 0) + projectile.damage);
-        if (projectile.freezeDuration) {
-          const current = freezeHits.get(projectile.targetId) ?? 0;
-          freezeHits.set(projectile.targetId, Math.max(current, projectile.freezeDuration));
-        }
+        addHit(hits, projectile.targetId, projectile.damage);
+        applyFreeze(freezeHits, projectile.targetId, projectile.freezeDuration);
         frameTotalDamage += projectile.damage;
       }
       continue;
@@ -187,7 +196,8 @@ export const stepProjectiles = (
 
       const addedFreeze = freezeHits.get(enemy.id);
       const frozenValue = enemy.frozen ?? 0;
-      const nextFrozen = addedFreeze ? Math.max(frozenValue, addedFreeze) : frozenValue;
+      const nextFrozen =
+        addedFreeze !== undefined ? Math.max(frozenValue, addedFreeze) : frozenValue;
 
       if (remainingHp <= 0) {
         const reward = Math.floor((enemy.reward ?? 0) * greedMultiplier);
@@ -239,3 +249,4 @@ export const stepProjectiles = (
 
   return { patch, events };
 };
+/* eslint-enable max-lines-per-function, sonarjs/cognitive-complexity, complexity */

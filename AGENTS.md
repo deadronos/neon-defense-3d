@@ -78,4 +78,5 @@ We follow a strict **Spec-Driven Workflow** (Analyze → Design → Implement �
 1. **Initialize:** Read `AGENTS.md` (this file) and `.github/copilot-instructions.md`.
 2. **Contextualize:** Read `/memory/activeContext.md` and `/memory/projectbrief.md`.
 3. **Plan:** Check `/memory/tasks/_index.md` for the next available task.
-4. **Execute:** Follow the Spec-Driven Workflow.
+4. **Pre-checks:** Run `npm run format && npm run lint && npm run typecheck && npm run test` (use `npm run lint:fix` where appropriate) and ensure all checks pass locally.
+5. **Execute:** Follow the Spec-Driven Workflow.

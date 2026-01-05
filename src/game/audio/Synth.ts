@@ -10,8 +10,14 @@ export class Synth {
   constructor() {
     // We defer initialization until first interaction if possible, but for now we create the context
     // It might be 'suspended' initially.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this.ctx = new (window.AudioContext ?? (window as any).webkitAudioContext)();
+    const webkitAudioContext = (window as unknown as { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext;
+    const AudioContextCtor =
+      typeof window.AudioContext === 'function' ? window.AudioContext : webkitAudioContext;
+    if (typeof AudioContextCtor !== 'function') {
+      throw new Error('AudioContext is not supported by this environment.');
+    }
+    this.ctx = new AudioContextCtor();
 
     this.masterGain = this.ctx.createGain();
     this.sfxGain = this.ctx.createGain();
@@ -188,19 +194,20 @@ export class Synth {
     this.isPlayingMusic = true;
 
     // Create a sub-mix for music to easily stop it
-    this.bgmGain = this.ctx.createGain();
+    const bgmGain = this.ctx.createGain();
+    this.bgmGain = bgmGain;
     // Create a mild lowpass to warm the mix
     try {
       this.bgmFilter = this.ctx.createBiquadFilter();
       this.bgmFilter.type = 'lowpass';
       this.bgmFilter.frequency.value = 1200;
       this.bgmFilter.Q.value = 0.8;
-      this.bgmGain.connect(this.bgmFilter);
+      bgmGain.connect(this.bgmFilter);
       // Feed both dry and wet
       this.bgmFilter.connect(this.musicGain);
     } catch (err) {
       console.warn('[AUDIO] Failed to create lowpass filter, using direct connection:', err);
-      this.bgmGain.connect(this.musicGain);
+      bgmGain.connect(this.musicGain);
     }
 
     // Gentle delay-based reverb (feedback loop)
@@ -213,7 +220,7 @@ export class Synth {
       if (this.bgmFilter) {
         this.bgmFilter.connect(this.delayNode);
       } else {
-        this.bgmGain.connect(this.delayNode);
+        bgmGain.connect(this.delayNode);
       }
       this.delayNode.connect(this.delayFeedback);
       this.delayFeedback.connect(this.delayNode);
@@ -242,7 +249,7 @@ export class Synth {
     const osc1 = this.ctx.createOscillator();
     osc1.type = 'sawtooth';
     osc1.frequency.value = 55; // A1
-    osc1.connect(this.bgmGain);
+    osc1.connect(bgmGain);
     osc1.start();
     this.bgmNodes.push(osc1);
 
@@ -251,11 +258,11 @@ export class Synth {
     osc2.type = 'sine';
     osc2.frequency.value = 110; // A2
     osc2.detune.value = 6;
-    if (this.lfoGain && osc2.detune) {
+    if (this.lfoGain !== null) {
       // connect LFO to detune for slow motion
-      this.lfoGain.connect(osc2.detune as unknown as AudioParam);
+      this.lfoGain.connect(osc2.detune);
     }
-    osc2.connect(this.bgmGain);
+    osc2.connect(bgmGain);
     osc2.start();
     this.bgmNodes.push(osc2);
 
@@ -264,10 +271,10 @@ export class Synth {
     osc3.type = 'sawtooth';
     osc3.frequency.value = 110;
     osc3.detune.value = -8;
-    if (this.lfoGain && osc3.detune) {
-      this.lfoGain.connect(osc3.detune as unknown as AudioParam);
+    if (this.lfoGain !== null) {
+      this.lfoGain.connect(osc3.detune);
     }
-    osc3.connect(this.bgmGain);
+    osc3.connect(bgmGain);
     osc3.start();
     this.bgmNodes.push(osc3);
 
@@ -278,7 +285,7 @@ export class Synth {
       this.arpGain = this.ctx.createGain();
       this.arpGain.gain.value = 0.0; // start silent
       this.arpOsc.connect(this.arpGain);
-      this.arpGain.connect(this.bgmGain);
+      this.arpGain.connect(bgmGain);
       this.arpOsc.start();
 
       const notes = [220, 277.18, 329.63, 392]; // A minor-ish arpeggio
@@ -299,84 +306,69 @@ export class Synth {
     }
 
     // finally connect the submix to the music bus if not connected earlier
-    if (!this.bgmGain) return;
-
     // connect dry
     if (!this.bgmFilter) {
       // already connected in filter branch, otherwise connect now
-      this.bgmGain.connect(this.musicGain);
+      bgmGain.connect(this.musicGain);
     }
 
     // connect wet via reverb send -> convolver
     if (this.reverbSend && this.convolver) {
-      this.bgmGain.connect(this.reverbSend);
+      bgmGain.connect(this.reverbSend);
       this.reverbSend.connect(this.convolver);
     }
 
-    this.bgmGain.gain.value = 0.6;
+    bgmGain.gain.value = 0.6;
+  }
+
+  private safeStop(node: OscillatorNode | null) {
+    if (node === null) return;
+    try {
+      node.stop();
+    } catch {
+      /* silent */
+    }
+  }
+
+  private safeDisconnect(node: AudioNode | null) {
+    if (node === null) return;
+    try {
+      node.disconnect();
+    } catch {
+      /* silent */
+    }
+  }
+
+  private safeClearInterval(id: number | null) {
+    if (id === null) return;
+    clearInterval(id);
   }
 
   stopMusic() {
-    for (const n of this.bgmNodes) n.stop();
+    for (const n of this.bgmNodes) this.safeStop(n);
     this.bgmNodes = [];
 
-    if (this.arpOsc) {
-      try {
-        this.arpOsc.stop();
-      } catch {
-        /* silent */
-      }
-      this.arpOsc = null;
-    }
-    if (this.arpInterval) {
-      clearInterval(this.arpInterval);
-      this.arpInterval = null;
-    }
+    this.safeStop(this.arpOsc);
+    this.arpOsc = null;
 
-    if (this.lfo) {
-      try {
-        this.lfo.stop();
-      } catch {
-        /* silent */
-      }
-      this.lfo = null;
-    }
+    this.safeClearInterval(this.arpInterval);
+    this.arpInterval = null;
+
+    this.safeStop(this.lfo);
+    this.lfo = null;
     this.lfoGain = null;
 
-    if (this.delayFeedback) {
-      try {
-        this.delayFeedback.disconnect();
-      } catch {
-        /* silent */
-      }
-      this.delayFeedback = null;
-    }
-    if (this.delayNode) {
-      try {
-        this.delayNode.disconnect();
-      } catch {
-        /* silent */
-      }
-      this.delayNode = null;
-    }
+    this.safeDisconnect(this.delayFeedback);
+    this.delayFeedback = null;
 
-    if (this.bgmFilter) {
-      try {
-        this.bgmFilter.disconnect();
-      } catch {
-        /* silent */
-      }
-      this.bgmFilter = null;
-    }
+    this.safeDisconnect(this.delayNode);
+    this.delayNode = null;
 
-    if (this.bgmGain) {
-      try {
-        this.bgmGain.disconnect();
-      } catch {
-        /* silent */
-      }
-      this.bgmGain = null;
-    }
+    this.safeDisconnect(this.bgmFilter);
+    this.bgmFilter = null;
+
+    this.safeDisconnect(this.bgmGain);
+    this.bgmGain = null;
 
     this.isPlayingMusic = false;
   }

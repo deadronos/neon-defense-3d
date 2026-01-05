@@ -14,9 +14,9 @@ import {
   generatePath,
 } from '@/constants';
 
-describe('constants', () => {
-  const makeEmptyMap = () => Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(0));
+const makeEmptyMap = () => Array.from({ length: MAP_HEIGHT }, () => Array(MAP_WIDTH).fill(0));
 
+describe('constants', () => {
   it('has correct map width and height', () => {
     expect(MAP_WIDTH).toBe(12);
     expect(MAP_HEIGHT).toBe(8);

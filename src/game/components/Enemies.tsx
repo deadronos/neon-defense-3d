@@ -2,7 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import React, { useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 
-import { useRenderState } from '../GameState';
+import { useRenderState } from '../gameContexts';
 
 import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 
@@ -25,6 +25,7 @@ export const InstancedEnemies: React.FC = () => {
     if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, count);
   }, [count]);
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity, complexity
   useFrame(({ clock }) => {
     // Defensive: the geometry child can mount after our first layout effect.
     // Re-ensuring here guarantees instance colors are attached to the current geometry.
@@ -49,7 +50,7 @@ export const InstancedEnemies: React.FC = () => {
       const px = lerp(prev[0], enemy.position[0], alpha);
       const py = lerp(prev[1], enemy.position[1], alpha);
       const pz = lerp(prev[2], enemy.position[2], alpha);
-      const scale = enemy.config.scale || 0.4;
+      const scale = enemy.config.scale ?? 0.4;
 
       // 1. Body Mesh
       if (bodyMeshRef.current) {
@@ -60,7 +61,7 @@ export const InstancedEnemies: React.FC = () => {
         bodyMeshRef.current.setMatrixAt(i, dummy.matrix);
 
         const isDashing = enemy.abilityActiveTimer > 0;
-        const isFrozen = (enemy.frozen ?? 0) > 0;
+        const isFrozen = enemy.frozen > 0;
         let baseColor = enemy.config.color;
         if (isDashing) {
           baseColor = '#ffffff';

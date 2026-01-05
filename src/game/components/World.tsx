@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
-import { useWorld } from '../GameState';
+import { useWorld } from '../gameContexts';
 
 type Tile = { x: number; z: number; type: TileType };
 
@@ -106,6 +106,7 @@ const createGridGeometry = (width: number, height: number, tileSize: number) => 
   return geometry;
 };
 
+// eslint-disable-next-line max-lines-per-function
 export const World = React.memo(() => {
   const {
     mapGrid,
@@ -288,8 +289,8 @@ export const World = React.memo(() => {
     (tiles: Tile[]) => (event: ThreeEvent<PointerEvent>) => {
       const instanceId = event.instanceId;
       if (instanceId === undefined) return;
-      const tile = tiles[instanceId];
-      if (!tile) return;
+      const tile = tiles.at(instanceId);
+      if (tile === undefined) return;
       if (selectedTower && tile.type === TileType.Grass && gameStatus === 'playing') {
         const valid = isValidPlacement(tile.x, tile.z);
         showHover(tile, valid);
@@ -308,8 +309,8 @@ export const World = React.memo(() => {
     (tiles: Tile[]) => (event: ThreeEvent<PointerEvent>) => {
       const instanceId = event.instanceId;
       if (instanceId === undefined) return;
-      const tile = tiles[instanceId];
-      if (!tile) return;
+      const tile = tiles.at(instanceId);
+      if (tile === undefined) return;
       if (gameStatus !== 'playing') return;
 
       const key = `${tile.x},${tile.z}`;

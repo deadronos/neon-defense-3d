@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { useGame } from '../../game/GameState';
+import { useGame } from '../../game/gameContexts';
 
 export const KillStreakAnnouncer: React.FC = () => {
   const { gameState, clearAnnouncement } = useGame();

@@ -1,57 +1,23 @@
-import { createContext, useContext, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import type { ReactNode } from 'react';
 
 import type { GameState } from '../types';
 
-import { useAudio } from './audio/AudioManager';
-import type {
-  GameContextProps,
-  GameUiContextProps,
-  RenderStateContextProps,
-  WorldContextProps,
-} from './contextTypes';
+import { useAudio } from './audio/useAudio';
 import {
   buildGameContextValue,
   buildGameUiValue,
   buildRenderStateValue,
   buildWorldValue,
 } from './contextValueBuilders';
+import { GameContext, GameUiContext, RenderStateContext, WorldContext } from './gameContexts';
 import { useAutosaveCheckpoint } from './hooks/useAutosaveCheckpoint';
 import { useDerivedEntities } from './hooks/useDerivedEntities';
 import { useGameActions } from './hooks/useGameActions';
 import { useGameStep } from './hooks/useGameStep';
 import { useGameStores } from './hooks/useGameStores';
 
-/** Context for managing game state. */
-const GameContext = createContext<GameContextProps | undefined>(undefined);
-const GameUiContext = createContext<GameUiContextProps | undefined>(undefined);
-const RenderStateContext = createContext<RenderStateContextProps | undefined>(undefined);
-const WorldContext = createContext<WorldContextProps | undefined>(undefined);
-
-export const useGame = () => {
-  const context = useContext(GameContext);
-  if (!context) throw new Error('useGame must be used within GameProvider');
-  return context;
-};
-
-export const useGameUi = () => {
-  const context = useContext(GameUiContext);
-  if (!context) throw new Error('useGameUi must be used within GameProvider');
-  return context;
-};
-
-export const useRenderState = () => {
-  const context = useContext(RenderStateContext);
-  if (!context) throw new Error('useRenderState must be used within GameProvider');
-  return context.renderStateRef;
-};
-
-export const useWorld = () => {
-  const context = useContext(WorldContext);
-  if (!context) throw new Error('useWorld must be used within GameProvider');
-  return context;
-};
-
+// eslint-disable-next-line max-lines-per-function
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { playSFX } = useAudio();
   const { runtime, dispatch, renderStateRef, gameSpeed, setGameSpeed } = useGameStores();

@@ -35,6 +35,7 @@ const isBuildable = (grid: TileType[][], x: number, z: number): boolean => {
   return grid[z][x] === TileType.Grass;
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity, complexity
 export const migrateSave = (input: unknown): MigrateResult => {
   const warnings: string[] = [];
   const errors: string[] = [];
@@ -94,8 +95,9 @@ export const migrateSave = (input: unknown): MigrateResult => {
     }
   }
 
-  const waveToStart = clampMin(coerceInt(checkpointIn?.waveToStart, 1), 1);
-  if (checkpointIn?.waveToStart !== undefined && waveToStart !== checkpointIn?.waveToStart) {
+  const waveToStartRaw = checkpointIn?.waveToStart;
+  const waveToStart = clampMin(coerceInt(waveToStartRaw, 1), 1);
+  if (waveToStartRaw !== undefined && waveToStart !== waveToStartRaw) {
     warnings.push('checkpoint.waveToStart was invalid; coerced to a safe value.');
   }
 

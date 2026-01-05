@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 
-import { useGameUi, useRenderState } from '../GameState';
+import { useGameUi, useRenderState } from '../gameContexts';
 
 const FIXED_STEP = 1 / 60;
 const MAX_FRAME_TIME = 0.25;

@@ -39,9 +39,6 @@ export const DynamicResScaler = () => {
     if (nextDpr !== dprRef.current) {
       dprRef.current = nextDpr;
       setDpr(nextDpr);
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[DynamicResScaler] FPS: ${fps}, DPR: ${nextDpr.toFixed(2)}`);
-      }
     }
   });
 
