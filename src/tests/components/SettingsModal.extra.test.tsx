@@ -170,15 +170,15 @@ describe('SettingsModal extras', () => {
     const sfx = sliders[1];
     const music = sliders[2];
 
-    // change values via change event
+    // change values via input event
 
-    fireEvent.change(master, { target: { value: '0.6' } });
+    fireEvent.input(master, { target: { value: '0.6' } });
     expect(mockSetMaster).toHaveBeenCalled();
 
-    fireEvent.change(sfx, { target: { value: '0.9' } });
+    fireEvent.input(sfx, { target: { value: '0.9' } });
     expect(mockSetSfx).toHaveBeenCalled();
 
-    fireEvent.change(music, { target: { value: '0.8' } });
+    fireEvent.input(music, { target: { value: '0.8' } });
     expect(mockSetMusic).toHaveBeenCalled();
   });
 });
