@@ -53,7 +53,7 @@ export const useExportImportState = ({
     // Schedule the export check on the next microtask to give parent effects
     // (like the GameProvider autosave) a chance to complete and write the checkpoint.
     let cancelled = false;
-    Promise.resolve().then(() => {
+    void Promise.resolve().then(() => {
       if (cancelled) return;
       const { json, hasCheckpoint: has } = exportCheckpointJson();
       setExportJson(json);
@@ -103,7 +103,7 @@ export const useExportImportState = ({
     if (!migrated.ok || !migrated.save) {
       setImportPreview({
         status: 'error',
-        errors: migrated.errors?.length ? migrated.errors : ['Invalid save payload.'],
+        errors: (migrated.errors?.length ?? 0) > 0 ? migrated.errors : ['Invalid save payload.'],
       });
       return;
     }

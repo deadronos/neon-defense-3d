@@ -10,11 +10,11 @@ interface SettingsExportImportSectionProps {
   copyStatus: string | null;
   setImportText: (value: string) => void;
   refreshExport: () => void;
-  onCopyExport: () => void;
+  onCopyExport: () => void | Promise<void>;
   onDownloadExport: () => void;
   previewImport: (raw: string) => void;
   onImportApply: () => void;
-  onImportFilePicked: (file: File | null) => void;
+  onImportFilePicked: (file: File | null) => void | Promise<void>;
 }
 
 export const SettingsExportImportSection: React.FC<SettingsExportImportSectionProps> = ({
@@ -54,7 +54,7 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
             </button>
             <button
               type="button"
-              onClick={onCopyExport}
+              onClick={() => void onCopyExport()}
               className="bg-black/40 border border-[#0f3460] hover:border-[#00f2ff] text-white px-3 py-1.5 rounded font-mono text-xs"
             >
               Copy
@@ -87,7 +87,7 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
                 type="file"
                 accept="application/json,.json"
                 className="hidden"
-                onChange={(e) => onImportFilePicked(e.target.files?.[0] ?? null)}
+                onChange={(e) => void onImportFilePicked(e.target.files?.[0] ?? null)}
               />
             </label>
             <button

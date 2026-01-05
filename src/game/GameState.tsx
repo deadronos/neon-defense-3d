@@ -113,10 +113,13 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     playSFX,
   });
 
-  const gameState: GameState = {
-    ...runtime.ui,
-    isPlaying: runtime.ui.gameStatus === 'playing',
-  };
+  const gameState = useMemo<GameState>(
+    () => ({
+      ...runtime.ui,
+      isPlaying: runtime.ui.gameStatus === 'playing',
+    }),
+    [runtime.ui],
+  );
 
   const gameContextValue = useMemo(
     () =>
