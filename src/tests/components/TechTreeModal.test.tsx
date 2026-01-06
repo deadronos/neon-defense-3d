@@ -7,7 +7,7 @@ import { TechTreeModal } from '../../components/TechTreeModal';
 import { UpgradeType } from '../../types';
 
 // Mock useGame hook
-vi.mock('../../game/GameState', () => ({
+vi.mock('../../game/gameContexts', () => ({
   useGame: () => ({
     gameState: {
       researchPoints: 5,
