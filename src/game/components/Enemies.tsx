@@ -1,66 +1,34 @@
-import { useFrame } from '@react-three/fiber';
-import React, { useLayoutEffect, useMemo, useRef } from 'react';
+import React from 'react';
 import * as THREE from 'three';
 
-import { useRenderState } from '../GameState';
+import type { EnemyEntity } from '../../types';
 
-import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { useInstancedUpdater } from './instancing/useInstancedUpdater';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export const InstancedEnemies: React.FC = () => {
-  const renderStateRef = useRenderState();
-  const count = 1000;
-  // Refs for each mesh part
-  const bodyMeshRef = useRef<THREE.InstancedMesh>(null);
-  const shieldMeshRef = useRef<THREE.InstancedMesh>(null);
-  const ringMeshRef = useRef<THREE.InstancedMesh>(null);
-
-  // Shared dummy for transforms
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-
-  useLayoutEffect(() => {
-    if (bodyMeshRef.current) ensureInstanceColor(bodyMeshRef.current, count);
-    if (shieldMeshRef.current) ensureInstanceColor(shieldMeshRef.current, count);
-    if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, count);
-  }, [count]);
-
-  useFrame(({ clock }) => {
-    // Defensive: the geometry child can mount after our first layout effect.
-    // Re-ensuring here guarantees instance colors are attached to the current geometry.
-    if (bodyMeshRef.current) ensureInstanceColor(bodyMeshRef.current, count);
-    if (shieldMeshRef.current) ensureInstanceColor(shieldMeshRef.current, count);
-    if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, count);
-
-    const renderState = renderStateRef.current;
-    const enemies = renderState.enemies;
-    const time = clock.getElapsedTime();
-    const alpha = renderState.renderAlpha;
-
-    const activeCount = Math.min(enemies.length, count);
-
-    if (bodyMeshRef.current) bodyMeshRef.current.count = activeCount;
-    if (shieldMeshRef.current) shieldMeshRef.current.count = activeCount;
-    if (ringMeshRef.current) ringMeshRef.current.count = activeCount;
-
-    for (let i = 0; i < activeCount; i++) {
-      const enemy = enemies[i];
+  const { setMeshRef } = useInstancedUpdater<EnemyEntity>((state) => state.enemies, {
+    count: 1000,
+    meshKeys: ['body', 'shield', 'ring'],
+    updateInstance: (i, enemy, dummy, meshes, { time, alpha, renderState }) => {
       const prev = renderState.previousEnemyPositions.get(enemy.id) ?? enemy.position;
       const px = lerp(prev[0], enemy.position[0], alpha);
       const py = lerp(prev[1], enemy.position[1], alpha);
       const pz = lerp(prev[2], enemy.position[2], alpha);
-      const scale = enemy.config.scale || 0.4;
+      const scale = enemy.config.scale ?? 0.4;
 
       // 1. Body Mesh
-      if (bodyMeshRef.current) {
+      if (meshes.body != null) {
         dummy.position.set(px, py + scale + 0.1, pz);
         dummy.rotation.set(0, 0, 0);
         dummy.scale.set(scale, scale, scale);
         dummy.updateMatrix();
-        bodyMeshRef.current.setMatrixAt(i, dummy.matrix);
+        meshes.body.setMatrixAt(i, dummy.matrix);
 
         const isDashing = enemy.abilityActiveTimer > 0;
-        const isFrozen = (enemy.frozen ?? 0) > 0;
+        const isFrozen = enemy.frozen > 0;
         let baseColor = enemy.config.color;
         if (isDashing) {
           baseColor = '#ffffff';
@@ -68,61 +36,55 @@ export const InstancedEnemies: React.FC = () => {
           baseColor = '#00ffff';
         }
         TEMP_COLOR.set(baseColor).multiplyScalar(2.5);
-        bodyMeshRef.current.setColorAt(i, TEMP_COLOR);
+        meshes.body.setColorAt(i, TEMP_COLOR);
       }
 
       // 2. Shield Mesh
-      if (shieldMeshRef.current) {
+      if (meshes.shield != null) {
         if (enemy.shield > 0) {
           dummy.position.set(px, py + scale + 0.1, pz);
           dummy.scale.set(scale * 1.5, scale * 1.5, scale * 1.5);
           dummy.rotation.set(0, 0, 0);
           dummy.updateMatrix();
-          shieldMeshRef.current.setMatrixAt(i, dummy.matrix);
+          meshes.shield.setMatrixAt(i, dummy.matrix);
 
           TEMP_COLOR.set('#00ffff');
-          shieldMeshRef.current.setColorAt(i, TEMP_COLOR);
+          meshes.shield.setColorAt(i, TEMP_COLOR);
         } else {
-          shieldMeshRef.current.setMatrixAt(i, ZERO_MATRIX);
+          meshes.shield.setMatrixAt(i, ZERO_MATRIX);
         }
       }
 
       // 3. Ring Mesh
-      if (ringMeshRef.current) {
+      if (meshes.ring != null) {
         dummy.position.set(px, py + scale + 0.1, pz);
         dummy.scale.set(scale * 2.0, scale * 2.0, scale * 2.0);
         dummy.rotation.set(time * 2, time, 0);
         dummy.updateMatrix();
-        ringMeshRef.current.setMatrixAt(i, dummy.matrix);
+        meshes.ring.setMatrixAt(i, dummy.matrix);
 
         TEMP_COLOR.set(enemy.config.color).multiplyScalar(0.6);
-        ringMeshRef.current.setColorAt(i, TEMP_COLOR);
+        meshes.ring.setColorAt(i, TEMP_COLOR);
       }
-    }
-
-    if (bodyMeshRef.current) {
-      bodyMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (bodyMeshRef.current.instanceColor) bodyMeshRef.current.instanceColor.needsUpdate = true;
-    }
-    if (shieldMeshRef.current) {
-      shieldMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (shieldMeshRef.current.instanceColor)
-        shieldMeshRef.current.instanceColor.needsUpdate = true;
-    }
-    if (ringMeshRef.current) {
-      ringMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (ringMeshRef.current.instanceColor) ringMeshRef.current.instanceColor.needsUpdate = true;
-    }
+    },
   });
 
   return (
     <group>
-      <instancedMesh ref={bodyMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
+      <instancedMesh
+        ref={setMeshRef('body')}
+        args={[undefined, undefined, 1000]}
+        frustumCulled={false}
+      >
         <dodecahedronGeometry args={[1, 0]} />
         <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
 
-      <instancedMesh ref={shieldMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
+      <instancedMesh
+        ref={setMeshRef('shield')}
+        args={[undefined, undefined, 1000]}
+        frustumCulled={false}
+      >
         <sphereGeometry args={[1, 16, 16]} />
         <meshBasicMaterial
           vertexColors
@@ -134,7 +96,11 @@ export const InstancedEnemies: React.FC = () => {
         />
       </instancedMesh>
 
-      <instancedMesh ref={ringMeshRef} args={[undefined, undefined, count]} frustumCulled={false}>
+      <instancedMesh
+        ref={setMeshRef('ring')}
+        args={[undefined, undefined, 1000]}
+        frustumCulled={false}
+      >
         <torusGeometry args={[0.7, 0.05, 8, 32]} />
         <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>

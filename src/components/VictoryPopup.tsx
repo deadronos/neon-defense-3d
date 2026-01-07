@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useGame } from '../game/GameState';
+import { useGame } from '../game/gameContexts';
 
 interface VictoryPopupProps {
   onOpenTechTree: () => void;

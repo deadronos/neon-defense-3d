@@ -6,6 +6,8 @@ import { stepTowers } from '../../../game/engine/tower';
 import type { EngineVector2 } from '../../../game/engine/types';
 import { TowerType } from '../../../types';
 
+/* eslint-disable max-lines-per-function */
+
 const path: [number, number][] = [
   [0, 0],
   [1, 0],

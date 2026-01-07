@@ -1,8 +1,10 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 
+/* eslint-disable max-lines-per-function */
+
 // Move mock to top to ensure it applies before imports that use it resolve
-vi.mock('../../game/audio/AudioManager', () => ({
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: () => ({
     playSFX: vi.fn(),
   }),
@@ -10,7 +12,8 @@ vi.mock('../../game/audio/AudioManager', () => ({
 
 import { applyEnginePatch, createInitialEngineState } from '../../game/engine/state';
 import { createInitialUiState } from '../../game/engine/uiReducer';
-import { GameProvider, useGame } from '../../game/GameState';
+import { useGame } from '../../game/gameContexts';
+import { GameProvider } from '../../game/GameState';
 import type { SaveV1 } from '../../game/persistence';
 import {
   CHECKPOINT_STORAGE_KEY_V1,
@@ -250,7 +253,7 @@ describe('persistence (Tier-B checkpoint)', () => {
         for (let x = 0; x < result.current.mapGrid[0].length; x++) {
           if (x === 0 && z === 0) continue;
           if (
-            result.current.mapGrid[z]![x] === TileType.Grass &&
+            result.current.mapGrid[z][x] === TileType.Grass &&
             result.current.isValidPlacement(x, z)
           ) {
             return { x, z };
@@ -317,11 +320,11 @@ describe('persistence (Tier-B checkpoint)', () => {
     const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
 
     // Start game and place a tower
-    act(() => result.current.startGame());
-    act(() => result.current.placeTower(0, 0, TowerType.Basic));
+    act(() => void result.current.startGame());
+    act(() => void result.current.placeTower(0, 0, TowerType.Basic));
 
     // Advance time to trigger WaveStarted and autosave
-    act(() => result.current.step(5.1, 5.1));
+    act(() => void result.current.step(5.1, 5.1));
 
     await waitFor(() => {
       expect(loadCheckpoint()).not.toBeNull();
@@ -334,8 +337,8 @@ describe('persistence (Tier-B checkpoint)', () => {
     // Sell the tower and tick to update gridOccupancy
     const towerId = result.current.towers[0]?.id;
     expect(towerId).toBeDefined();
-    act(() => result.current.sellTower(towerId!));
-    act(() => result.current.step(0.016, 5.116)); // trigger syncRenderState
+    act(() => void result.current.sellTower(towerId));
+    act(() => void result.current.step(0.016, 5.116)); // trigger syncRenderState
 
     // Now (0,0) should be free
     expect(result.current.towers).toHaveLength(0);
@@ -367,7 +370,7 @@ describe('persistence (Tier-B checkpoint)', () => {
         totalDamageDealt: previousUi.totalDamageDealt,
         totalCurrencyEarned: previousUi.totalCurrencyEarned,
         researchPoints: previousUi.researchPoints,
-        upgrades: previousUi.upgrades ?? {},
+        upgrades: previousUi.upgrades,
       },
       checkpoint: {
         waveToStart: 1,
@@ -399,7 +402,7 @@ describe('persistence (Tier-B checkpoint)', () => {
         totalDamageDealt: previousUi.totalDamageDealt,
         totalCurrencyEarned: previousUi.totalCurrencyEarned,
         researchPoints: previousUi.researchPoints,
-        upgrades: previousUi.upgrades ?? {},
+        upgrades: previousUi.upgrades,
       },
       checkpoint: {
         waveToStart: 1,

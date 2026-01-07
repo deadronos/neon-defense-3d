@@ -52,7 +52,7 @@ describe('AudioManager defensive behavior', () => {
       <AudioProvider>
         <div>
           <button
-            onClick={async () => {
+            onClick={() => {
               try {
                 synth.startMusic();
               } catch {}

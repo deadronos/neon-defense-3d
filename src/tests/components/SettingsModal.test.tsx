@@ -5,24 +5,22 @@ import { describe, expect, it, beforeEach, vi } from 'vitest';
 
 import { UI } from '../../components/UI';
 import { SettingsModal } from '../../components/ui/SettingsModal';
-import { useAudio } from '../../game/audio/AudioManager';
-import { GameProvider, useGame } from '../../game/GameState';
+import { useAudio } from '../../game/audio/useAudio';
+import { useGame } from '../../game/gameContexts';
+import { GameProvider } from '../../game/GameState';
 import type { Vector2 } from '../../types';
 import { TileType, TowerType } from '../../types';
 
-vi.mock('../../game/audio/AudioManager', () => ({
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: vi.fn(),
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  AudioProvider: ({ children }: any) => <>{children}</>,
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockUseAudio = useAudio as any;
+const mockUseAudio = useAudio as unknown as ReturnType<typeof vi.fn>;
 
 const findFirstBuildableSpot = (grid: TileType[][]): Vector2 | null => {
   for (let z = 0; z < grid.length; z++) {
-    for (let x = 0; x < grid[0]!.length; x++) {
-      if (grid[z]![x] === TileType.Grass) return [x, z];
+    for (let x = 0; x < grid[0].length; x++) {
+      if (grid[z][x] === TileType.Grass) return [x, z];
     }
   }
   return null;
@@ -40,6 +38,7 @@ const Harness = ({ open }: { open: boolean }) => {
   );
 };
 
+// eslint-disable-next-line max-lines-per-function
 describe('SettingsModal', () => {
   beforeEach(() => {
     localStorage.clear();

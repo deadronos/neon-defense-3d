@@ -47,13 +47,14 @@ export const useGameStep = ({
   const killStreakRef = useRef({ count: 0, lastTime: 0 });
 
   const step = useCallback(
+    // eslint-disable-next-line sonarjs/cognitive-complexity, complexity
     (deltaSeconds: number, nowSeconds: number) => {
       const snapshot = runtimeRef.current;
       if (snapshot.ui.gameStatus !== 'playing') return;
 
       const deltaMs = deltaSeconds * 1000 * gameSpeed;
       const nowMs = nowSeconds * 1000;
-      const greedLevel = snapshot.ui.upgrades?.[UpgradeType.GLOBAL_GREED] || 0;
+      const greedLevel = snapshot.ui.upgrades[UpgradeType.GLOBAL_GREED] ?? 0;
       const greedMultiplier = 1 + greedLevel * 0.05;
 
       const result = stepEngine(
@@ -77,7 +78,7 @@ export const useGameStep = ({
 
         // Kill Streak Logic
         let killsThisTick = 0;
-        allEvents.forEach((e) => {
+        for (const e of allEvents) {
           if (e.type === 'EffectSpawned') {
             playSFX('impact');
           } else if (e.type === 'ProjectileFired') {
@@ -85,7 +86,7 @@ export const useGameStep = ({
           } else if (e.type === 'EnemyKilled') {
             killsThisTick++;
           }
-        });
+        }
 
         if (killsThisTick > 0) {
           const streakState = killStreakRef.current;

@@ -21,7 +21,7 @@ export function useInstancedEntities<T>({
   meshRef: providedMeshRef,
 }: UseInstancedEntitiesOptions<T>) {
   const localMeshRef = useRef<THREE.InstancedMesh>(null);
-  const meshRef = providedMeshRef || localMeshRef;
+  const meshRef = providedMeshRef ?? localMeshRef;
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 

@@ -24,11 +24,11 @@ describe('BuildMenu', () => {
     render(<BuildMenu {...defaultProps} />);
 
     // Check if buttons for each tower type exist
-    Object.values(TowerType).forEach((type) => {
+    for (const type of Object.values(TowerType)) {
       const config = TOWER_CONFIGS[type];
       // Use getAllByText because text appears in button and tooltip
       expect(screen.getAllByText(config.name).length).toBeGreaterThan(0);
-    });
+    }
   });
 
   it('calls onSelectTower when a tower is clicked', () => {

@@ -10,9 +10,7 @@ import { createRuntimeStore } from '../stores/runtimeStore';
 import type { RuntimeStoreState } from '../stores/runtimeStore';
 
 const ensureStoreRef = <T>(factory: () => StoreApi<T>, ref: { current: StoreApi<T> | null }) => {
-  if (!ref.current) {
-    ref.current = factory();
-  }
+  ref.current ??= factory();
   return ref.current;
 };
 

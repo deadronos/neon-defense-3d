@@ -30,14 +30,14 @@ export const IdleScreen: React.FC<IdleScreenProps> = ({ onStart, onOpenTechTree 
             </span>
           </button>
 
-          {onOpenTechTree && (
+          {onOpenTechTree ? (
             <button
               onClick={onOpenTechTree}
               className="px-8 py-2 bg-transparent border-b border-cyan-500/30 text-cyan-400 hover:text-cyan-200 hover:border-cyan-400 transition-colors tracking-widest text-sm font-bold uppercase"
             >
               Research Lab
             </button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

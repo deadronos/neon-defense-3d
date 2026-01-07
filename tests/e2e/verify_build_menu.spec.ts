@@ -12,7 +12,7 @@ test('verify build menu', async ({ page }) => {
   // Find the Basic Tower button (Pulse Cannon)
   // Code: `Select ${name}, Cost ${cost}` e.g. "Select Pulse Cannon, Cost 50"
   // Note: No $ symbol in the aria-label
-  const basicTower = page.getByRole('button', { name: /Select Pulse Cannon, Cost 50/i });
+  const basicTower = page.getByRole('button', { name: /select pulse cannon, cost 50/i });
   await expect(basicTower).toBeVisible();
 
   // Hover to show tooltip

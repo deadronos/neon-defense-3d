@@ -1,10 +1,13 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { GameProvider, useGame } from '../../game/GameState';
+/* eslint-disable max-lines-per-function */
+
+import { useGame } from '../../game/gameContexts';
+import { GameProvider } from '../../game/GameState';
 import { TowerType } from '../../types';
 
-vi.mock('../../game/audio/AudioManager', () => ({
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: () => ({
     playSFX: vi.fn(),
   }),
@@ -12,7 +15,7 @@ vi.mock('../../game/audio/AudioManager', () => ({
 
 describe('GameProvider (engine-backed)', () => {
   it('throws if useGame is used outside of GameProvider', () => {
-    expect(() => renderHook(() => useGame())).toThrowError(/GameProvider/i);
+    expect(() => renderHook(() => useGame())).toThrowError(/gameprovider/i);
   });
 
   it('does not allow placing towers while not playing', () => {
@@ -92,13 +95,13 @@ describe('GameProvider (engine-backed)', () => {
     expect(result.current.towers).toHaveLength(1);
     expect(result.current.gameState.money).toBe(100);
 
-    const towerId = result.current.towers[0]!.id;
+    const towerId = result.current.towers[0].id;
 
     act(() => {
       result.current.upgradeTower(towerId);
     });
 
-    expect(result.current.towers[0]!.level).toBe(2);
+    expect(result.current.towers[0].level).toBe(2);
     expect(result.current.gameState.money).toBe(25);
 
     act(() => {
@@ -165,14 +168,14 @@ describe('GameProvider (engine-backed)', () => {
       result.current.placeTower(0, 0, TowerType.Rapid);
     });
 
-    const towerId = result.current.towers[0]!.id;
+    const towerId = result.current.towers[0].id;
     expect(result.current.gameState.money).toBe(30);
 
     act(() => {
       result.current.upgradeTower(towerId);
     });
 
-    expect(result.current.towers[0]!.level).toBe(1);
+    expect(result.current.towers[0].level).toBe(1);
     expect(result.current.gameState.money).toBe(30);
   });
 

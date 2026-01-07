@@ -4,7 +4,7 @@ import React from 'react';
 import * as THREE from 'three';
 
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
-import { useGameUi } from '../GameState';
+import { useGameUi } from '../gameContexts';
 import { StarField } from '../StarField';
 
 import { InstancedExplosions } from './Effects';
@@ -41,7 +41,7 @@ export const SceneContent = () => {
       <group position={[offsetX, 0, offsetZ]}>
         <SynergyLinks />
         <InstancedTowers />
-        {isHigh && <InstancedTrails />}
+        {isHigh ? <InstancedTrails /> : null}
         <InstancedEnemies />
         <InstancedProjectiles />
         <InstancedExplosions remove={removeEffect} />
@@ -55,10 +55,10 @@ export const SceneContent = () => {
         maxDistance={50}
       />
 
-      {isHigh && <SoftShadows size={10} samples={8} />}
+      {isHigh ? <SoftShadows size={10} samples={8} /> : null}
 
       {/* Post Processing */}
-      {isHigh && (
+      {isHigh ? (
         <EffectComposer enableNormalPass={false}>
           <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.6} />
           <Vignette eskil={false} offset={0.1} darkness={1.1} />
@@ -68,7 +68,7 @@ export const SceneContent = () => {
             modulationOffset={0}
           />
         </EffectComposer>
-      )}
+      ) : null}
     </>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 
-import { useAudio } from '../../game/audio/AudioManager';
-import { useGame } from '../../game/GameState';
+import { useAudio } from '../../game/audio/useAudio';
+import { useGame } from '../../game/gameContexts';
 
 import { SettingsAudioSection } from './settings/SettingsAudioSection';
 import { SettingsExportImportSection } from './settings/SettingsExportImportSection';

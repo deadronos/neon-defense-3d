@@ -32,7 +32,7 @@ export const serializeCheckpoint = (ui: UiState, engine: EngineState): SaveV1 =>
       totalCurrencyEarned: totalEarned,
       researchPoints: clampMin(coerceInt(ui.researchPoints, 0), 0),
       upgrades: Object.fromEntries(
-        Object.entries(ui.upgrades ?? {}).map(([k, v]) => [k, clampMin(coerceInt(v, 0), 0)]),
+        Object.entries(ui.upgrades).map(([k, v]) => [k, clampMin(coerceInt(v, 0), 0)]),
       ),
     },
     checkpoint: {

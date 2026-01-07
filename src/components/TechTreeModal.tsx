@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useGame } from '../game/GameState';
+import { useGame } from '../game/gameContexts';
 import { UpgradeType } from '../types';
 
 interface TechTreeModalProps {
@@ -9,39 +9,37 @@ interface TechTreeModalProps {
   onAction?: () => void;
 }
 
+const UPGRADES = [
+  {
+    type: UpgradeType.GLOBAL_DAMAGE,
+    name: 'Weapon Overdrive',
+    desc: '+5% Damage to all towers',
+    baseCost: 1,
+    icon: '⚔️',
+    color: '#ff0055',
+  },
+  {
+    type: UpgradeType.GLOBAL_RANGE,
+    name: 'Sensor Array',
+    desc: '+5% Range to all towers',
+    baseCost: 1,
+    icon: '📡',
+    color: '#f9f871',
+  },
+  {
+    type: UpgradeType.GLOBAL_GREED,
+    name: 'Matter Recycler',
+    desc: '+5% Starting Money & Kill Rewards',
+    baseCost: 1,
+    icon: '💰',
+    color: '#00f2ff',
+  },
+] as const;
+
+const getCost = (level: number, baseCost: number) => baseCost + level;
+
 export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLabel, onAction }) => {
   const { gameState, purchaseUpgrade } = useGame();
-
-  const UPGRADES = [
-    {
-      type: UpgradeType.GLOBAL_DAMAGE,
-      name: 'Weapon Overdrive',
-      desc: '+5% Damage to all towers',
-      baseCost: 1,
-      icon: '⚔️',
-      color: '#ff0055',
-    },
-    {
-      type: UpgradeType.GLOBAL_RANGE,
-      name: 'Sensor Array',
-      desc: '+5% Range to all towers',
-      baseCost: 1,
-      icon: '📡',
-      color: '#f9f871',
-    },
-    {
-      type: UpgradeType.GLOBAL_GREED,
-      name: 'Matter Recycler',
-      desc: '+5% Starting Money & Kill Rewards',
-      baseCost: 1,
-      icon: '💰',
-      color: '#00f2ff',
-    },
-  ];
-
-  const getCost = (level: number, baseCost: number) => {
-    return baseCost + level; // Simple linear scaling: 1, 2, 3...
-  };
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -59,7 +57,7 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLab
                 {Math.floor(gameState.researchPoints)}
               </div>
             </div>
-            {onClose && (
+            {onClose ? (
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-white transition-colors"
@@ -80,14 +78,14 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLab
                   />
                 </svg>
               </button>
-            )}
+            ) : null}
           </div>
         </div>
 
         {/* Upgrade Grid */}
         <div className="flex-1 p-8 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-y-auto">
           {UPGRADES.map((u) => {
-            const level = gameState.upgrades[u.type] || 0;
+            const level = gameState.upgrades[u.type] ?? 0;
             const cost = getCost(level, u.baseCost);
             const canAfford = gameState.researchPoints >= cost;
 
@@ -123,21 +121,21 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLab
 
         {/* Footer */}
         <div className="p-6 border-t border-[#0f3460] flex justify-end bg-[#1a1a2e] gap-4">
-          {onClose && !onAction && (
+          {onClose && !onAction ? (
             <button
               onClick={onClose}
               className="px-6 py-3 text-[#00f2ff] hover:text-white hover:bg-[#00f2ff]/10 rounded transition-colors font-bold"
             >
               CLOSE
             </button>
-          )}
-          {onAction && (
+          ) : null}
+          {onAction ? (
             <button
               onClick={onAction}
               className="group relative px-8 py-3 bg-[#e94560] hover:bg-[#ff5777] text-white font-bold rounded overflow-hidden shadow-[0_0_20px_rgba(233,69,96,0.3)] transition-all"
             >
               <span className="relative z-10 flex items-center gap-2">
-                {actionLabel || 'CONTINUE'}
+                {actionLabel ?? 'CONTINUE'}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-5 w-5 transform group-hover:translate-x-1 transition-transform"
@@ -152,7 +150,7 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLab
                 </svg>
               </span>
             </button>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

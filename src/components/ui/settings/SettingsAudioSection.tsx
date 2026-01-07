@@ -28,7 +28,7 @@ export const SettingsAudioSection: React.FC<SettingsAudioSectionProps> = ({
           max="1"
           step="0.05"
           value={masterVolume}
-          onChange={(e) => setMasterVolume(parseFloat(e.target.value))}
+          onChange={(e) => setMasterVolume(Number.parseFloat(e.target.value))}
           className="flex-1"
         />
       </div>
@@ -40,7 +40,7 @@ export const SettingsAudioSection: React.FC<SettingsAudioSectionProps> = ({
           max="1"
           step="0.05"
           value={sfxVolume}
-          onChange={(e) => setSFXVolume(parseFloat(e.target.value))}
+          onChange={(e) => setSFXVolume(Number.parseFloat(e.target.value))}
           className="flex-1"
         />
       </div>
@@ -52,7 +52,7 @@ export const SettingsAudioSection: React.FC<SettingsAudioSectionProps> = ({
           max="1"
           step="0.05"
           value={musicVolume}
-          onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
+          onChange={(e) => setMusicVolume(Number.parseFloat(e.target.value))}
           className="flex-1"
         />
       </div>

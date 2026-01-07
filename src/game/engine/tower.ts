@@ -28,6 +28,13 @@ const PROJECTILE_SPAWN_OFFSET_Y = 1.5;
 /** Default projectile speed in world units per second. */
 const PROJECTILE_SPEED = 20;
 
+const getTowerColor = (type: string): string => {
+  const config = Object.prototype.hasOwnProperty.call(TOWER_CONFIGS, type)
+    ? TOWER_CONFIGS[type as unknown as TowerType]
+    : undefined;
+  return config?.color ?? '#ffffff';
+};
+
 const selectTowerWorldPosition = (tower: EngineTower, tileSize: number): EngineVector3 => [
   tower.gridPosition[0] * tileSize,
   TOWER_HEIGHT_Y,
@@ -37,6 +44,7 @@ const selectTowerWorldPosition = (tower: EngineTower, tileSize: number): EngineV
 const distanceSquared = (a: EngineVector3, b: EngineVector3) =>
   (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
 
+/* eslint-disable sonarjs/cognitive-complexity, complexity */
 export const stepTowers = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -83,8 +91,8 @@ export const stepTowers = (
   }
 
   for (let index = 0; index < state.towers.length; index += 1) {
-    const tower = state.towers[index];
-    if (!tower) continue;
+    const tower = state.towers.at(index);
+    if (tower === undefined) continue;
 
     const stats = getTowerStats(tower.type as TowerType, tower.level, {
       activeSynergies: tower.activeSynergies,
@@ -110,9 +118,8 @@ export const stepTowers = (
         MAP_HEIGHT,
         (enemy) => {
           const cachedPos = enemyPositions?.get(enemy.id);
-          const position = cachedPos
-            ? cachedPos
-            : writeEnemyWorldPosition(scratchEnemyPos, enemy, pathWaypoints, tileSize);
+          const position =
+            cachedPos ?? writeEnemyWorldPosition(scratchEnemyPos, enemy, pathWaypoints, tileSize);
           const d2 = distanceSquared(towerPos, position);
           if (d2 <= rangeSquared && d2 < minDistanceSquared) {
             minDistanceSquared = d2;
@@ -142,7 +149,7 @@ export const stepTowers = (
       towerPos[2],
     ];
 
-    const color = TOWER_CONFIGS[tower.type as keyof typeof TOWER_CONFIGS]?.color ?? '#ffffff';
+    const color = getTowerColor(tower.type);
 
     newProjectiles.push({
       id: projectileId,
@@ -159,7 +166,7 @@ export const stepTowers = (
     events.immediate.push({ type: 'ProjectileFired', projectileId, towerId: tower.id });
 
     const nextTower: EngineTower = { ...tower, lastFired: context.nowMs, targetId };
-    if (!nextTowers) nextTowers = state.towers.slice();
+    nextTowers ??= state.towers.slice();
     nextTowers[index] = nextTower;
   }
 
@@ -174,3 +181,4 @@ export const stepTowers = (
 
   return { patch, events };
 };
+/* eslint-enable sonarjs/cognitive-complexity, complexity */

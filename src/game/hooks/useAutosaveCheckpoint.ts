@@ -25,8 +25,7 @@ export const useAutosaveCheckpoint = (
     // Dev StrictMode can double-run effects; skip duplicate writes for the same wave.
     const existing = loadCheckpoint();
     if (
-      existing &&
-      existing.checkpoint.waveToStart === nextSave.checkpoint.waveToStart &&
+      existing?.checkpoint.waveToStart === nextSave.checkpoint.waveToStart &&
       existing.ui.currentMapIndex === nextSave.ui.currentMapIndex
     ) {
       return;
