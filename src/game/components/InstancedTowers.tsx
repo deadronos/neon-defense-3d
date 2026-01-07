@@ -1,33 +1,29 @@
 import type { ThreeEvent } from '@react-three/fiber';
-import { useFrame } from '@react-three/fiber';
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import * as THREE from 'three';
 
 import { TOWER_CONFIGS } from '../../constants';
-import type { UpgradeType } from '../../types';
+import type { UpgradeType, TowerEntity, TowerType } from '../../types';
 import { useGameUi, useRenderState } from '../gameContexts';
 import { getTowerStats } from '../utils';
 
 import { createComplexTowerBase } from './instancing/geometryUtils';
-import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { useInstancedUpdater } from './instancing/useInstancedUpdater';
 
 // eslint-disable-next-line max-lines-per-function
 export const InstancedTowers: React.FC = () => {
   const { setSelectedEntityId, selectedEntityId, gameState } = useGameUi();
-  const renderStateRef = useRenderState();
   const [baseGeometry, setBaseGeometry] = useState<THREE.BufferGeometry | null>(null);
-  const baseMeshRef = useRef<THREE.InstancedMesh>(null);
-  const turretMeshRef = useRef<THREE.InstancedMesh>(null);
-  const ringMeshRef = useRef<THREE.InstancedMesh>(null);
-  const rangeMeshRef = useRef<THREE.InstancedMesh>(null);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
+
   const colorCache = useRef<Map<string, THREE.Color>>(new Map());
 
-  useLayoutEffect(() => {
-    if (baseMeshRef.current) ensureInstanceColor(baseMeshRef.current, 100);
-    if (turretMeshRef.current) ensureInstanceColor(turretMeshRef.current, 100);
-    if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, 100);
-  }, []);
+  const getCachedColor = (colorStr: string) => {
+    if (!colorCache.current.has(colorStr)) {
+      colorCache.current.set(colorStr, new THREE.Color(colorStr));
+    }
+    return colorCache.current.get(colorStr)!;
+  };
 
   useEffect(() => {
     const geo = createComplexTowerBase();
@@ -37,131 +33,94 @@ export const InstancedTowers: React.FC = () => {
     };
   }, []);
 
-  const getCachedColor = (colorStr: string) => {
-    if (!colorCache.current.has(colorStr)) {
-      colorCache.current.set(colorStr, new THREE.Color(colorStr));
-    }
-    return colorCache.current.get(colorStr)!;
-  };
+  const { setMeshRef } = useInstancedUpdater<TowerEntity>(
+    (state) => state.towers,
+    {
+      count: 100,
+      meshKeys: ['base', 'turret', 'ring', 'range'],
+      updateInstance: (i, tower, dummy, meshes, { time }) => {
+        const baseColor = TOWER_CONFIGS[tower.type as TowerType].color;
+        const colorObj = getCachedColor(baseColor);
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity, complexity
-  useFrame(({ clock }) => {
-    const towers = renderStateRef.current.towers;
-    const count = 100;
+        // Base
+        if (meshes.base) {
+            dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
+            dummy.rotation.set(0, 0, 0);
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+            meshes.base.setMatrixAt(i, dummy.matrix);
 
-    if (baseMeshRef.current) ensureInstanceColor(baseMeshRef.current, count);
-    if (turretMeshRef.current) ensureInstanceColor(turretMeshRef.current, count);
-    if (ringMeshRef.current) ensureInstanceColor(ringMeshRef.current, count);
-
-    const renderCount = Math.min(towers.length, count);
-    const time = clock.getElapsedTime();
-
-    if (baseMeshRef.current) baseMeshRef.current.count = renderCount;
-    if (turretMeshRef.current) turretMeshRef.current.count = renderCount;
-    if (ringMeshRef.current) ringMeshRef.current.count = renderCount;
-    if (rangeMeshRef.current) rangeMeshRef.current.count = renderCount;
-
-    for (let i = 0; i < renderCount; i++) {
-      const tower = towers[i];
-      const baseColor = TOWER_CONFIGS[tower.type].color;
-      const colorObj = getCachedColor(baseColor);
-
-      if (baseMeshRef.current) {
-        dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
-        dummy.rotation.set(0, 0, 0);
-        dummy.scale.set(1, 1, 1);
-        dummy.updateMatrix();
-        baseMeshRef.current.setMatrixAt(i, dummy.matrix);
-
-        if (tower.id === selectedEntityId) {
-          TEMP_COLOR.set('#ffffff');
-        } else {
-          TEMP_COLOR.copy(colorObj).multiplyScalar(1.0);
+            if (tower.id === selectedEntityId) {
+              TEMP_COLOR.set('#ffffff');
+            } else {
+              TEMP_COLOR.copy(colorObj).multiplyScalar(1.0);
+            }
+            meshes.base.setColorAt(i, TEMP_COLOR);
         }
-        baseMeshRef.current.setColorAt(i, TEMP_COLOR);
-      }
 
-      if (turretMeshRef.current) {
-        dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
-        dummy.position.y += 0.8;
-        const scale = 0.5 + tower.level * 0.1;
-        dummy.scale.set(scale, scale, scale);
-        dummy.rotation.set(0, time, 0);
-        dummy.updateMatrix();
-        turretMeshRef.current.setMatrixAt(i, dummy.matrix);
+        // Turret
+        if (meshes.turret) {
+            dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
+            dummy.position.y += 0.8;
+            const scale = 0.5 + tower.level * 0.1;
+            dummy.scale.set(scale, scale, scale);
+            dummy.rotation.set(0, time, 0);
+            dummy.updateMatrix();
+            meshes.turret.setMatrixAt(i, dummy.matrix);
 
-        TEMP_COLOR.copy(colorObj).multiplyScalar(2.5);
-        turretMeshRef.current.setColorAt(i, TEMP_COLOR);
-      }
+            TEMP_COLOR.copy(colorObj).multiplyScalar(2.5);
+            meshes.turret.setColorAt(i, TEMP_COLOR);
+        }
 
-      if (ringMeshRef.current) {
-        dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
-        dummy.position.y += 0.8;
+        // Ring
+        if (meshes.ring) {
+            dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
+            dummy.position.y += 0.8;
 
-        dummy.rotation.x = Math.sin(time + i) * 0.2;
-        dummy.rotation.y = time;
-        const ringScale = 1.0 + Math.sin(time * 2 + i) * 0.1;
-        dummy.scale.set(ringScale, ringScale, ringScale);
+            dummy.rotation.x = Math.sin(time + i) * 0.2;
+            dummy.rotation.y = time;
+            const ringScale = 1.0 + Math.sin(time * 2 + i) * 0.1;
+            dummy.scale.set(ringScale, ringScale, ringScale);
 
-        dummy.updateMatrix();
-        ringMeshRef.current.setMatrixAt(i, dummy.matrix);
+            dummy.updateMatrix();
+            meshes.ring.setMatrixAt(i, dummy.matrix);
 
-        TEMP_COLOR.copy(colorObj).multiplyScalar(0.8);
-        ringMeshRef.current.setColorAt(i, TEMP_COLOR);
-      }
+            TEMP_COLOR.copy(colorObj).multiplyScalar(0.8);
+            meshes.ring.setColorAt(i, TEMP_COLOR);
+        }
 
-      if (rangeMeshRef.current) {
-        if (tower.id === selectedEntityId) {
-          const stats = getTowerStats(tower.type, tower.level, {
-            upgrades: gameState.upgrades as { [key in UpgradeType]?: number },
-            activeSynergies: tower.activeSynergies,
-          });
-          dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
-          dummy.position.y += 0.1;
-          dummy.rotation.set(Math.PI / 2, 0, 0);
-          dummy.scale.set(stats.range, stats.range, 1);
-          dummy.updateMatrix();
-          rangeMeshRef.current.setMatrixAt(i, dummy.matrix);
-          TEMP_COLOR.set('#00ffff');
-          rangeMeshRef.current.setColorAt(i, TEMP_COLOR);
-        } else {
-          rangeMeshRef.current.setMatrixAt(i, ZERO_MATRIX);
+        // Range
+        if (meshes.range) {
+            if (tower.id === selectedEntityId) {
+              const stats = getTowerStats(tower.type, tower.level, {
+                upgrades: gameState.upgrades as { [key in UpgradeType]?: number },
+                activeSynergies: tower.activeSynergies,
+              });
+              dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
+              dummy.position.y += 0.1;
+              dummy.rotation.set(Math.PI / 2, 0, 0);
+              dummy.scale.set(stats.range, stats.range, 1);
+              dummy.updateMatrix();
+              meshes.range.setMatrixAt(i, dummy.matrix);
+              TEMP_COLOR.set('#00ffff');
+              meshes.range.setColorAt(i, TEMP_COLOR);
+            } else {
+              meshes.range.setMatrixAt(i, ZERO_MATRIX);
+            }
         }
       }
     }
+  );
 
-    if (baseMeshRef.current) {
-      baseMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (baseMeshRef.current.instanceColor) {
-        baseMeshRef.current.instanceColor.needsUpdate = true;
-      }
-    }
-    if (turretMeshRef.current) {
-      turretMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (turretMeshRef.current.instanceColor) {
-        turretMeshRef.current.instanceColor.needsUpdate = true;
-      }
-    }
-    if (ringMeshRef.current) {
-      ringMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (ringMeshRef.current.instanceColor) {
-        ringMeshRef.current.instanceColor.needsUpdate = true;
-      }
-    }
-    if (rangeMeshRef.current) {
-      rangeMeshRef.current.instanceMatrix.needsUpdate = true;
-      if (rangeMeshRef.current.instanceColor) {
-        rangeMeshRef.current.instanceColor.needsUpdate = true;
-      }
-    }
-  });
+  const renderStateRef = useRenderState();
 
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation();
-    if (e.instanceId === undefined) return;
-    const tower = renderStateRef.current.towers.at(e.instanceId);
-    if (tower === undefined) return;
-    setSelectedEntityId(tower.id);
+      e.stopPropagation();
+      if (e.instanceId === undefined) return;
+      const towers = renderStateRef.current.towers;
+      const tower = towers[e.instanceId];
+      if (tower === undefined) return;
+      setSelectedEntityId(tower.id);
   };
 
   if (!baseGeometry) return null;
@@ -169,7 +128,7 @@ export const InstancedTowers: React.FC = () => {
   return (
     <group>
       <instancedMesh
-        ref={baseMeshRef}
+        ref={setMeshRef('base')}
         args={[baseGeometry, undefined, 100]}
         onPointerDown={handlePointerDown}
         frustumCulled={false}
@@ -178,7 +137,7 @@ export const InstancedTowers: React.FC = () => {
       </instancedMesh>
 
       <instancedMesh
-        ref={turretMeshRef}
+        ref={setMeshRef('turret')}
         args={[undefined, undefined, 100]}
         raycast={() => null}
         frustumCulled={false}
@@ -188,7 +147,7 @@ export const InstancedTowers: React.FC = () => {
       </instancedMesh>
 
       <instancedMesh
-        ref={ringMeshRef}
+        ref={setMeshRef('ring')}
         args={[undefined, undefined, 100]}
         raycast={() => null}
         frustumCulled={false}
@@ -198,7 +157,7 @@ export const InstancedTowers: React.FC = () => {
       </instancedMesh>
 
       <instancedMesh
-        ref={rangeMeshRef}
+        ref={setMeshRef('range')}
         args={[undefined, undefined, 100]}
         raycast={() => null}
         frustumCulled={false}
