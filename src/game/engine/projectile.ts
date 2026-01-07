@@ -1,4 +1,8 @@
 import type { EngineEvent } from './events';
+import { createExplosionEffect } from './projectile/effects';
+import { addHit, applyFreeze } from './projectile/hitResolution';
+import type { ImpactContext } from './projectile/impactSearch';
+import { ensureEnemyPosition, findTargetsInSplash } from './projectile/impactSearch';
 import type { EngineCache } from './step';
 import type {
   EngineEffectIntent,
@@ -11,9 +15,6 @@ import type {
   EngineMutableVector3,
   EngineVector2,
 } from './types';
-import { createExplosionEffect } from './projectile/effects';
-import { addHit, applyFreeze } from './projectile/hitResolution';
-import { ensureEnemyPosition, findTargetsInSplash, ImpactContext } from './projectile/impactSearch';
 
 export interface StepProjectilesOptions {
   greedMultiplier?: number;
@@ -25,7 +26,7 @@ const PROJECTILE_PROGRESS_RATE = 3; // Matches legacy behavior: progress += delt
 const EFFECT_DURATION_SECONDS = 0.8;
 const DEFAULT_EFFECT_SCALE = 0.4;
 
-/* eslint-disable max-lines-per-function, sonarjs/cognitive-complexity, complexity */
+/* eslint-disable sonarjs/cognitive-complexity, complexity */
 export const stepProjectiles = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -78,7 +79,7 @@ export const stepProjectiles = (
     enemyPositionPool,
     spatialGrid: cache?.spatialGrid,
     pathWaypoints,
-    tileSize
+    tileSize,
   };
 
   for (const enemy of state.enemies) {
@@ -91,32 +92,33 @@ export const stepProjectiles = (
 
     const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;
     if (nextProgress >= 1) {
-      if (projectile.splashRadius && projectile.splashRadius > 0) {
+      if (projectile.splashRadius != null && projectile.splashRadius > 0) {
         // We can look up the target position directly if it exists, otherwise compute it.
-        const impactPos = enemyPositions.get(target.id) ?? ensureEnemyPosition(target, impactContext);
+        const impactPos =
+          enemyPositions.get(target.id) ?? ensureEnemyPosition(target, impactContext);
 
         // Visual Effect for AOE Impact
         const explosion = createExplosionEffect(
-            nextEffectCounter,
-            impactPos,
-            projectile.color,
-            projectile.splashRadius,
-            context.nowMs / 1000,
-            0.5
+          nextEffectCounter,
+          impactPos,
+          projectile.color,
+          projectile.splashRadius,
+          context.nowMs / 1000,
+          0.5,
         );
         nextEffectCounter = explosion.newCounter;
         addedEffects.push(explosion.effect);
 
         findTargetsInSplash(
-            impactPos,
-            projectile.splashRadius,
-            state.enemies,
-            impactContext,
-            (enemy) => {
-                addHit(hits, enemy.id, projectile.damage);
-                applyFreeze(freezeHits, enemy.id, projectile.freezeDuration);
-                frameTotalDamage += projectile.damage;
-            }
+          impactPos,
+          projectile.splashRadius,
+          state.enemies,
+          impactContext,
+          (enemy) => {
+            addHit(hits, enemy.id, projectile.damage);
+            applyFreeze(freezeHits, enemy.id, projectile.freezeDuration);
+            frameTotalDamage += projectile.damage;
+          },
         );
       } else {
         addHit(hits, projectile.targetId, projectile.damage);
@@ -166,12 +168,12 @@ export const stepProjectiles = (
         const position = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy, impactContext);
 
         const explosion = createExplosionEffect(
-            nextEffectCounter,
-            position,
-            enemy.color,
-            enemy.scale ?? DEFAULT_EFFECT_SCALE,
-            context.nowMs / 1000,
-            EFFECT_DURATION_SECONDS
+          nextEffectCounter,
+          position,
+          enemy.color,
+          enemy.scale ?? DEFAULT_EFFECT_SCALE,
+          context.nowMs / 1000,
+          EFFECT_DURATION_SECONDS,
         );
         nextEffectCounter = explosion.newCounter;
         addedEffects.push(explosion.effect);
@@ -203,4 +205,4 @@ export const stepProjectiles = (
 
   return { patch, events };
 };
-/* eslint-enable max-lines-per-function, sonarjs/cognitive-complexity, complexity */
+/* eslint-enable sonarjs/cognitive-complexity, complexity */

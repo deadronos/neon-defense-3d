@@ -1,9 +1,10 @@
+import type { ThreeEvent } from '@react-three/fiber';
 import { useCallback, useRef, useMemo } from 'react';
 import * as THREE from 'three';
-import { ThreeEvent } from '@react-three/fiber';
+
+import { TILE_SIZE } from '../../constants';
 import { TileType } from '../../types';
 import { useWorld } from '../gameContexts';
-import { TILE_SIZE } from '../../constants';
 
 type Tile = { x: number; z: number; type: TileType };
 

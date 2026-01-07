@@ -1,4 +1,3 @@
-import type { ThreeEvent } from '@react-three/fiber';
 import { useFrame } from '@react-three/fiber';
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
@@ -6,9 +5,9 @@ import * as THREE from 'three';
 import { TILE_SIZE, MAP_WIDTH, MAP_HEIGHT } from '../../constants';
 import { TileType } from '../../types';
 import { useWorld } from '../gameContexts';
-import { createTileMaterial, createGridMaterial } from '../render/tileShaders';
 import { createGridGeometry } from '../geometry/grid';
 import { useTileHover } from '../hooks/useTileHover';
+import { createTileMaterial, createGridMaterial } from '../render/tileShaders';
 
 type Tile = { x: number; z: number; type: TileType };
 
@@ -24,10 +23,7 @@ const TILE_COLORS: Record<TileType, string> = {
 
 // eslint-disable-next-line max-lines-per-function
 export const World = React.memo(() => {
-  const {
-    mapGrid,
-    currentMapIndex,
-  } = useWorld();
+  const { mapGrid, currentMapIndex } = useWorld();
 
   const grassMeshRef = useRef<THREE.InstancedMesh>(null);
   const pathMeshRef = useRef<THREE.InstancedMesh>(null);
@@ -43,33 +39,16 @@ export const World = React.memo(() => {
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   // Use the extracted hook for hover and interaction logic
-  const {
-    hoverMeshRef,
-    handlePointerMove,
-    handlePointerOut,
-    handlePointerDown,
-    hoverValidColor,
-  } = useTileHover();
+  const { hoverMeshRef, handlePointerMove, handlePointerOut, handlePointerDown, hoverValidColor } =
+    useTileHover();
 
   // Create shader materials
   const gridMaterial = useMemo(() => createGridMaterial(), []);
 
-  const grassMaterial = useMemo(
-    () => createTileMaterial(TILE_COLORS[TileType.Grass]),
-    [],
-  );
-  const pathMaterial = useMemo(
-    () => createTileMaterial(TILE_COLORS[TileType.Path]),
-    [],
-  );
-  const spawnMaterial = useMemo(
-    () => createTileMaterial(TILE_COLORS[TileType.Spawn]),
-    [],
-  );
-  const baseMaterial = useMemo(
-    () => createTileMaterial(TILE_COLORS[TileType.Base]),
-    [],
-  );
+  const grassMaterial = useMemo(() => createTileMaterial(TILE_COLORS[TileType.Grass]), []);
+  const pathMaterial = useMemo(() => createTileMaterial(TILE_COLORS[TileType.Path]), []);
+  const spawnMaterial = useMemo(() => createTileMaterial(TILE_COLORS[TileType.Spawn]), []);
+  const baseMaterial = useMemo(() => createTileMaterial(TILE_COLORS[TileType.Base]), []);
 
   // Update time uniform for animation
   useFrame((state) => {

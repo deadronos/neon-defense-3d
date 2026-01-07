@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 
-export const createGridGeometry = (width: number, height: number, tileSize: number): THREE.BufferGeometry => {
+export const createGridGeometry = (
+  width: number,
+  height: number,
+  tileSize: number,
+): THREE.BufferGeometry => {
   const positions: number[] = [];
 
   // Tiles are centered at (x * tileSize, z * tileSize) within the World's group.

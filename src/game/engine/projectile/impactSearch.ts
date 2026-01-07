@@ -1,8 +1,8 @@
 import { MAP_HEIGHT, MAP_WIDTH } from '../../../constants';
-import type { EngineEnemy, EngineVector3, EngineMutableVector3, EngineVector2 } from '../types';
-import { forEachNearbyEnemy } from '../spatial';
 import { writeEnemyWorldPosition } from '../selectors';
-import { SpatialGrid } from '../spatial';
+import { forEachNearbyEnemy } from '../spatial';
+import type { SpatialGrid } from '../spatial';
+import type { EngineEnemy, EngineVector3, EngineMutableVector3, EngineVector2 } from '../types';
 
 const distanceSquared = (a: EngineVector3, b: EngineVector3) =>
   (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
@@ -15,10 +15,7 @@ export interface ImpactContext {
   tileSize: number;
 }
 
-export const ensureEnemyPosition = (
-  enemy: EngineEnemy,
-  context: ImpactContext
-): EngineVector3 => {
+export const ensureEnemyPosition = (enemy: EngineEnemy, context: ImpactContext): EngineVector3 => {
   const { enemyPositions, enemyPositionPool, pathWaypoints, tileSize } = context;
   const existing = enemyPositions.get(enemy.id);
   if (existing !== undefined) {
@@ -36,7 +33,7 @@ export const findTargetsInSplash = (
   splashRadius: number,
   enemies: readonly EngineEnemy[],
   context: ImpactContext,
-  callback: (enemy: EngineEnemy) => void
+  callback: (enemy: EngineEnemy) => void,
 ) => {
   const splashRadiusSquared = splashRadius ** 2;
   const { spatialGrid, tileSize } = context;
@@ -54,7 +51,7 @@ export const findTargetsInSplash = (
         if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
           callback(enemy);
         }
-      }
+      },
     );
   } else {
     for (const enemy of enemies) {

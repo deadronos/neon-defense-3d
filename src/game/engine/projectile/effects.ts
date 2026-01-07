@@ -6,7 +6,7 @@ export const createExplosionEffect = (
   color: string | undefined,
   scale: number,
   createdAt: number,
-  duration: number
+  duration: number,
 ): { effect: EngineEffectIntent; newCounter: number } => {
   const newCounter = effectCounter + 1;
   const effect: EngineEffectIntent = {
