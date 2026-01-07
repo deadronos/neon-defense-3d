@@ -1,8 +1,8 @@
-import { MAP_HEIGHT, MAP_WIDTH } from '../../constants';
-
 import type { EngineEvent } from './events';
-import { writeEnemyWorldPosition } from './selectors';
-import { forEachNearbyEnemy } from './spatial';
+import { createExplosionEffect } from './projectile/effects';
+import { addHit, applyFreeze } from './projectile/hitResolution';
+import type { ImpactContext } from './projectile/impactSearch';
+import { ensureEnemyPosition, findTargetsInSplash } from './projectile/impactSearch';
 import type { EngineCache } from './step';
 import type {
   EngineEffectIntent,
@@ -14,11 +14,7 @@ import type {
   EngineTickResult,
   EngineMutableVector3,
   EngineVector2,
-  EngineVector3,
 } from './types';
-
-const distanceSquared = (a: EngineVector3, b: EngineVector3) =>
-  (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
 
 export interface StepProjectilesOptions {
   greedMultiplier?: number;
@@ -30,24 +26,7 @@ const PROJECTILE_PROGRESS_RATE = 3; // Matches legacy behavior: progress += delt
 const EFFECT_DURATION_SECONDS = 0.8;
 const DEFAULT_EFFECT_SCALE = 0.4;
 
-const isPositiveNumber = (value: number | undefined): value is number =>
-  value !== undefined && value > 0;
-
-const addHit = (hits: Map<string, number>, enemyId: string, damage: number) => {
-  hits.set(enemyId, (hits.get(enemyId) ?? 0) + damage);
-};
-
-const applyFreeze = (
-  freezeHits: Map<string, number>,
-  enemyId: string,
-  freezeDuration: number | undefined,
-) => {
-  if (!isPositiveNumber(freezeDuration)) return;
-  const current = freezeHits.get(enemyId) ?? 0;
-  freezeHits.set(enemyId, Math.max(current, freezeDuration));
-};
-
-/* eslint-disable max-lines-per-function, sonarjs/cognitive-complexity, complexity */
+/* eslint-disable sonarjs/cognitive-complexity, complexity */
 export const stepProjectiles = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -73,7 +52,7 @@ export const stepProjectiles = (
   if (cache) freezeHits.clear();
 
   const activeProjectiles = cache ? cache.activeProjectiles : [];
-  if (cache) activeProjectiles.length = 0; // Clear array
+  if (cache) activeProjectiles.length = 0;
 
   let frameTotalDamage = 0;
   let nextEffectCounter = state.idCounters.effect;
@@ -94,16 +73,13 @@ export const stepProjectiles = (
     cache.enemyPositionsSource = undefined;
   }
 
-  const ensureEnemyPosition = (enemy: EngineEnemy): EngineVector3 => {
-    const existing = enemyPositions.get(enemy.id);
-    if (existing !== undefined) {
-      writeEnemyWorldPosition(existing, enemy, pathWaypoints, tileSize);
-      return existing;
-    }
-    const next = enemyPositionPool.pop() ?? [0, 0, 0];
-    writeEnemyWorldPosition(next, enemy, pathWaypoints, tileSize);
-    enemyPositions.set(enemy.id, next);
-    return next;
+  // Build context for impact search
+  const impactContext: ImpactContext = {
+    enemyPositions,
+    enemyPositionPool,
+    spatialGrid: cache?.spatialGrid,
+    pathWaypoints,
+    tileSize,
   };
 
   for (const enemy of state.enemies) {
@@ -116,53 +92,34 @@ export const stepProjectiles = (
 
     const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;
     if (nextProgress >= 1) {
-      if (isPositiveNumber(projectile.splashRadius)) {
+      if (projectile.splashRadius != null && projectile.splashRadius > 0) {
         // We can look up the target position directly if it exists, otherwise compute it.
-        const impactPos = enemyPositions.get(target.id) ?? ensureEnemyPosition(target);
+        const impactPos =
+          enemyPositions.get(target.id) ?? ensureEnemyPosition(target, impactContext);
 
         // Visual Effect for AOE Impact
-        nextEffectCounter += 1;
-        addedEffects.push({
-          id: `effect-${nextEffectCounter}`,
-          type: 'explosion',
-          position: impactPos,
-          color: projectile.color,
-          scale: projectile.splashRadius,
-          createdAt: context.nowMs / 1000,
-          duration: 0.5,
-        });
+        const explosion = createExplosionEffect(
+          nextEffectCounter,
+          impactPos,
+          projectile.color,
+          projectile.splashRadius,
+          context.nowMs / 1000,
+          0.5,
+        );
+        nextEffectCounter = explosion.newCounter;
+        addedEffects.push(explosion.effect);
 
-        const splashRadiusSquared = projectile.splashRadius ** 2;
-
-        const spatialGrid = cache?.spatialGrid;
-        if (spatialGrid) {
-          forEachNearbyEnemy(
-            spatialGrid,
-            impactPos,
-            projectile.splashRadius,
-            tileSize,
-            MAP_WIDTH,
-            MAP_HEIGHT,
-            (enemy) => {
-              const pos = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy);
-              if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
-                addHit(hits, enemy.id, projectile.damage);
-                applyFreeze(freezeHits, enemy.id, projectile.freezeDuration);
-                frameTotalDamage += projectile.damage;
-              }
-            },
-          );
-        } else {
-          for (const enemy of state.enemies) {
-            const pos = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy);
-
-            if (distanceSquared(impactPos, pos) <= splashRadiusSquared) {
-              addHit(hits, enemy.id, projectile.damage);
-              applyFreeze(freezeHits, enemy.id, projectile.freezeDuration);
-              frameTotalDamage += projectile.damage;
-            }
-          }
-        }
+        findTargetsInSplash(
+          impactPos,
+          projectile.splashRadius,
+          state.enemies,
+          impactContext,
+          (enemy) => {
+            addHit(hits, enemy.id, projectile.damage);
+            applyFreeze(freezeHits, enemy.id, projectile.freezeDuration);
+            frameTotalDamage += projectile.damage;
+          },
+        );
       } else {
         addHit(hits, projectile.targetId, projectile.damage);
         applyFreeze(freezeHits, projectile.targetId, projectile.freezeDuration);
@@ -208,20 +165,19 @@ export const stepProjectiles = (
         };
         events.deferred.push(killedEvent);
 
-        nextEffectCounter += 1;
-        const effectId = `effect-${nextEffectCounter}`;
-        // Optimization: use cached position if available
-        const position = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy);
+        const position = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy, impactContext);
 
-        addedEffects.push({
-          id: effectId,
-          type: 'explosion',
+        const explosion = createExplosionEffect(
+          nextEffectCounter,
           position,
-          color: enemy.color,
-          scale: enemy.scale ?? DEFAULT_EFFECT_SCALE,
-          createdAt: context.nowMs / 1000,
-          duration: EFFECT_DURATION_SECONDS,
-        });
+          enemy.color,
+          enemy.scale ?? DEFAULT_EFFECT_SCALE,
+          context.nowMs / 1000,
+          EFFECT_DURATION_SECONDS,
+        );
+        nextEffectCounter = explosion.newCounter;
+        addedEffects.push(explosion.effect);
+
         continue;
       }
 
@@ -249,4 +205,4 @@ export const stepProjectiles = (
 
   return { patch, events };
 };
-/* eslint-enable max-lines-per-function, sonarjs/cognitive-complexity, complexity */
+/* eslint-enable sonarjs/cognitive-complexity, complexity */
