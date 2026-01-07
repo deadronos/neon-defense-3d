@@ -51,24 +51,24 @@ export const createComplexTowerBase = (): THREE.BufferGeometry => {
       [-pylonOffset, -pylonOffset],
     ];
 
-    positions.forEach(([x, z]) => {
+    for (const [x, z] of positions) {
       const clone = pylonGeo.clone();
       clone.translate(x, 0, z);
       parts.push(clone);
-    });
+    }
 
     // CRITICAL: Ensure all geometries are non-indexed for safe merging
     const nonIndexedParts = parts.map((g) => g.toNonIndexed());
 
     // Dispose originals
-    parts.forEach((g) => g.dispose());
+    for (const g of parts) g.dispose();
     pylonGeo.dispose();
 
     // 3. Merge
     const merged = mergeGeometries(nonIndexedParts);
 
     // Cleanup non-indexed parts
-    nonIndexedParts.forEach((g) => g.dispose());
+    for (const g of nonIndexedParts) g.dispose();
 
     if (!merged) {
       console.error('Merge failed, returned null/undefined');
@@ -76,8 +76,8 @@ export const createComplexTowerBase = (): THREE.BufferGeometry => {
     }
 
     return merged;
-  } catch (e) {
-    console.error('Failed to generate complex tower geometry:', e);
+  } catch (err) {
+    console.error('Failed to generate complex tower geometry:', err);
     return new THREE.BoxGeometry(1, 0.2, 1);
   }
 };

@@ -53,6 +53,7 @@ export const toWaveState = (engineWave: EngineState['wave']): WaveState | null =
 /**
  * Converts an engine enemy to a UI enemy entity.
  */
+/* eslint-disable complexity */
 export const toEnemyEntity = (
   enemy: EngineEnemy,
   enemyTypeMap: Map<string, EnemyConfig>,
@@ -85,6 +86,7 @@ export const toEnemyEntity = (
     abilityActiveTimer: enemy.abilityActiveTimer ?? 0,
   };
 };
+/* eslint-enable complexity */
 
 /**
  * Converts an engine projectile to a UI projectile entity.

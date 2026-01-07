@@ -4,7 +4,7 @@ import React from 'react';
 import { describe, it, vi } from 'vitest';
 
 // Mock the useGame hook to simulate victory flow
-vi.mock('../../game/GameState', () => {
+vi.mock('../../game/gameContexts', () => {
   return {
     useGame: () => ({
       gameState: {

@@ -39,7 +39,7 @@ export const runtimeReducer = (state: RuntimeState, action: RuntimeAction): Runt
       };
     case 'placeTower': {
       const config = TOWER_CONFIGS[action.towerType];
-      if (!config || state.ui.money < config.cost) return state;
+      if (state.ui.money < config.cost) return state;
 
       const { id, state: afterId } = allocateId(state.engine, 'tower');
       const nextTower = {
@@ -82,7 +82,7 @@ export const runtimeReducer = (state: RuntimeState, action: RuntimeAction): Runt
       const tower = state.engine.towers.find((t) => t.id === action.id);
       if (!tower) return state;
       const config = TOWER_CONFIGS[tower.type as TowerType];
-      const refund = Math.floor((config?.cost ?? 0) * 0.7);
+      const refund = Math.floor(config.cost * 0.7);
 
       const filteredTowers = state.engine.towers.filter((t) => t.id !== action.id);
       const synergies = calculateSynergies(filteredTowers);

@@ -64,14 +64,16 @@ export interface GameState {
   } | null;
 }
 
-export enum UpgradeType {
-  GLOBAL_DAMAGE = 'GLOBAL_DAMAGE',
-  GLOBAL_RANGE = 'GLOBAL_RANGE',
-  GLOBAL_GREED = 'GLOBAL_GREED',
+export const UpgradeType = {
+  GLOBAL_DAMAGE: 'GLOBAL_DAMAGE',
+  GLOBAL_RANGE: 'GLOBAL_RANGE',
+  GLOBAL_GREED: 'GLOBAL_GREED',
   // Per-tower or specific upgrades
-  TOWER_DAMAGE = 'TOWER_DAMAGE',
+  TOWER_DAMAGE: 'TOWER_DAMAGE',
   // Can add specific tower upgrades later if needed, generic for now
-}
+} as const;
+
+export type UpgradeType = (typeof UpgradeType)[keyof typeof UpgradeType];
 
 /**
  * Configuration settings for an enemy type.
@@ -146,18 +148,20 @@ export interface ProjectileEntity {
 /**
  * Enum defining the available tower types.
  */
-export enum TowerType {
+export const TowerType = {
   /** Basic balanced tower. */
-  Basic = 'Basic',
+  Basic: 'Basic',
   /** High fire rate, low range tower. */
-  Rapid = 'Rapid',
+  Rapid: 'Rapid',
   /** Long range, high damage tower. */
-  Sniper = 'Sniper',
+  Sniper: 'Sniper',
   /** Slows enemies down. */
-  Cryo = 'Cryo',
+  Cryo: 'Cryo',
   /** Deals splash damage. */
-  Missile = 'Missile',
-}
+  Missile: 'Missile',
+} as const;
+
+export type TowerType = (typeof TowerType)[keyof typeof TowerType];
 
 /**
  * Configuration settings for a tower type.
@@ -219,16 +223,18 @@ export interface EffectEntity {
 /**
  * Enum defining the types of tiles in the map grid.
  */
-export enum TileType {
+export const TileType = {
   /** Empty grass tile (buildable?). Usually non-path. */
-  Grass = 0,
+  Grass: 0,
   /** Path tile where enemies walk. */
-  Path = 1,
+  Path: 1,
   /** Enemy spawn point. */
-  Spawn = 2,
+  Spawn: 2,
   /** Player base (destination). */
-  Base = 3,
-}
+  Base: 3,
+} as const;
+
+export type TileType = (typeof TileType)[keyof typeof TileType];
 
 /**
  * Represents the current state of the wave system.
@@ -246,12 +252,14 @@ export interface WaveState {
   timer: number;
 }
 
-export enum SynergyType {
-  SYNCHRONIZED_FIRE = 'SYNCHRONIZED_FIRE',
-  TRIANGULATION = 'TRIANGULATION',
-  COVER_FIRE_SOURCE = 'COVER_FIRE_SOURCE',
-  COVER_FIRE_RECEIVER = 'COVER_FIRE_RECEIVER',
-}
+export const SynergyType = {
+  SYNCHRONIZED_FIRE: 'SYNCHRONIZED_FIRE',
+  TRIANGULATION: 'TRIANGULATION',
+  COVER_FIRE_SOURCE: 'COVER_FIRE_SOURCE',
+  COVER_FIRE_RECEIVER: 'COVER_FIRE_RECEIVER',
+} as const;
+
+export type SynergyType = (typeof SynergyType)[keyof typeof SynergyType];
 
 export interface ActiveSynergy {
   type: SynergyType;

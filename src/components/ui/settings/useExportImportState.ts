@@ -53,7 +53,7 @@ export const useExportImportState = ({
     // Schedule the export check on the next microtask to give parent effects
     // (like the GameProvider autosave) a chance to complete and write the checkpoint.
     let cancelled = false;
-    Promise.resolve().then(() => {
+    void Promise.resolve().then(() => {
       if (cancelled) return;
       const { json, hasCheckpoint: has } = exportCheckpointJson();
       setExportJson(json);
@@ -75,13 +75,13 @@ export const useExportImportState = ({
     try {
       await navigator.clipboard.writeText(exportJson);
       setCopyStatus('Copied to clipboard.');
-    } catch (e) {
-      setCopyStatus(`Copy failed: ${e instanceof Error ? e.message : String(e)}`);
+    } catch (err) {
+      setCopyStatus(`Copy failed: ${err instanceof Error ? err.message : String(err)}`);
     }
   };
 
   const onDownloadExport = () => {
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const stamp = new Date().toISOString().replace(/[.:]/g, '-');
     downloadJson(exportJson, `neon-defense-3d-checkpoint-${stamp}.json`);
   };
 
@@ -91,19 +91,21 @@ export const useExportImportState = ({
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw);
-    } catch (e) {
+    } catch (err) {
       setImportPreview({
         status: 'error',
-        errors: [`Invalid JSON: ${e instanceof Error ? e.message : String(e)}`],
+        errors: [`Invalid JSON: ${err instanceof Error ? err.message : String(err)}`],
       });
       return;
     }
 
     const migrated = migrateSave(parsed);
     if (!migrated.ok || !migrated.save) {
+      const errors =
+        migrated.errors && migrated.errors.length > 0 ? migrated.errors : ['Invalid save payload.'];
       setImportPreview({
         status: 'error',
-        errors: migrated.errors?.length ? migrated.errors : ['Invalid save payload.'],
+        errors,
       });
       return;
     }
@@ -153,10 +155,10 @@ export const useExportImportState = ({
       const text = await file.text();
       setImportText(text);
       previewImport(text);
-    } catch (e) {
+    } catch (err) {
       setImportPreview({
         status: 'error',
-        errors: [`Failed to read file: ${e instanceof Error ? e.message : String(e)}`],
+        errors: [`Failed to read file: ${err instanceof Error ? err.message : String(err)}`],
       });
     }
   };

@@ -45,7 +45,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render(): ReactNode {
     if (this.state.hasError) {
-      if (this.props.fallback) {
+      if (this.props.fallback !== undefined) {
         return this.props.fallback;
       }
 
@@ -58,7 +58,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               An unexpected error occurred. The game may not function correctly.
             </p>
             <div className="bg-[#0f3460] p-4 rounded mb-6 text-left overflow-auto max-h-32 text-sm font-mono text-gray-300">
-              {this.state.error?.message || 'Unknown error'}
+              {this.state.error?.message ?? 'Unknown error'}
             </div>
             <button
               onClick={this.handleReset}

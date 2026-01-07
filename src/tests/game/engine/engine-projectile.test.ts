@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { stepProjectiles } from '../../../game/engine/projectile';
 import { createInitialEngineState } from '../../../game/engine/state';
 
+/* eslint-disable max-lines-per-function */
+
 const path: [number, number][] = [
   [0, 0],
   [1, 0],

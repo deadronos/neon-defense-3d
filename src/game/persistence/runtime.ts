@@ -28,7 +28,7 @@ export const buildRuntimeFromCheckpoint = (
       0,
     ),
     upgrades: Object.fromEntries(
-      Object.entries(save.ui.upgrades ?? {}).filter(([k]) => knownUpgradeKeys.has(k)),
+      Object.entries(save.ui.upgrades).filter(([k]) => knownUpgradeKeys.has(k)),
     ) as UiState['upgrades'],
     selectedEntityId: null,
     selectedTower: null,

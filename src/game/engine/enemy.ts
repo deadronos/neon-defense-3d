@@ -25,6 +25,142 @@ const DASH_DURATION_SECONDS = 0.5;
 /** Cooldown between enemy dash abilities in seconds. */
 const DASH_COOLDOWN_SECONDS = 4;
 
+const getOrUpdateSegmentLengths = (
+  cache: EngineCache,
+  pathWaypoints: readonly EngineVector2[],
+  tileSize: number,
+): number[] => {
+  const needsRefresh =
+    cache.pathWaypointsRef !== pathWaypoints ||
+    cache.pathTileSize !== tileSize ||
+    cache.pathSegmentLengths.length !== Math.max(0, pathWaypoints.length - 1);
+
+  if (needsRefresh) {
+    cache.pathSegmentLengths.length = 0;
+    for (let i = 0; i < pathWaypoints.length - 1; i += 1) {
+      const p1 = pathWaypoints[i];
+      const p2 = pathWaypoints[i + 1];
+      const segmentLength = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * tileSize;
+      cache.pathSegmentLengths.push(segmentLength);
+    }
+    cache.pathWaypointsRef = pathWaypoints;
+    cache.pathTileSize = tileSize;
+  }
+
+  return cache.pathSegmentLengths;
+};
+
+const applyEnemyStatusAndAbility = (
+  enemy: EngineEnemy,
+  deltaSeconds: number,
+): {
+  speed: number;
+  frozen: number;
+  hasDashAbility: boolean;
+  abilityActiveTimer?: number;
+  abilityCooldown?: number;
+} => {
+  let speed = enemy.speed ?? 0;
+
+  let frozen = enemy.frozen ?? 0;
+  if (frozen > 0) {
+    speed *= FROZEN_SPEED_MULTIPLIER;
+    frozen = Math.max(0, frozen - deltaSeconds);
+  }
+
+  const hasDashAbility =
+    enemy.abilityCooldown !== undefined || enemy.abilityActiveTimer !== undefined;
+  if (!hasDashAbility) return { speed, frozen, hasDashAbility: false };
+
+  const abilityActiveTimer = enemy.abilityActiveTimer ?? 0;
+  const abilityCooldown = enemy.abilityCooldown ?? 0;
+
+  if (abilityActiveTimer > 0) {
+    return {
+      speed: speed * DASH_SPEED_MULTIPLIER,
+      frozen,
+      hasDashAbility: true,
+      abilityActiveTimer: Math.max(0, abilityActiveTimer - deltaSeconds),
+      abilityCooldown,
+    };
+  }
+
+  const nextCooldown = abilityCooldown - deltaSeconds;
+  if (nextCooldown <= 0) {
+    return {
+      speed,
+      frozen,
+      hasDashAbility: true,
+      abilityActiveTimer: DASH_DURATION_SECONDS,
+      abilityCooldown: DASH_COOLDOWN_SECONDS,
+    };
+  }
+
+  return {
+    speed,
+    frozen,
+    hasDashAbility: true,
+    abilityActiveTimer: 0,
+    abilityCooldown: nextCooldown,
+  };
+};
+
+const advanceAlongPath = (params: {
+  pathWaypoints: readonly EngineVector2[];
+  segmentLengths: number[] | undefined;
+  tileSize: number;
+  pathIndex: number;
+  progress: number;
+  distance: number;
+}): { pathIndex: number; progress: number; leaked: boolean } => {
+  const { pathWaypoints, segmentLengths, tileSize } = params;
+
+  let searchIndex = params.pathIndex;
+  let searchProgress = params.progress;
+  let distanceRemaining = params.distance;
+
+  // Safety break to prevent infinite loops in case of zero-length segments or massive deltas
+  let loops = 0;
+  while (distanceRemaining > 0 && loops < 20) {
+    loops += 1;
+
+    const s1 = pathWaypoints.at(searchIndex);
+    const s2 = pathWaypoints.at(searchIndex + 1);
+    if (s1 === undefined || s2 === undefined) {
+      return { pathIndex: searchIndex, progress: searchProgress, leaked: true };
+    }
+
+    const cachedLength = segmentLengths?.at(searchIndex);
+    const segLen = cachedLength ?? Math.hypot(s2[0] - s1[0], s2[1] - s1[1]) * tileSize;
+
+    if (segLen <= 0.0001) {
+      searchIndex += 1;
+      searchProgress = 0;
+      if (searchIndex >= pathWaypoints.length - 1) {
+        return { pathIndex: searchIndex, progress: searchProgress, leaked: true };
+      }
+      continue;
+    }
+
+    const distanceToNext = (1 - searchProgress) * segLen;
+
+    if (distanceRemaining >= distanceToNext) {
+      distanceRemaining -= distanceToNext;
+      searchProgress = 0;
+      searchIndex += 1;
+      if (searchIndex >= pathWaypoints.length - 1) {
+        return { pathIndex: searchIndex, progress: searchProgress, leaked: true };
+      }
+      continue;
+    }
+
+    searchProgress += distanceRemaining / segLen;
+    distanceRemaining = 0;
+  }
+
+  return { pathIndex: searchIndex, progress: searchProgress, leaked: false };
+};
+
 export const stepEnemies = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -39,129 +175,35 @@ export const stepEnemies = (
   const nextEnemies: EngineEnemy[] = cache ? cache.nextEnemies : [];
   if (cache) nextEnemies.length = 0;
 
-  let segmentLengths: number[] | undefined;
-  if (cache) {
-    // ... cache logic
-    const needsRefresh =
-      cache.pathWaypointsRef !== pathWaypoints ||
-      cache.pathTileSize !== tileSize ||
-      cache.pathSegmentLengths.length !== Math.max(0, pathWaypoints.length - 1);
-
-    if (needsRefresh) {
-      cache.pathSegmentLengths.length = 0;
-      for (let i = 0; i < pathWaypoints.length - 1; i += 1) {
-        const p1 = pathWaypoints[i];
-        const p2 = pathWaypoints[i + 1];
-        const segmentLength = Math.hypot(p2[0] - p1[0], p2[1] - p1[1]) * tileSize;
-        cache.pathSegmentLengths.push(segmentLength);
-      }
-      cache.pathWaypointsRef = pathWaypoints;
-      cache.pathTileSize = tileSize;
-    }
-
-    segmentLengths = cache.pathSegmentLengths;
-  }
+  const segmentLengths = cache
+    ? getOrUpdateSegmentLengths(cache, pathWaypoints, tileSize)
+    : undefined;
 
   let livesLost = 0;
 
   for (const enemy of state.enemies) {
-    let currentSpeed = enemy.speed ?? 0;
+    const status = applyEnemyStatusAndAbility(enemy, deltaSeconds);
+    const movement = advanceAlongPath({
+      pathWaypoints,
+      segmentLengths,
+      tileSize,
+      pathIndex: enemy.pathIndex,
+      progress: enemy.progress,
+      distance: status.speed * deltaSeconds,
+    });
 
-    let nextFrozen = enemy.frozen ?? 0;
-    if (nextFrozen > 0) {
-      currentSpeed *= FROZEN_SPEED_MULTIPLIER;
-      nextFrozen = Math.max(0, nextFrozen - deltaSeconds);
-    }
-
-    const hasDashAbility =
-      enemy.abilityCooldown !== undefined || enemy.abilityActiveTimer !== undefined;
-    const abilityActiveTimer = enemy.abilityActiveTimer ?? 0;
-    const abilityCooldown = enemy.abilityCooldown ?? 0;
-
-    let nextActiveTimer = abilityActiveTimer;
-    let nextCooldown = abilityCooldown;
-
-    if (hasDashAbility) {
-      if (abilityActiveTimer > 0) {
-        nextActiveTimer = Math.max(0, abilityActiveTimer - deltaSeconds);
-        currentSpeed *= DASH_SPEED_MULTIPLIER;
-      } else {
-        nextCooldown = abilityCooldown - deltaSeconds;
-        if (nextCooldown <= 0) {
-          nextActiveTimer = DASH_DURATION_SECONDS;
-          nextCooldown = DASH_COOLDOWN_SECONDS;
-        }
-      }
-    }
-
-    const p1 = pathWaypoints[enemy.pathIndex];
-    const p2 = pathWaypoints[enemy.pathIndex + 1];
-    if (!p1 || !p2) {
-      livesLost += 1;
-      continue;
-    }
-
-    let searchIndex = enemy.pathIndex;
-    let searchProgress = enemy.progress;
-    let distanceRemaining = currentSpeed * deltaSeconds;
-    let hasLeaked = false;
-
-    // Safety break to prevent infinite loops in case of zero-length segments or massive deltas
-    let loops = 0;
-    while (distanceRemaining > 0 && loops < 20) {
-      loops++;
-      const s1 = pathWaypoints[searchIndex];
-      const s2 = pathWaypoints[searchIndex + 1];
-      if (!s1 || !s2) {
-        // End of path (should have been caught by nextPathIndex check below, but safety)
-        hasLeaked = true;
-        distanceRemaining = 0;
-        break;
-      }
-
-      const segLen =
-        segmentLengths?.[searchIndex] ?? Math.hypot(s2[0] - s1[0], s2[1] - s1[1]) * tileSize;
-
-      if (segLen <= 0.0001) {
-        // ...
-        searchIndex++;
-        if (searchIndex >= pathWaypoints.length - 1) {
-          hasLeaked = true;
-          distanceRemaining = 0;
-        }
-        continue;
-      }
-
-      const distanceToNext = (1 - searchProgress) * segLen;
-
-      if (distanceRemaining >= distanceToNext) {
-        // Complete this segment
-        distanceRemaining -= distanceToNext;
-        searchProgress = 0;
-        searchIndex++;
-        if (searchIndex >= pathWaypoints.length - 1) {
-          hasLeaked = true;
-          distanceRemaining = 0; // Leaked
-        }
-      } else {
-        // Finish on this segment
-        searchProgress += distanceRemaining / segLen;
-        distanceRemaining = 0;
-      }
-    }
-
-    if (hasLeaked) {
+    if (movement.leaked) {
       livesLost += 1;
       continue;
     }
 
     nextEnemies.push({
       ...enemy,
-      pathIndex: searchIndex,
-      progress: searchProgress,
-      frozen: nextFrozen,
-      abilityActiveTimer: hasDashAbility ? nextActiveTimer : undefined,
-      abilityCooldown: hasDashAbility ? nextCooldown : undefined,
+      pathIndex: movement.pathIndex,
+      progress: movement.progress,
+      frozen: status.frozen,
+      abilityActiveTimer: status.hasDashAbility ? status.abilityActiveTimer : undefined,
+      abilityCooldown: status.hasDashAbility ? status.abilityCooldown : undefined,
     });
   }
 

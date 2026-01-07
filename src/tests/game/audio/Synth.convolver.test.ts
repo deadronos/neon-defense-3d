@@ -7,6 +7,7 @@ describe('Synth convolver fallback', () => {
     // Force AudioContext.createConvolver to throw
     // @ts-ignore
     const OrigAC = global.AudioContext;
+    const originalDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'AudioContext');
 
     class BadAC extends OrigAC {
       createConvolver(): ConvolverNode {
@@ -14,8 +15,10 @@ describe('Synth convolver fallback', () => {
       }
     }
 
-    // @ts-ignore
-    global.AudioContext = BadAC;
+    Object.defineProperty(globalThis, 'AudioContext', {
+      configurable: true,
+      value: BadAC,
+    });
 
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -24,8 +27,14 @@ describe('Synth convolver fallback', () => {
     expect(warnSpy).toHaveBeenCalled();
 
     warnSpy.mockRestore();
-    // @ts-ignore
-    global.AudioContext = OrigAC;
+    if (originalDescriptor) {
+      Object.defineProperty(globalThis, 'AudioContext', originalDescriptor);
+    } else {
+      Object.defineProperty(globalThis, 'AudioContext', {
+        configurable: true,
+        value: OrigAC,
+      });
+    }
   });
 
   it('setReverbMix no-op when reverbSend is null', () => {

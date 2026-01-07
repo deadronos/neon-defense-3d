@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { VictoryPopup } from '../../components/VictoryPopup';
 
 // Mock useGame hook
-vi.mock('../../game/GameState', () => ({
+vi.mock('../../game/gameContexts', () => ({
   useGame: () => ({
     gameState: {
       researchPoints: 42,

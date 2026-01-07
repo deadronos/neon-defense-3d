@@ -3,8 +3,7 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, it, vi, beforeEach } from 'vitest';
 
-// Mock audio hook (we only need volume values for inputs)
-vi.mock('../../game/audio/AudioManager', () => ({
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: vi.fn().mockReturnValue({
     masterVolume: 0.5,
     sfxVolume: 1,
@@ -14,11 +13,10 @@ vi.mock('../../game/audio/AudioManager', () => ({
     setMusicVolume: vi.fn(),
     playSFX: vi.fn(),
   }),
-  AudioProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { SettingsModal } from '../../components/ui/SettingsModal';
-import * as audioModule from '../../game/audio/AudioManager';
+import { useAudio } from '../../game/audio/useAudio';
 import { GameProvider } from '../../game/GameState';
 import type { MigrateResult, SaveV1 } from '../../game/persistence';
 import * as persistence from '../../game/persistence';
@@ -67,7 +65,7 @@ describe('SettingsModal extras', () => {
     const origCreate = document.createElement.bind(document);
     let clickSpy: ReturnType<typeof vi.spyOn> | undefined = undefined;
     vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
-      const el = origCreate(tagName) as HTMLElement;
+      const el = origCreate(tagName);
       if (tagName === 'a') {
         // Spy on the anchor's click method so the DOM appendChild still accepts it
         clickSpy = vi.spyOn(el, 'click');
@@ -143,7 +141,7 @@ describe('SettingsModal extras', () => {
     );
 
     // Find the hidden input directly
-    const input = document.querySelector('input[type=file]') as HTMLInputElement | null;
+    const input = document.querySelector('input[type=file]');
     expect(input).not.toBeNull();
 
     // Create a file-like object whose text() rejects
@@ -170,8 +168,8 @@ describe('SettingsModal extras', () => {
     );
 
     // retrieve the instance returned by the mocked useAudio as used by the component
-    const mockUse = audioModule.useAudio as unknown as {
-      mock: { results: Array<{ value: ReturnType<typeof audioModule.useAudio> }> };
+    const mockUse = useAudio as unknown as {
+      mock: { results: Array<{ value: ReturnType<typeof useAudio> }> };
     };
     // the vi mock stores call/return data under `.mock.results`
     const lastResult = mockUse.mock.results[mockUse.mock.results.length - 1];
@@ -181,7 +179,7 @@ describe('SettingsModal extras', () => {
       setMusicVolume: mockSetMusic,
     } = lastResult.value;
 
-    const sliders = screen.getAllByRole('slider') as HTMLInputElement[];
+    const sliders = screen.getAllByRole('slider');
     expect(sliders.length).toBeGreaterThanOrEqual(3);
 
     const master = sliders[0];

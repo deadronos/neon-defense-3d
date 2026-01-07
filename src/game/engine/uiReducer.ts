@@ -110,6 +110,7 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
   }
 };
 
+// eslint-disable-next-line complexity
 export const uiReducer = (state: UiState, action: UiAction): UiState => {
   switch (action.type) {
     case 'startGame':
@@ -149,7 +150,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         sessionNonce: state.sessionNonce + 1,
       };
     case 'startNextSector': {
-      const greedLevel = state.upgrades?.[UpgradeType.GLOBAL_GREED] || 0;
+      const greedLevel = state.upgrades[UpgradeType.GLOBAL_GREED] ?? 0;
       const startMoney = 150 * (1 + greedLevel * 0.05);
       return {
         ...state,
@@ -167,7 +168,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
     }
     case 'purchaseUpgrade': {
       if (state.researchPoints < action.cost) return state;
-      const currentLevel = state.upgrades[action.upgrade] || 0;
+      const currentLevel = state.upgrades[action.upgrade] ?? 0;
       return {
         ...state,
         researchPoints: state.researchPoints - action.cost,

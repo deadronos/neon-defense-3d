@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { TopBar } from '../../components/ui/TopBar';
 import type { WaveState } from '../../types';
 
-vi.mock('../../game/audio/AudioManager', () => ({
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: () => ({
     toggleMusic: vi.fn(),
     isMusicPlaying: false,

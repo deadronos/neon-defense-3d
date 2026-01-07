@@ -7,8 +7,8 @@ export const saveCheckpoint = (save: SaveV1): { ok: boolean; error?: string } =>
     const json = JSON.stringify(save);
     localStorage.setItem(CHECKPOINT_STORAGE_KEY_V1, json);
     return { ok: true };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 };
 
@@ -20,8 +20,8 @@ export const loadCheckpoint = (): SaveV1 | null => {
     const migrated = migrateSave(parsed);
     if (!migrated.ok || !migrated.save) return null;
     return migrated.save;
-  } catch (e) {
-    console.warn('[PERSISTENCE] Failed to load checkpoint, returning null:', e);
+  } catch (err) {
+    console.warn('[PERSISTENCE] Failed to load checkpoint, returning null:', err);
     return null;
   }
 };
@@ -29,7 +29,7 @@ export const loadCheckpoint = (): SaveV1 | null => {
 export const clearCheckpoint = (): void => {
   try {
     localStorage.removeItem(CHECKPOINT_STORAGE_KEY_V1);
-  } catch (e) {
-    console.warn('[PERSISTENCE] Failed to clear checkpoint:', e);
+  } catch (err) {
+    console.warn('[PERSISTENCE] Failed to clear checkpoint:', err);
   }
 };

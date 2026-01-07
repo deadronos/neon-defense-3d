@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import * as THREE from 'three';
 
 import { SynergyType } from '../../types';
-import { useRenderState } from '../GameState';
+import { useRenderState } from '../gameContexts';
 
 const SYNERGY_COLORS: Record<SynergyType, THREE.Color> = {
   [SynergyType.SYNCHRONIZED_FIRE]: new THREE.Color('#00f2ff'), // Cyan
@@ -24,6 +24,7 @@ export const SynergyLinks: React.FC = () => {
   // We can use a shader material or just animate colors/opacity.
   // For MVP: LineSegments with vertex colors.
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useFrame(({ clock }) => {
     if (!geometryRef.current) return;
 
@@ -34,29 +35,29 @@ export const SynergyLinks: React.FC = () => {
 
     // Map needed to find partner positions
     const towerMap = new Map<string, (typeof towers)[0]>();
-    towers.forEach((t) => towerMap.set(t.id, t));
+    for (const t of towers) towerMap.set(t.id, t);
 
     const processedLinks = new Set<string>();
 
-    towers.forEach((tower) => {
+    for (const tower of towers) {
       // Tower Position
       const tPos = tower.position; // [x, y, z] is world pos?
       // In toTowerEntity: [grid * TILE, 0.5, grid * TILE]
       // We want lines to be a bit higher, say y=1.0 to clear base meshes.
       const y = 1.0;
 
-      if (!tower.activeSynergies) return;
+      if (!tower.activeSynergies) continue;
 
-      tower.activeSynergies.forEach((syn) => {
+      for (const syn of tower.activeSynergies) {
         // Unique key for strict undirected graph: sort IDs
         const ids = [tower.id, syn.partnerId].sort();
         const linkKey = `${ids[0]}-${ids[1]}-${syn.type}`;
 
-        if (processedLinks.has(linkKey)) return;
+        if (processedLinks.has(linkKey)) continue;
         processedLinks.add(linkKey);
 
         const partner = towerMap.get(syn.partnerId);
-        if (!partner) return;
+        if (!partner) continue;
 
         // Add line segment
         // From
@@ -66,7 +67,7 @@ export const SynergyLinks: React.FC = () => {
 
         // Color
         // If pulsing, we can mod luminance.
-        const baseColor = SYNERGY_COLORS[syn.type] ?? new THREE.Color(1, 1, 1);
+        const baseColor = SYNERGY_COLORS[syn.type];
 
         // Pulse logic
         let intensity = 1.0;
@@ -86,8 +87,8 @@ export const SynergyLinks: React.FC = () => {
         // Push colors for both vertices
         colors.push(r, g, b);
         colors.push(r, g, b);
-      });
-    });
+      }
+    }
 
     // Update geometry
     const geo = geometryRef.current;

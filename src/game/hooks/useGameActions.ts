@@ -29,6 +29,7 @@ interface UseGameActionsParams {
   lastAutosavedNonceRef: MutableRefObject<number>;
 }
 
+// eslint-disable-next-line max-lines-per-function
 export const useGameActions = ({
   runtimeRef,
   dispatch,

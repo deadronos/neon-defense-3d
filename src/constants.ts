@@ -60,6 +60,7 @@ export const TILE_SIZE = 2; // World units per tile
  * @param mapLayout The 2D array map definition.
  * @returns An array of Vector2 coordinates representing the path. Returns an empty array if no path is found.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity, complexity
 export const generatePath = (mapLayout: number[][]): Vector2[] => {
   let start: Vector2 | null = null;
   let end: Vector2 | null = null;

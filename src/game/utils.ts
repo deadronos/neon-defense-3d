@@ -13,12 +13,12 @@ export const getTowerStats = (
   const base = TOWER_CONFIGS[type];
   const { upgrades = {}, activeSynergies = [] } = context;
 
-  let dmgMult = 1 + (upgrades[UpgradeType.GLOBAL_DAMAGE] || 0) * 0.05;
-  let rangeMult = 1 + (upgrades[UpgradeType.GLOBAL_RANGE] || 0) * 0.05;
+  let dmgMult = 1 + (upgrades[UpgradeType.GLOBAL_DAMAGE] ?? 0) * 0.05;
+  let rangeMult = 1 + (upgrades[UpgradeType.GLOBAL_RANGE] ?? 0) * 0.05;
   let fireRateMult = 1.0;
 
   // Apply Synergies
-  activeSynergies.forEach((s) => {
+  for (const s of activeSynergies) {
     switch (s.type) {
       case SynergyType.SYNCHRONIZED_FIRE:
         fireRateMult += 0.15;
@@ -34,7 +34,7 @@ export const getTowerStats = (
         rangeMult += 0.05;
         break;
     }
-  });
+  }
 
   // Cooldown is uniform 1/FireRate.
   // Base cooldown is reduced by level. Then we divide by fireRateMult.

@@ -1,12 +1,14 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
-import { GameProvider, useGame } from '../../game/GameState';
+import { useGame } from '../../game/gameContexts';
+import { GameProvider } from '../../game/GameState';
 import type { SaveV1 } from '../../game/persistence';
+import type { TowerEntity } from '../../types';
 import { TowerType } from '../../types';
 
 // Mock Audio
-vi.mock('../../game/audio/AudioManager', () => ({
+vi.mock('../../game/audio/useAudio', () => ({
   useAudio: () => ({
     playSFX: vi.fn(),
   }),
@@ -110,7 +112,9 @@ describe('Save/Load Interaction Bug Reproduction', () => {
     // 7. Verify Interaction: Selection
     // Selecting the old tower (which has a NEW ID after load!)
     // We need to find the new ID at (0,0)
-    const towerAt00 = result.current.towers.find((t) => t.gridPos[0] === 0 && t.gridPos[1] === 0);
+    const towerAt00 = result.current.towers.find(
+      (t: TowerEntity) => t.gridPos[0] === 0 && t.gridPos[1] === 0,
+    );
     expect(towerAt00).toBeDefined();
     expect(towerAt00).toBeDefined();
     expect(towerAt00?.id).toBe(towerIdOriginal); // IDs are deterministic (reset to tower-1)
