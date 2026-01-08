@@ -26,12 +26,12 @@ The current files bundle multiple responsibilities (state wiring, actions, effec
 
 ### Subtasks
 
-| ID  | Description | Status | Updated | Notes |
-| --- | ----------- | ------ | ------- | ----- |
-| 1.1 | Draft design doc with module boundaries | Complete | 2026-01-05 | DESIGN026 |
-| 1.2 | Split `GameState.tsx` into hooks/helpers | Complete | 2026-01-05 | New hooks + context builders |
+| ID  | Description                                   | Status   | Updated    | Notes                         |
+| --- | --------------------------------------------- | -------- | ---------- | ----------------------------- |
+| 1.1 | Draft design doc with module boundaries       | Complete | 2026-01-05 | DESIGN026                     |
+| 1.2 | Split `GameState.tsx` into hooks/helpers      | Complete | 2026-01-05 | New hooks + context builders  |
 | 1.3 | Split `SettingsModal.tsx` into sections/hooks | Complete | 2026-01-05 | Sections + import/export hook |
-| 1.4 | Split `persistence.ts` into modules | Complete | 2026-01-05 | New persistence folder |
+| 1.4 | Split `persistence.ts` into modules           | Complete | 2026-01-05 | New persistence folder        |
 
 ## Progress Log
 
