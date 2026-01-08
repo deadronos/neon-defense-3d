@@ -36,9 +36,7 @@ export const InspectorStats: React.FC<InspectorStatsProps> = ({
         <div className="text-gray-500 uppercase tracking-widest text-[9px]">Range</div>
         <div className="font-mono text-white text-lg">
           {current.range.toFixed(1)}{' '}
-          <span className="text-green-500 text-xs">
-            +{(next.range - current.range).toFixed(1)}
-          </span>
+          <span className="text-green-500 text-xs">+{(next.range - current.range).toFixed(1)}</span>
         </div>
       </div>
       <div>
