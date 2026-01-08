@@ -1,7 +1,8 @@
 # TASK025 — Fix ESLint warnings after new rules
+
 **Status:** Completed  
 **Added:** 2026-01-05  
-**Updated:** 2026-01-05  
+**Updated:** 2026-01-05
 
 ## Original Request
 
@@ -20,5 +21,6 @@ Fix most or all `npm run lint` warnings after introducing new lint rules.
 - Re-run `npm run lint` to validate.
 
 ## Outcome
+
 - `npm run lint` reports **0 problems** (warnings/errors).
 - Key refactors: extracted `src/game/gameContexts.ts` (to satisfy `react-refresh/only-export-components`), split `useAudio` into `src/game/audio/useAudio.ts`, updated imports/mocks accordingly, and ran Prettier on touched files to normalize line endings.

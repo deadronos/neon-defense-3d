@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { TOWER_CONFIGS } from '../../constants';
 import { SYNERGIES } from '../../game/synergies';
@@ -22,6 +22,23 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
   onUpgrade,
   onSell,
 }) => {
+  const [isConfirmingSell, setIsConfirmingSell] = useState(false);
+
+  // Reset confirmation state when selected tower changes
+  useEffect(() => {
+    setIsConfirmingSell(false);
+  }, [selectedTowerEntity.id]);
+
+  // Reset confirmation state after 3 seconds if not clicked
+  useEffect(() => {
+    if (isConfirmingSell) {
+      const timer = setTimeout(() => {
+        setIsConfirmingSell(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isConfirmingSell]);
+
   return (
     <div className="absolute bottom-10 w-full flex justify-center pointer-events-auto">
       <div className="bg-black/90 backdrop-blur border-t-2 border-cyan-500/50 p-4 sm:p-6 flex flex-col sm:flex-row gap-4 sm:gap-8 shadow-2xl w-[min(98%,900px)] max-w-full animate-fade-in-up rounded-t-md">
@@ -153,11 +170,29 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
             const refund = Math.floor(config.cost * 0.7);
             return (
               <button
-                onClick={() => onSell(selectedTowerEntity.id)}
-                className="mt-1 text-xs text-red-400 hover:text-red-300 border border-red-900/30 hover:border-red-500/50 px-2 py-1 transition-colors uppercase tracking-wider"
-                aria-label={`Sell unit for $${refund}`}
+                onClick={() => {
+                  if (isConfirmingSell) {
+                    onSell(selectedTowerEntity.id);
+                    setIsConfirmingSell(false);
+                  } else {
+                    setIsConfirmingSell(true);
+                  }
+                }}
+                className={`
+                  mt-1 text-xs px-2 py-1 transition-all uppercase tracking-wider border
+                  ${
+                    isConfirmingSell
+                      ? 'bg-red-900/40 text-red-200 border-red-500 animate-pulse font-bold'
+                      : 'text-red-400 hover:text-red-300 border-red-900/30 hover:border-red-500/50 bg-transparent'
+                  }
+                `}
+                aria-label={
+                  isConfirmingSell
+                    ? 'Confirm sell? Click again to sell unit'
+                    : `Sell unit for $${refund}`
+                }
               >
-                Sell Unit (+${refund})
+                {isConfirmingSell ? 'Confirm Sell?' : `Sell Unit (+$${refund})`}
               </button>
             );
           })()}
