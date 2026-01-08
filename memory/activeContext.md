@@ -7,6 +7,7 @@
 - Refactoring monolithic modules (GameState, SettingsModal, persistence) into smaller helpers.
 
 ## Recent changes (code highlights)
+
 - **State:** Split GameState into Zustand stores (runtime/render/gameSpeed) and moved the runtime reducer into a store module.
 - **Refactor:** Extracted GameState logic into hooks/context builders, split SettingsModal into sections with an import/export hook, and modularized persistence helpers under `src/game/persistence/`.
 - **Lint:** Fixed new ESLint rule failures (async handler promises, hook deps) and replaced `enum` exports with `as const` value objects + union types in `src/types.ts`.
@@ -37,6 +38,7 @@
 - **New features:** Added `KillStreakAnnouncer` (UI announcer), Synergy system (tower synergies + `SynergyLinks` visuals), upgrades support in engine step functions, `CanvasErrorBoundary` for robust rendering failure handling, and `currentMapIndex` for map selection and management.
 
 ## Next steps
+
 - Decide whether to clean existing lint warnings in tests/engine modules.
 - Run unit tests for GameState/persistence after the store refactor.
 
@@ -49,4 +51,3 @@
 
 - Visual fidelity vs. performance: whether to reintroduce expensive effects (trails, per-entity lights) via instancing or shaders.
 - Sector/progression balancing: decide wave lengths and reward curves for persistent campaign progression.
-

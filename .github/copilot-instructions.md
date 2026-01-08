@@ -21,6 +21,7 @@
 ## 3. Architecture & Patterns
 
 ### Game Loop & State Management
+
 - **Central State:** `GameState` (Context) holds the canonical arrays of entities (`enemies`, `towers`, `projectiles`, `effects`) and global values (`money`, `lives`, `wave`).
 - **Game Loop:** `GameLoopBridge` (`src/game/components/GameLoop.tsx`) drives the frame-by-frame logic using `useFrame`.
 - **Logic Separation:** Logic is split into custom hooks:
@@ -30,11 +31,13 @@
   - `useProjectileBehavior`: Manages projectile movement, collision, and damage.
 
 ### Rendering Strategy
+
 - **InstancedMesh:** High-count entities (Enemies, Projectiles, Towers) use `InstancedMesh` for performance.
 - **Visuals vs. Logic:** Rendering components consume state from `GameState` but do not drive logic. Logic happens in the `GameLoopBridge`.
 - **Post-Processing:** Use high emissive values on materials to trigger the Bloom effect.
 
 ### Coordinate System
+
 - **Grid:** The game uses a fixed grid (12x8 tiles).
 - **World Coordinates:** Calculated centrally using `TILE_SIZE`.
 - **Positioning:** Game entities store positions as `readonly [number, number, number]` tuples to avoid GC overhead.
@@ -42,27 +45,32 @@
 ## 4. Workflows
 
 ### Adding Content
+
 - **Towers:** Define new towers in `TOWER_CONFIGS` (`src/constants.ts`). Implement visual geometry in `InstancedTowers.tsx` or similar.
 - **Enemies:** Define types in `ENEMY_TYPES` (`src/constants.ts`).
 - **Maps:** Layouts are defined in `MAP_LAYOUTS` (`src/constants.ts`) using integer codes.
 
 ### Testing
+
 - **Unit Tests:** `npm run test`. Located in `src/tests/` (configured via `vitest.config.ts`).
 - **E2E Tests:** `npm run e2e`. Located in `tests/e2e/`.
 
 ## 5. Coding Standards
 
 ### TypeScript
+
 - Target ES2022.
 - No `any`. Use strict typing.
 - Use `interface` for props and state shapes.
 
 ### React
+
 - Functional components with Hooks only.
 - Minimize re-renders. Use `React.memo` for static components (like `Tile`).
 - Optimize loop performance: avoid creating objects in `useFrame`. Reuse shared vectors/matrices.
 
 ### Coding Standards — Quick guide
+
 - Run these checks before committing or opening a PR:
   - **Format:** `npm run format` (check with `npm run format:check`)
   - **Lint:** `npm run lint` → auto-fix with `npm run lint:fix`
