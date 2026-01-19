@@ -1,4 +1,4 @@
-import { resetEnemyPositionsCache } from './cacheUtils';
+import { getOrCreateProjectileCaches, resetEnemyPositionsCache } from './cacheUtils';
 import type { EngineEvent } from './events';
 import { createExplosionEffect } from './projectile/effects';
 import { addHit, applyFreeze } from './projectile/hitResolution';
@@ -46,21 +46,11 @@ export const stepProjectiles = (
   }
 
   // Reuse or create structures
-  const hits = cache ? cache.projectileHits : new Map<string, number>();
-  if (cache) hits.clear();
-
-  const freezeHits = cache ? cache.projectileFreeze : new Map<string, number>();
-  if (cache) freezeHits.clear();
-
-  const activeProjectiles = cache ? cache.activeProjectiles : [];
-  if (cache) activeProjectiles.length = 0;
+  const { hits, freezeHits, activeProjectiles, enemiesById } = getOrCreateProjectileCaches(cache);
 
   let frameTotalDamage = 0;
   let nextEffectCounter = state.idCounters.effect;
   const addedEffects: EngineEffectIntent[] = [];
-
-  const enemiesById = cache ? cache.enemiesById : new Map<string, EngineEnemy>();
-  if (cache) enemiesById.clear();
 
   // Cache enemy positions for splash checks and effects.
   const enemyPositions = cache ? cache.enemyPositions : new Map<string, EngineMutableVector3>();
