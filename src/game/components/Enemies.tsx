@@ -2,11 +2,10 @@ import React from 'react';
 import * as THREE from 'three';
 
 import type { EnemyEntity } from '../../types';
+import { lerp } from '../../utils/math';
 
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 import { useInstancedUpdater } from './instancing/useInstancedUpdater';
-
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export const InstancedEnemies: React.FC = () => {
   const { setMeshRef } = useInstancedUpdater<EnemyEntity>((state) => state.enemies, {

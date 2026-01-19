@@ -1,8 +1,9 @@
+import { resetEnemyPositionsCache } from './cacheUtils';
 import type { EngineEvent } from './events';
 import { createExplosionEffect } from './projectile/effects';
 import { addHit, applyFreeze } from './projectile/hitResolution';
-import type { ImpactContext } from './projectile/impactSearch';
 import { ensureEnemyPosition, findTargetsInSplash } from './projectile/impactSearch';
+import type { ImpactContext } from './projectile/impactSearch';
 import type { EngineCache } from './step';
 import type {
   EngineEffectIntent,
@@ -66,11 +67,7 @@ export const stepProjectiles = (
   const enemyPositionPool = cache ? cache.enemyPositionPool : [];
   const positionsFromCache = cache?.enemyPositionsSource === state.enemies;
   if (cache && !positionsFromCache) {
-    for (const position of enemyPositions.values()) {
-      enemyPositionPool.push(position);
-    }
-    enemyPositions.clear();
-    cache.enemyPositionsSource = undefined;
+    resetEnemyPositionsCache(cache);
   }
 
   // Build context for impact search

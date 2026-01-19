@@ -1,11 +1,9 @@
 import { MAP_HEIGHT, MAP_WIDTH } from '../../../constants';
+import { distanceSquared } from '../math';
 import { writeEnemyWorldPosition } from '../selectors';
 import { forEachNearbyEnemy } from '../spatial';
 import type { SpatialGrid } from '../spatial';
 import type { EngineEnemy, EngineVector3, EngineMutableVector3, EngineVector2 } from '../types';
-
-const distanceSquared = (a: EngineVector3, b: EngineVector3) =>
-  (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
 
 export interface ImpactContext {
   enemyPositions: Map<string, EngineMutableVector3>;

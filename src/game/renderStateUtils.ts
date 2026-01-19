@@ -7,6 +7,8 @@ import type {
   TowerType,
   Position3,
 } from '../types';
+import { gridKey } from '../utils/gridKey';
+import { lerp } from '../utils/math';
 
 import { selectEnemyWorldPosition } from './engine/selectors';
 import type { EngineState, EngineVector2 } from './engine/types';
@@ -210,7 +212,7 @@ export const syncRenderState = (
     };
     nextTowers.push(tower);
 
-    const key = `${engTower.gridPosition[0]},${engTower.gridPosition[1]}`;
+    const key = gridKey(engTower.gridPosition[0], engTower.gridPosition[1]);
     renderState.gridOccupancy.set(key, tower);
   }
   renderState.towers = nextTowers;
@@ -252,9 +254,9 @@ export const syncRenderState = (
     // If we have a render-time enemy target, lerp toward its known world position (avoids using engine types).
     const pos: Position3 = target
       ? ([
-          proj.origin[0] + (target.position[0] - proj.origin[0]) * proj.progress,
-          proj.origin[1] + (target.position[1] - proj.origin[1]) * proj.progress,
-          proj.origin[2] + (target.position[2] - proj.origin[2]) * proj.progress,
+          lerp(proj.origin[0], target.position[0], proj.progress),
+          lerp(proj.origin[1], target.position[1], proj.progress),
+          lerp(proj.origin[2], target.position[2], proj.progress),
         ] as Position3)
       : (proj.origin as Position3);
 
