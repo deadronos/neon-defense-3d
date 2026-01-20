@@ -1,5 +1,6 @@
 import type { ActiveSynergy } from '../types';
 import { SynergyType, TowerType } from '../types';
+import { forEachOrthogonalNeighborKey, gridKey } from '../utils/gridKey';
 
 export interface SynergyDef {
   id: SynergyType;
@@ -46,22 +47,17 @@ export const calculateSynergies = (
 
   for (const t of towers) {
     towerMap.set(t.id, t);
-    gridMap.set(`${t.gridPosition[0]},${t.gridPosition[1]}`, t.id);
+    gridMap.set(gridKey(t.gridPosition[0], t.gridPosition[1]), t.id);
+
     synergyMap.set(t.id, []);
   }
 
   const getNeighbors = (x: number, z: number) => {
     const neighborIds: string[] = [];
-    const offsets = [
-      [0, 1],
-      [0, -1],
-      [1, 0],
-      [-1, 0],
-    ];
-    for (const [dx, dz] of offsets) {
-      const id = gridMap.get(`${x + dx},${z + dz}`);
+    forEachOrthogonalNeighborKey(x, z, (key) => {
+      const id = gridMap.get(key);
       if (id) neighborIds.push(id);
-    }
+    });
     return neighborIds;
   };
 

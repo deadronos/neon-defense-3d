@@ -1,3 +1,5 @@
+import { lerp } from '../../utils/math';
+
 import type {
   EngineEnemy,
   EngineMutableVector3,
@@ -5,8 +7,6 @@ import type {
   EngineVector2,
   EngineVector3,
 } from './types';
-
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export const writeEnemyWorldPosition = (
   out: EngineMutableVector3,

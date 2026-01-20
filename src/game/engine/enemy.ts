@@ -1,3 +1,4 @@
+import { getOrCreateNextEnemies } from './cacheUtils';
 import type { EngineEvent } from './events';
 import type { EngineCache } from './step';
 import type {
@@ -172,8 +173,7 @@ export const stepEnemies = (
   const deltaSeconds = context.deltaMs / 1000;
 
   const events: EngineEvents = { immediate: [], deferred: [] };
-  const nextEnemies: EngineEnemy[] = cache ? cache.nextEnemies : [];
-  if (cache) nextEnemies.length = 0;
+  const nextEnemies = getOrCreateNextEnemies(cache);
 
   const segmentLengths = cache
     ? getOrUpdateSegmentLengths(cache, pathWaypoints, tileSize)

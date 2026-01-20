@@ -1,5 +1,6 @@
 import { MAP_LAYOUTS, getMapGrid } from '../../constants';
 import { TileType } from '../../types';
+import { gridKey } from '../../utils/gridKey';
 
 import { knownTowerTypes, knownUpgradeKeys } from './constants';
 import type { MigrateResult, Quality, SaveV1 } from './types';
@@ -133,7 +134,7 @@ export const migrateSave = (input: unknown): MigrateResult => {
         continue;
       }
 
-      const key = `${x},${z}`;
+      const key = gridKey(x, z);
       if (occupied.has(key)) {
         warnings.push(`Duplicate tower position (${x},${z}) was dropped.`);
         continue;

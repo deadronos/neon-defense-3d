@@ -4,6 +4,7 @@ import type { MutableRefObject } from 'react';
 import { MAP_LAYOUTS, TILE_SIZE, generatePath } from '../../constants';
 import type { GraphicsQuality, TowerType, UpgradeType } from '../../types';
 import { TileType } from '../../types';
+import { gridKey } from '../../utils/gridKey';
 import {
   buildRuntimeFromCheckpoint,
   clearCheckpoint,
@@ -45,7 +46,7 @@ export const useGameActions = ({
       if (mapGrid[z][x] !== TileType.Grass) return false;
 
       // Use the cached O(1) grid occupancy map from renderState
-      const key = `${x},${z}`;
+      const key = gridKey(x, z);
       if (renderStateRef.current.gridOccupancy.has(key)) return false;
 
       return true;

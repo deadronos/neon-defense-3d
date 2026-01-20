@@ -1,5 +1,6 @@
 import type { TileType, TowerConfig, Vector2 } from './types';
 import { TowerType } from './types';
+import { gridKey } from './utils/gridKey';
 
 /**
  * Raw map definition as a 2D array of integers.
@@ -78,7 +79,7 @@ export const generatePath = (mapLayout: number[][]): Vector2[] => {
   // Queue stores { position, path_so_far }
   const queue: { pos: Vector2; path: Vector2[] }[] = [{ pos: start, path: [start] }];
   const visited = new Set<string>();
-  visited.add(`${start[0]},${start[1]}`);
+  visited.add(gridKey(start[0], start[1]));
 
   while (queue.length > 0) {
     const { pos, path } = queue.shift()!;
@@ -99,7 +100,7 @@ export const generatePath = (mapLayout: number[][]): Vector2[] => {
     for (const [nx, nz] of neighbors) {
       if (nx >= 0 && nx < MAP_WIDTH && nz >= 0 && nz < MAP_HEIGHT) {
         const type = mapLayout[nz][nx];
-        const key = `${nx},${nz}`;
+        const key = gridKey(nx, nz);
 
         // Walkable tiles: Path (1) or Base (3)
         if ((type === 1 || type === 3) && !visited.has(key)) {
