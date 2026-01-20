@@ -4,6 +4,7 @@ import * as THREE from 'three';
 
 import { TILE_SIZE } from '../../constants';
 import { TileType } from '../../types';
+import { gridKey } from '../../utils/gridKey';
 import { useWorld } from '../gameContexts';
 
 type Tile = { x: number; z: number; type: TileType };
@@ -67,7 +68,7 @@ export const useTileHover = () => {
       if (tile === undefined) return;
       if (gameStatus !== 'playing') return;
 
-      const key = `${tile.x},${tile.z}`;
+      const key = gridKey(tile.x, tile.z);
       const existingTower = renderStateRef.current.gridOccupancy.get(key);
 
       if (existingTower) {

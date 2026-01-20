@@ -1,11 +1,10 @@
 import React from 'react';
 
 import type { ProjectileEntity } from '../../types';
+import { lerp } from '../../utils/math';
 
 import { TEMP_COLOR } from './instancing/instancedUtils';
 import { useInstancedUpdater } from './instancing/useInstancedUpdater';
-
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
 export const InstancedProjectiles: React.FC = () => {
   const { setMeshRef } = useInstancedUpdater<ProjectileEntity>((state) => state.projectiles, {

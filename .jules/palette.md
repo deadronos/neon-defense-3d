@@ -1,4 +1,5 @@
 ## 2024-05-22 - Double-Click Confirmation Pattern
+
 **Learning:** For destructive actions in a game UI (like selling a tower), a "double-click to confirm" pattern on the same button is a highly effective micro-UX improvement. It prevents accidental clicks without breaking flow with a modal dialog.
 **Action:** Use this pattern for other destructive, non-critical actions where speed is important but safety is required.
 

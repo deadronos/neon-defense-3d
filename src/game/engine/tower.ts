@@ -2,6 +2,8 @@ import { MAP_HEIGHT, MAP_WIDTH, TOWER_CONFIGS } from '../../constants';
 import type { TowerType } from '../../types';
 import { getTowerStats } from '../utils';
 
+import { resetEnemyPositionsCache } from './cacheUtils';
+import { distanceSquared } from './math';
 import { writeEnemyWorldPosition } from './selectors';
 import { buildSpatialGrid, forEachNearbyEnemy } from './spatial';
 import type { EngineCache } from './step';
@@ -41,9 +43,6 @@ const selectTowerWorldPosition = (tower: EngineTower, tileSize: number): EngineV
   tower.gridPosition[1] * tileSize,
 ];
 
-const distanceSquared = (a: EngineVector3, b: EngineVector3) =>
-  (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
-
 /* eslint-disable sonarjs/cognitive-complexity, complexity */
 export const stepTowers = (
   state: EngineState,
@@ -63,11 +62,7 @@ export const stepTowers = (
   const enemyPositionPool = cache?.enemyPositionPool;
 
   if (cache && enemyPositions && enemyPositionPool) {
-    for (const position of enemyPositions.values()) {
-      enemyPositionPool.push(position);
-    }
-    enemyPositions.clear();
-    cache.enemyPositionsSource = undefined;
+    resetEnemyPositionsCache(cache);
   }
 
   // Build spatial grid once per tick
