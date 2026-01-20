@@ -47,6 +47,7 @@ export interface GameState {
   gameMode: 'CLASSIC' | 'ROGUELITE';
   roguePhase: number; // 1-indexed difficulty phase
   customMapSeed: string | null;
+  customMapLayout: number[][] | null;
 
 
   // Campaign & Tech Tree

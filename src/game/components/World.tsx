@@ -12,6 +12,9 @@ import { createTileMaterial, createGridMaterial } from '../render/tileShaders';
 type Tile = { x: number; z: number; type: TileType };
 
 const TILE_GEOMETRY = new THREE.PlaneGeometry(TILE_SIZE * 0.95, TILE_SIZE * 0.95);
+// Expand bounding sphere to ensure checking the bounding sphere doesn't cull instances far from origin
+// The map is at most MAP_WIDTH/HEIGHT * TILE_SIZE. A radius of 100 covers everything comfortably.
+TILE_GEOMETRY.boundingSphere = new THREE.Sphere(new THREE.Vector3(0, 0, 0), 100);
 const TILE_ROTATION = new THREE.Euler(-Math.PI / 2, 0, 0);
 
 const TILE_COLORS: Record<TileType, string> = {
@@ -154,6 +157,7 @@ export const World = React.memo(() => {
         ref={grassMeshRef}
         args={[TILE_GEOMETRY, grassMaterial, tilesByType.grass.length]}
         material={grassMaterial}
+        frustumCulled={false}
         onPointerMove={handlePointerMove(tilesByType.grass)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.grass)}
@@ -165,6 +169,7 @@ export const World = React.memo(() => {
         ref={pathMeshRef}
         args={[TILE_GEOMETRY, pathMaterial, tilesByType.path.length]}
         material={pathMaterial}
+        frustumCulled={false}
         onPointerMove={handlePointerMove(tilesByType.path)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.path)}
@@ -176,6 +181,7 @@ export const World = React.memo(() => {
         ref={spawnMeshRef}
         args={[TILE_GEOMETRY, spawnMaterial, tilesByType.spawn.length]}
         material={spawnMaterial}
+        frustumCulled={false}
         onPointerMove={handlePointerMove(tilesByType.spawn)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.spawn)}
@@ -187,6 +193,7 @@ export const World = React.memo(() => {
         ref={baseMeshRef}
         args={[TILE_GEOMETRY, baseMaterial, tilesByType.base.length]}
         material={baseMaterial}
+        frustumCulled={false}
         onPointerMove={handlePointerMove(tilesByType.base)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.base)}

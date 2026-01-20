@@ -47,6 +47,30 @@ export const RogueliteManager = () => {
       
    }, [gameState.wave, gameState.gameStatus, waveState?.phase, waveState?.enemiesAlive]);
 
+   // Handle Initial Map Generation
+   useEffect(() => {
+     if (gameState.gameMode === 'ROGUELITE' && gameState.gameStatus === 'playing' && !gameState.customMapLayout && gameState.customMapSeed) {
+        if (!processingRef.current) {
+            processingRef.current = true;
+            console.log("Generating Initial Roguelite Map for Seed:", gameState.customMapSeed);
+            generateAndSetMap(gameState.customMapSeed).then(() => {
+                processingRef.current = false;
+            });
+        }
+     }
+   }, [gameState.gameMode, gameState.gameStatus, gameState.customMapLayout, gameState.customMapSeed]);
+
+
+   const generateAndSetMap = async (seed: string) => {
+       const mapLayout = await wfcClient.generateMap(seed, MAP_WIDTH, MAP_HEIGHT);
+       if (!mapLayout || mapLayout.length === 0) {
+           console.error("Map Gen failed");
+           // Retry?
+           return;
+       }
+       setCustomMapLayout(mapLayout);
+   };
+
    const handlePhaseTransition = async () => {
        // Pause / Show Overlay?
        // Generate new Seed
