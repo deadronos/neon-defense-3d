@@ -12,6 +12,7 @@ import { InstancedEnemies } from './Enemies';
 import { GameLoopBridge } from './GameLoop';
 import { InstancedTowers } from './InstancedTowers';
 import { InstancedProjectiles } from './Projectiles';
+import { RogueliteManager } from '../RogueliteManager';
 import { SynergyLinks } from './SynergyLinks'; // New import
 // import { Tower } from './Tower'; // Keep for ref? No, replacing usage.
 import { InstancedTrails } from './Trails';
@@ -35,6 +36,7 @@ export const SceneContent = () => {
       <directionalLight position={[10, 5, 10]} intensity={0.5} color="#ff00ff" />
 
       <GameLoopBridge />
+      <RogueliteManager />
 
       <World />
 

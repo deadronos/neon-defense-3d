@@ -59,6 +59,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setSelectedEntityId,
     removeEffect,
     clearAnnouncement,
+    startRogueliteRun,
+    nextRoguePhase,
+    setCustomMapLayout,
   } = useGameActions({
     runtimeRef,
     dispatch,
@@ -122,6 +125,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         setGameSpeed,
         renderStateRef,
         clearAnnouncement,
+        startRogueliteRun,
+        nextRoguePhase,
+        setCustomMapLayout,
       }),
     [
       gameState,
@@ -156,6 +162,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       setGameSpeed,
       renderStateRef,
       clearAnnouncement,
+      startRogueliteRun,
+      nextRoguePhase,
+      setCustomMapLayout,
     ],
   );
 
@@ -186,6 +195,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
         gameSpeed,
         setGameSpeed,
         clearAnnouncement,
+        startRogueliteRun,
+        nextRoguePhase,
+        setCustomMapLayout,
       }),
     [
       gameState,
@@ -212,6 +224,9 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       gameSpeed,
       setGameSpeed,
       clearAnnouncement,
+      startRogueliteRun,
+      nextRoguePhase,
+      setCustomMapLayout,
     ],
   );
 
