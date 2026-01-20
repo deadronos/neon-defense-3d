@@ -46,6 +46,7 @@ export const getTowerStats = (
     range: base.range * (1 + (level - 1) * 0.1) * rangeMult,
     cooldown: finalCooldown,
     upgradeCost: Math.floor(base.cost * Math.pow(1.5, level)),
+    cost: base.cost, // Base placement cost
     freezeDuration: base.freezeDuration, // Pass through for gameplay usage
     splashRadius: base.splashRadius, // Pass through for gameplay usage
   };

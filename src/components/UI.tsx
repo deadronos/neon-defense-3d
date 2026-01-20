@@ -32,6 +32,7 @@ export const UI = () => {
     startNextSector,
     gameSpeed,
     setGameSpeed,
+    startRogueliteRun,
   } = useGame();
 
   const [showTechTree, setShowTechTree] = useState(false);
@@ -53,7 +54,13 @@ export const UI = () => {
     if (showTechTree) {
       return <TechTreeModal onClose={() => setShowTechTree(false)} />;
     }
-    return <IdleScreen onStart={startGame} onOpenTechTree={() => setShowTechTree(true)} />;
+    return (
+      <IdleScreen
+        onStart={startGame}
+        onOpenTechTree={() => setShowTechTree(true)}
+        onStartRoguelite={startRogueliteRun}
+      />
+    );
   }
 
   if (gameState.gameStatus === 'gameover') {

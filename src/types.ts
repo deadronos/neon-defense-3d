@@ -40,8 +40,14 @@ export interface GameState {
   /** Graphics quality preset (affects postprocessing, trails, etc.). */
   graphicsQuality: GraphicsQuality;
 
-  /** Index of the current map in the campaign. */
+  /** Index of the current map in the campaign. -1 indicates procedural/custom. */
   currentMapIndex: number;
+
+  /** Procedural Generation State */
+  gameMode: 'CLASSIC' | 'ROGUELITE';
+  roguePhase: number; // 1-indexed difficulty phase
+  customMapSeed: string | null;
+
 
   // Campaign & Tech Tree
   researchPoints: number;
