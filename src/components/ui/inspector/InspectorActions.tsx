@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { TOWER_CONFIGS } from '../../../constants';
 import { getTowerStats } from '../../../game/utils';
 import type { TowerEntity, UpgradeType } from '../../../types';
+import { Badge } from '../../ui/badge';
+import { Button } from '../../ui/button';
 
 interface InspectorActionsProps {
   selectedTowerEntity: TowerEntity;
@@ -48,33 +50,34 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
   const refund = Math.floor(config.cost * 0.7);
 
   return (
-    <div className="flex flex-col gap-3 w-full sm:w-auto border-t sm:border-t-0 sm:border-l border-gray-800 pt-4 sm:pt-0 sm:pl-6 justify-center">
-      <button
-        className="text-[10px] text-gray-500 hover:text-white uppercase tracking-widest text-right mb-auto"
-        onClick={onClose}
-      >
-        Close [ESC]
-      </button>
+    <div className="flex flex-col gap-3 min-w-[200px] border-t sm:border-t-0 sm:border-l border-zinc-800 pt-4 sm:pt-0 sm:pl-6 justify-center">
+      <div className="flex justify-end mb-auto">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-[10px] h-6 text-zinc-500 hover:text-white uppercase tracking-widest"
+          onClick={onClose}
+        >
+          Close [ESC]
+        </Button>
+      </div>
 
-      <button
+      <Button
         onClick={() => onUpgrade(selectedTowerEntity.id)}
         disabled={!canAfford}
-        className={`
-          relative group flex flex-col items-center justify-center p-2 border transition-all duration-200
-          ${
-            canAfford
-              ? 'border-cyan-500 bg-cyan-900/20 hover:bg-cyan-500/20'
-              : 'border-gray-800 opacity-50 cursor-not-allowed'
-          }
-        `}
+        className="h-14 relative flex flex-col items-center justify-center border-cyan-500/50 hover:bg-cyan-900/30 bg-cyan-900/10 text-cyan-50"
+        variant="outline"
       >
-        <span className="font-bold text-white text-sm uppercase tracking-wider">Upgrade</span>
-        <span className={`text-xs font-mono ${canAfford ? 'text-cyan-300' : 'text-gray-500'}`}>
+        <span className="font-bold text-sm uppercase tracking-wider">Upgrade</span>
+        <Badge
+          variant="secondary"
+          className={`mt-0.5 h-4 text-[10px] font-mono ${canAfford ? 'text-cyan-300 bg-cyan-950' : 'text-zinc-500 bg-zinc-900'}`}
+        >
           ${nextStats.upgradeCost}
-        </span>
-      </button>
+        </Badge>
+      </Button>
 
-      <button
+      <Button
         onClick={() => {
           if (isConfirmingSell) {
             onSell(selectedTowerEntity.id);
@@ -83,20 +86,18 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
             setIsConfirmingSell(true);
           }
         }}
+        variant={isConfirmingSell ? 'destructive' : 'ghost'}
         className={`
-          mt-1 text-xs px-2 py-1 transition-all uppercase tracking-wider border
+          mt-1 h-9 text-xs uppercase tracking-wider border transition-all
           ${
             isConfirmingSell
-              ? 'bg-red-900/40 text-red-200 border-red-500 animate-pulse font-bold'
-              : 'text-red-400 hover:text-red-300 border-red-900/30 hover:border-red-500/50 bg-transparent'
+              ? 'animate-pulse font-bold'
+              : 'text-red-400 hover:text-red-300 border-red-900/30 hover:border-red-500/50 bg-transparent hover:bg-red-950/30'
           }
         `}
-        aria-label={
-          isConfirmingSell ? 'Confirm sell? Click again to sell unit' : `Sell unit for $${refund}`
-        }
       >
         {isConfirmingSell ? 'Confirm Sell?' : `Sell Unit (+$${refund})`}
-      </button>
+      </Button>
     </div>
   );
 };
