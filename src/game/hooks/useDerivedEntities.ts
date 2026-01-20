@@ -15,9 +15,13 @@ import {
 export const useDerivedEntities = (runtime: RuntimeStoreState['runtime']) => {
   const enemyTypeMap = useMemo(buildEnemyTypeMap, []);
 
-  const currentMapLayout = MAP_LAYOUTS[runtime.ui.currentMapIndex % MAP_LAYOUTS.length];
-  const mapGrid = useMemo(() => getMapGrid(currentMapLayout), [currentMapLayout]);
-  const pathWaypoints = useMemo(() => generatePath(currentMapLayout), [currentMapLayout]);
+  const mapLayout =
+    runtime.ui.currentMapIndex >= 0
+      ? MAP_LAYOUTS[runtime.ui.currentMapIndex % MAP_LAYOUTS.length]
+      : (runtime.ui.customMapLayout ?? MAP_LAYOUTS[0]);
+
+  const mapGrid = useMemo(() => getMapGrid(mapLayout), [mapLayout]);
+  const pathWaypoints = useMemo(() => generatePath(mapLayout), [mapLayout]);
   const enginePathWaypoints: readonly EngineVector2[] = pathWaypoints;
 
   const enemies = useMemo(

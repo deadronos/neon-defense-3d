@@ -32,6 +32,11 @@ export interface UiState {
     subtext?: string;
     id: number;
   } | null;
+  // Procedural
+  gameMode: 'CLASSIC' | 'ROGUELITE';
+  roguePhase: number;
+  customMapSeed: string | null;
+  customMapLayout: number[][] | null;
 }
 
 export type UiAction =
@@ -46,7 +51,11 @@ export type UiAction =
   | { type: 'setSelectedTower'; tower: TowerType | null }
   | { type: 'setSelectedEntity'; id: string | null }
   | { type: 'applyEngineEvents'; events: EngineEvent[] }
-  | { type: 'setAnnouncement'; announcement: UiState['announcement'] };
+  | { type: 'setAnnouncement'; announcement: UiState['announcement'] }
+  | { type: 'setGameMode'; mode: 'CLASSIC' | 'ROGUELITE' }
+  | { type: 'startRogueliteRun'; seed: string }
+  | { type: 'nextRoguePhase'; seed: string }
+  | { type: 'setCustomMapLayout'; layout: number[][] };
 
 export const createInitialUiState = (): UiState => ({
   money: 150,
@@ -65,6 +74,10 @@ export const createInitialUiState = (): UiState => ({
   upgrades: {},
   sessionNonce: 0,
   announcement: null,
+  gameMode: 'CLASSIC',
+  roguePhase: 1,
+  customMapSeed: null,
+  customMapLayout: null,
 });
 
 const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
@@ -99,6 +112,11 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
       }
       return state;
     }
+    // Handle Roguelite Phase completion
+    // The previous block was for "Victory" every 10 waves in main game
+    // We should refactor this to be mode aware if we want distinct behavior
+    // For now, let's leave legacy behavior and add specific Rogue overrides below if needed,
+    // or handle the "Wrap" logic in the game loop via a new action.
     case 'EnemyKilled':
       return {
         ...state,
@@ -192,6 +210,41 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       return action.events.reduce(reduceEngineEvent, state);
     case 'setAnnouncement':
       return { ...state, announcement: action.announcement };
+    case 'setGameMode':
+      return { ...state, gameMode: action.mode };
+    case 'startRogueliteRun':
+      return {
+        ...state,
+        gameMode: 'ROGUELITE',
+        gameStatus: 'playing',
+        lives: 20,
+        money: 150, // Keep starting money 150 for fresh run
+        wave: 1,
+        roguePhase: 1,
+        waveStartedNonce: 0,
+        lastWaveStartedWave: 0,
+        currentMapIndex: -1, // -1 signals procedural
+        customMapSeed: action.seed,
+        totalDamageDealt: 0,
+        totalCurrencyEarned: 0,
+        selectedEntityId: null,
+        selectedTower: null,
+      };
+    case 'nextRoguePhase':
+      return {
+        ...state,
+        roguePhase: state.roguePhase + 1,
+        wave: 1, // Reset wave count for new phase
+        // Money/Lives logic handled by caller? Or preserved?
+        // UI Reducer manages the state, so we preserve current money/lives.
+        // towers are in EngineState, so clearing them is an Engine Action or side-effect.
+        customMapSeed: action.seed,
+        // sessionNonce maybe? To reload World?
+        sessionNonce: state.sessionNonce + 1, // Force world mount to refresh grid
+        gameStatus: 'playing',
+      };
+    case 'setCustomMapLayout':
+      return { ...state, customMapLayout: action.layout };
     default:
       return state;
   }
