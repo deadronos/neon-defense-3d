@@ -68,7 +68,7 @@ export const RogueliteManager = () => {
            // Retry?
            return;
        }
-       setCustomMapLayout(mapLayout);
+       if (setCustomMapLayout) setCustomMapLayout(mapLayout);
    };
 
    const handlePhaseTransition = async () => {
@@ -96,8 +96,8 @@ export const RogueliteManager = () => {
        }
        
        // Dispatch Next Phase
-       nextRoguePhase(newSeed);
-       setCustomMapLayout(mapLayout);
+       if (nextRoguePhase) nextRoguePhase(newSeed);
+       if (setCustomMapLayout) setCustomMapLayout(mapLayout);
    };
    
    return null;

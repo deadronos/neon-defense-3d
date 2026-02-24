@@ -16,7 +16,7 @@ export const IdleScreen: React.FC<IdleScreenProps> = ({
   const handleRogueStart = () => {
     // Generate a default seed if empty
     const actualSeed = seed.trim() || Math.random().toString(36).substring(7);
-    onStartRoguelite(actualSeed);
+    onStartRoguelite?.(actualSeed);
   };
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10 animate-fade-in">
