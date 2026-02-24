@@ -3,7 +3,7 @@ import React from 'react';
 interface IdleScreenProps {
   onStart: () => void;
   onOpenTechTree?: () => void;
-  onStartRoguelite: (seed: string) => void;
+  onStartRoguelite?: (seed: string) => void;
 }
 
 export const IdleScreen: React.FC<IdleScreenProps> = ({
