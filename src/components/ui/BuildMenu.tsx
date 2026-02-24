@@ -2,9 +2,8 @@ import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -35,6 +34,7 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
               const config = TOWER_CONFIGS[type];
               const isSelected = selectedTower === type;
               const canAfford = money >= config.cost;
+              const actionLabel = `${isSelected ? 'Deselect' : 'Select'} ${config.name}`;
 
               // Display base stats, assume level 1 and active upgrades
               const stats = getTowerStats(type, 1, { upgrades });
@@ -52,7 +52,9 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
                             : 'border-zinc-800 hover:border-zinc-600',
                           !canAfford && !isSelected && 'opacity-50 grayscale cursor-not-allowed',
                         )}
-                        disabled={!canAfford && !isSelected}
+                        aria-label={actionLabel}
+                        aria-pressed={isSelected}
+                        aria-disabled={!canAfford && !isSelected}
                         onClick={() => {
                           if (isSelected) {
                             onSelectTower(null);

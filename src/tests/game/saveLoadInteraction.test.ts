@@ -14,27 +14,6 @@ vi.mock('../../game/audio/useAudio', () => ({
   }),
 }));
 
-// Mock LocalStorage
-const localStorageMock = (() => {
-  let store: Record<string, string> = {};
-  return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => {
-      store[key] = value.toString();
-    },
-    removeItem: (key: string) => {
-      delete store[key];
-    },
-    clear: () => {
-      store = {};
-    },
-  };
-})();
-
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
-});
-
 describe('Save/Load Interaction Bug Reproduction', () => {
   it('allows building towers after loading a save', () => {
     const { result } = renderHook(() => useGame(), { wrapper: GameProvider });

@@ -44,92 +44,56 @@ if (typeof env.ResizeObserver !== 'function') {
 
 // Mock Web Audio API
 
-// Provide a robust localStorage shim for tests (some environments may lack clear())
-if (typeof (globalThis as any).localStorage === 'undefined') {
-  class LocalStorageShim {
-    private _store: Record<string, string> = {};
+// Provide a robust localStorage shim for tests.
+const hasUsableLocalStorage = (() => {
+  const localStorageCandidate = (globalThis as { localStorage?: unknown }).localStorage;
+  if (typeof localStorageCandidate !== 'object' || localStorageCandidate === null) return false;
+  const storageCandidate = localStorageCandidate as Partial<Storage>;
+  return (
+    typeof storageCandidate.getItem === 'function' &&
+    typeof storageCandidate.setItem === 'function' &&
+    typeof storageCandidate.removeItem === 'function' &&
+    typeof storageCandidate.clear === 'function' &&
+    typeof storageCandidate.key === 'function' &&
+    typeof storageCandidate.length === 'number'
+  );
+})();
+
+if (!hasUsableLocalStorage) {
+  class TestStorage {
+    private store: Record<string, string> = {};
+
     get length() {
-      return Object.keys(this._store).length;
-    }
-    key(i: number) {
-      return Object.keys(this._store)[i] ?? null;
-    }
-    getItem(k: string) {
-      return Object.prototype.hasOwnProperty.call(this._store, k) ? this._store[k] : null;
-    }
-    setItem(k: string, v: string) {
-      this._store[k] = String(v);
-    }
-    removeItem(k: string) {
-      delete this._store[k];
-    }
-    clear() {
-      for (const k of Object.keys(this._store)) delete this._store[k];
-    }
-  }
-  try {
-    Object.defineProperty(globalThis as any, 'Storage', {
-      value: LocalStorageShim,
-      configurable: true,
-    });
-  } catch {}
-  try {
-    Object.defineProperty(globalThis as any, 'localStorage', {
-      value: new (LocalStorageShim as any)(),
-      configurable: true,
-    });
-  } catch {
-    (globalThis as any).localStorage = new (LocalStorageShim as any)();
-  }
-} else if (typeof (globalThis as any).localStorage.clear !== 'function') {
-  // Try to augment the existing localStorage so that it has a clear() and preserves its prototype
-  try {
-    const st = (globalThis as any).localStorage;
-    // If Storage.prototype exists, set prototype so tests that spy on Storage.prototype will work
-    if (typeof (globalThis as any).Storage === 'function' && (Storage as any).prototype) {
-      try {
-        Object.setPrototypeOf(st, (Storage as any).prototype);
-      } catch {
-        // ignore
-      }
+      return Object.keys(this.store).length;
     }
 
-    const defineClear = () => {
-      try {
-        Object.defineProperty(st, 'clear', {
-          value: function clearShim() {
-            const keys: string[] = [];
-            for (let i = 0; i < (this as Storage).length; i++) {
-              const k = (this as Storage).key(i);
-              if (k) keys.push(k);
-            }
-            for (const k of keys) {
-              (this as Storage).removeItem(k);
-            }
-          },
-          configurable: true,
-        });
-      } catch {
-        // fallback to direct assignment
-        try {
-          st.clear = function clearShimFallback() {
-            const keys: string[] = [];
-            for (let i = 0; i < (st as Storage).length; i++) {
-              const k = (st as Storage).key(i);
-              if (k) keys.push(k);
-            }
-            for (const k of keys) (st as Storage).removeItem(k);
-          };
-        } catch {}
-      }
-    };
+    key(index: number): string | null {
+      return Object.keys(this.store)[index] ?? null;
+    }
 
-    defineClear();
-  } catch {
-    try {
-      (globalThis as any).localStorage.clear = () => {};
-    } catch {}
+    getItem(key: string): string | null {
+      return Object.prototype.hasOwnProperty.call(this.store, key) ? this.store[key] : null;
+    }
+
+    setItem(key: string, value: string): void {
+      this.store[key] = String(value);
+    }
+
+    removeItem(key: string): void {
+      delete this.store[key];
+    }
+
+    clear(): void {
+      this.store = {};
+    }
   }
+
+  Object.defineProperty(globalThis, 'Storage', { value: TestStorage, configurable: true });
+  Object.defineProperty(globalThis, 'localStorage', {
+    value: new TestStorage(),
+    configurable: true,
+    writable: true,
+  });
 }
 
 // Mock Web Audio API

@@ -47,9 +47,9 @@ export interface GameContextProps {
   exportCheckpointJson: () => { json: string; hasCheckpoint: boolean };
   skipWave: () => void;
   // Roguelite features
-  startRogueliteRun?: (seed: string) => void;
-  nextRoguePhase?: (seed: string) => void;
-  setCustomMapLayout?: (layout: number[][]) => void;
+  startRogueliteRun: (seed: string) => void;
+  nextRoguePhase: (seed: string) => void;
+  setCustomMapLayout: (layout: number[][]) => void;
   gameSpeed: number;
   setGameSpeed: (speed: number) => void;
   renderStateRef: MutableRefObject<RenderState>;
@@ -79,9 +79,9 @@ export interface GameUiContextProps {
   exportCheckpointJson: () => { json: string; hasCheckpoint: boolean };
   skipWave: () => void;
   // Roguelite features
-  startRogueliteRun?: (seed: string) => void;
-  nextRoguePhase?: (seed: string) => void;
-  setCustomMapLayout?: (layout: number[][]) => void;
+  startRogueliteRun: (seed: string) => void;
+  nextRoguePhase: (seed: string) => void;
+  setCustomMapLayout: (layout: number[][]) => void;
   gameSpeed: number;
   setGameSpeed: (speed: number) => void;
   clearAnnouncement: () => void;
