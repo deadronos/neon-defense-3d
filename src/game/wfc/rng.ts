@@ -27,12 +27,12 @@ export const createRNG = (seedStr: string) => {
     range: (min: number, max: number): number => {
       return Math.floor(createRNG(seedStr).next() * (max - min)) + min;
     },
-    
+
     /**
      * Re-seed the generator (if needed for chained generation).
      * NOTE: The closure captures 'seed', so this mutator is local.
      */
-    // eslint-disable-next-line no-return-assign
+
     fork: (suffix: string) => createRNG(seedStr + suffix),
   };
 };

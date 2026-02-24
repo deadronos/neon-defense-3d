@@ -186,9 +186,9 @@ export const useGameActions = ({
 
   const setCustomMapLayout = useCallback(
     (layout: number[][]) => {
-        dispatch({ type: 'uiAction', action: { type: 'setCustomMapLayout', layout } });
+      dispatch({ type: 'uiAction', action: { type: 'setCustomMapLayout', layout } });
     },
-    [dispatch]
+    [dispatch],
   );
 
   const removeEffect = useCallback(
@@ -196,44 +196,52 @@ export const useGameActions = ({
     [dispatch],
   );
 
-  const startRogueliteRun = useCallback((seed: string) => {
-    dispatch({ type: 'uiAction', action: { type: 'startRogueliteRun', seed } });
-    dispatch({ type: 'resetEngine' });
-  }, [dispatch]);
+  const startRogueliteRun = useCallback(
+    (seed: string) => {
+      dispatch({ type: 'uiAction', action: { type: 'startRogueliteRun', seed } });
+      dispatch({ type: 'resetEngine' });
+    },
+    [dispatch],
+  );
 
-  const nextRoguePhase = useCallback((seed: string) => {
-    // Phase Transition:
-    // 1. Maintain Money/Lives/Upgrades (handled by Reducer)
-    // 2. Clear Board (resetEngine)
-    // 3. Update Phase/Seed (Reducer)
-    // 4. Refund Towers? (Already verified: we should refund generic value or just let player keep money)
-    //    Ideally, before resetting engine, we sum up tower costs and add to money.
-    //    Since resetEngine wipes everything, we need a custom "SellAllAndStartNextPhase" action?
-    //    Or we just assume "Warp" auto-sells everything.
-    //    Current implementation: We must dispatch a 'sellAll' or compute value first.
-    //    Let's iterate towers in runtimeRef to compute refund.
+  const nextRoguePhase = useCallback(
+    (seed: string) => {
+      // Phase Transition:
+      // 1. Maintain Money/Lives/Upgrades (handled by Reducer)
+      // 2. Clear Board (resetEngine)
+      // 3. Update Phase/Seed (Reducer)
+      // 4. Refund Towers? (Already verified: we should refund generic value or just let player keep money)
+      //    Ideally, before resetting engine, we sum up tower costs and add to money.
+      //    Since resetEngine wipes everything, we need a custom "SellAllAndStartNextPhase" action?
+      //    Or we just assume "Warp" auto-sells everything.
+      //    Current implementation: We must dispatch a 'sellAll' or compute value first.
+      //    Let's iterate towers in runtimeRef to compute refund.
 
-    const towers = runtimeRef.current.engine.towers;
-    let refund = 0;
-    for (const t of towers) {
-       // Simple refund calculation: cost
-       // Or rely on stats cost cache.
-       // Let's assume average cost or metadata.
-       // actually, tower entity doesn't store cost, but config does.
-       const stats = getTowerStats(t.type as TowerType, t.level, { upgrades: runtimeRef.current.ui.upgrades });
-       // Refund: Current Value.
-       refund += stats.cost; // Base cost roughly.
-       // For exactness we might need cumulative cost.
-       // For MVP Roguelite: Refund 75% or 100% of BASE cost.
-    }
+      const towers = runtimeRef.current.engine.towers;
+      let refund = 0;
+      for (const t of towers) {
+        // Simple refund calculation: cost
+        // Or rely on stats cost cache.
+        // Let's assume average cost or metadata.
+        // actually, tower entity doesn't store cost, but config does.
+        const stats = getTowerStats(t.type as TowerType, t.level, {
+          upgrades: runtimeRef.current.ui.upgrades,
+        });
+        // Refund: Current Value.
+        refund += stats.cost; // Base cost roughly.
+        // For exactness we might need cumulative cost.
+        // For MVP Roguelite: Refund 75% or 100% of BASE cost.
+      }
 
-    if (refund > 0) {
-       dispatch({type: 'uiAction', action: { type: 'spendMoney', amount: -refund } }); // Negative spend = Refund
-    }
+      if (refund > 0) {
+        dispatch({ type: 'uiAction', action: { type: 'spendMoney', amount: -refund } }); // Negative spend = Refund
+      }
 
-    dispatch({ type: 'uiAction', action: { type: 'nextRoguePhase', seed } });
-    dispatch({ type: 'resetEngine' });
-  }, [dispatch, runtimeRef]);
+      dispatch({ type: 'uiAction', action: { type: 'nextRoguePhase', seed } });
+      dispatch({ type: 'resetEngine' });
+    },
+    [dispatch, runtimeRef],
+  );
 
   const clearAnnouncement = useCallback(() => {
     dispatch({ type: 'uiAction', action: { type: 'setAnnouncement', announcement: null } });

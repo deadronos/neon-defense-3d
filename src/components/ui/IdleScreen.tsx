@@ -12,7 +12,7 @@ export const IdleScreen: React.FC<IdleScreenProps> = ({
   onStartRoguelite,
 }) => {
   const [seed, setSeed] = React.useState('');
-  
+
   const handleRogueStart = () => {
     // Generate a default seed if empty
     const actualSeed = seed.trim() || Math.random().toString(36).substring(7);
@@ -56,26 +56,29 @@ export const IdleScreen: React.FC<IdleScreenProps> = ({
           {/* Roguelite Section */}
           <div className="flex flex-col gap-2 items-center w-full">
             <div className="flex gap-2 w-full justify-center">
-               <input 
-                  type="text" 
-                  placeholder="SEED (OPTIONAL)" 
-                  value={seed}
-                  onChange={(e) => setSeed(e.target.value)}
-                  className="bg-black/40 border border-cyan-800 text-cyan-100 px-3 py-2 w-48 text-center tracking-widest text-xs focus:border-cyan-500 outline-none placeholder:text-cyan-900"
-               />
-               <button onClick={() => setSeed(Math.random().toString(36).substring(7).toUpperCase())} className="text-cyan-600 hover:text-cyan-400 text-xs px-2 border border-cyan-900 hover:border-cyan-600">
-                  RND
-               </button>
+              <input
+                type="text"
+                placeholder="SEED (OPTIONAL)"
+                value={seed}
+                onChange={(e) => setSeed(e.target.value)}
+                className="bg-black/40 border border-cyan-800 text-cyan-100 px-3 py-2 w-48 text-center tracking-widest text-xs focus:border-cyan-500 outline-none placeholder:text-cyan-900"
+              />
+              <button
+                onClick={() => setSeed(Math.random().toString(36).substring(7).toUpperCase())}
+                className="text-cyan-600 hover:text-cyan-400 text-xs px-2 border border-cyan-900 hover:border-cyan-600"
+              >
+                RND
+              </button>
             </div>
-            
+
             <button
-                onClick={handleRogueStart}
-                className="group relative px-10 py-3 bg-transparent overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,50,50,0.4)]"
+              onClick={handleRogueStart}
+              className="group relative px-10 py-3 bg-transparent overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(255,50,50,0.4)]"
             >
-                <div className="absolute inset-0 border border-red-500/50 skew-x-[-20deg] bg-red-900/10 group-hover:bg-red-500/20 transition-all"></div>
-                <span className="relative font-bold text-lg tracking-widest text-red-100 group-hover:text-white">
+              <div className="absolute inset-0 border border-red-500/50 skew-x-[-20deg] bg-red-900/10 group-hover:bg-red-500/20 transition-all"></div>
+              <span className="relative font-bold text-lg tracking-widest text-red-100 group-hover:text-white">
                 ROGUE PROTOCOL
-                </span>
+              </span>
             </button>
           </div>
         </div>

@@ -49,7 +49,6 @@ export interface GameState {
   customMapSeed: string | null;
   customMapLayout: number[][] | null;
 
-
   // Campaign & Tech Tree
   researchPoints: number;
   totalDamageDealt: number;

@@ -5,6 +5,7 @@ import * as THREE from 'three';
 
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
 import { useGameUi } from '../gameContexts';
+import { RogueliteManager } from '../RogueliteManager';
 import { StarField } from '../StarField';
 
 import { InstancedExplosions } from './Effects';
@@ -12,7 +13,6 @@ import { InstancedEnemies } from './Enemies';
 import { GameLoopBridge } from './GameLoop';
 import { InstancedTowers } from './InstancedTowers';
 import { InstancedProjectiles } from './Projectiles';
-import { RogueliteManager } from '../RogueliteManager';
 import { SynergyLinks } from './SynergyLinks'; // New import
 // import { Tower } from './Tower'; // Keep for ref? No, replacing usage.
 import { InstancedTrails } from './Trails';

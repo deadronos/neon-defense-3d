@@ -1,4 +1,4 @@
-import { GenerateMapMessage, MapGeneratedMessage } from './wfc.worker';
+import type { GenerateMapMessage, MapGeneratedMessage } from './wfc.worker';
 
 class WFCClient {
   private worker: Worker;
@@ -19,7 +19,7 @@ class WFCClient {
           } else {
             console.error(`Map generation failed for seed: ${seed}`);
             // Return empty or fallback?
-            resolve([]); 
+            resolve([]);
           }
           this.pendingResolves.delete(seed);
         }

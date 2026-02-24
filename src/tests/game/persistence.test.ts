@@ -27,7 +27,17 @@ import { TileType, TowerType, UpgradeType } from '../../types';
 
 describe('persistence (Tier-B checkpoint)', () => {
   beforeEach(() => {
-    localStorage.clear();
+    if (typeof localStorage.clear === 'function') {
+      localStorage.clear();
+    } else if (
+      typeof localStorage.length === 'number' &&
+      typeof localStorage.removeItem === 'function'
+    ) {
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const k = localStorage.key(i);
+        if (k) localStorage.removeItem(k);
+      }
+    }
     vi.restoreAllMocks();
   });
 
