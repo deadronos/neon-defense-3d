@@ -2,8 +2,6 @@ import React from 'react';
 
 import { SYNERGIES } from '../../../game/synergies';
 import type { TowerEntity } from '../../../types';
-import { Badge } from '../../ui/badge';
-import { Separator } from '../../ui/separator';
 
 interface InspectorSynergiesProps {
   selectedTowerEntity: TowerEntity;

@@ -2,7 +2,6 @@ import React from 'react';
 
 import { getTowerStats } from '../../../game/utils';
 import type { TowerEntity, UpgradeType } from '../../../types';
-import { Separator } from '../../ui/separator';
 
 interface InspectorStatsProps {
   selectedTowerEntity: TowerEntity;
@@ -12,16 +11,15 @@ interface InspectorStatsProps {
 export const InspectorStats: React.FC<InspectorStatsProps> = ({
   selectedTowerEntity,
   upgrades,
-  activeSynergies,
-}: any) => {
-  // TODO: fix typing for activeSynergies if needed, or pass it down
+}) => {
+  const activeSynergies = selectedTowerEntity.activeSynergies ?? [];
   const current = getTowerStats(selectedTowerEntity.type, selectedTowerEntity.level, {
     upgrades,
-    activeSynergies: selectedTowerEntity.activeSynergies,
+    activeSynergies,
   });
   const next = getTowerStats(selectedTowerEntity.type, selectedTowerEntity.level + 1, {
     upgrades,
-    activeSynergies: selectedTowerEntity.activeSynergies,
+    activeSynergies,
   });
 
   return (
