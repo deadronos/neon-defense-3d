@@ -9,20 +9,19 @@ class WFCClient {
       type: 'module',
     });
 
-    this.worker.onmessage = (e: MessageEvent<MapGeneratedMessage>) => {
-      const { type, map, seed, success } = e.data;
-      if (type === 'MAP_GENERATED') {
-        const resolve = this.pendingResolves.get(seed);
-        if (resolve) {
-          if (success) {
-            resolve(map);
-          } else {
-            console.error(`Map generation failed for seed: ${seed}`);
-            // Return empty or fallback?
-            resolve([]);
-          }
-          this.pendingResolves.delete(seed);
+    this.worker.onmessage = ({ data }: MessageEvent<MapGeneratedMessage>) => {
+      const { map, seed, success } = data;
+      const resolve = this.pendingResolves.get(seed);
+
+      if (resolve) {
+        if (success) {
+          resolve(map);
+        } else {
+          console.error(`Map generation failed for seed: ${seed}`);
+          resolve([]);
         }
+
+        this.pendingResolves.delete(seed);
       }
     };
   }

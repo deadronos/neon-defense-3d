@@ -23,7 +23,7 @@ Neon Defense 3D is an immersive Tower Defense game built using **React 19**, **T
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (v16 or higher recommended)
+- [Node.js](https://nodejs.org/) (`^20.19.0` or `>=22.12.0`)
 - npm or yarn
 
 ### Installation
