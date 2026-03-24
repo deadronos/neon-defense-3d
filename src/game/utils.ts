@@ -41,11 +41,18 @@ export const getTowerStats = (
   const levelCooldown = Math.max(0.1, base.cooldown * (1 - (level - 1) * 0.05));
   const finalCooldown = levelCooldown / fireRateMult;
 
+  // Calculate total investment (base cost + all upgrades up to current level)
+  let totalInvestment = base.cost;
+  for (let l = 1; l < level; l++) {
+    totalInvestment += Math.floor(base.cost * Math.pow(1.5, l));
+  }
+
   return {
     damage: base.damage * (1 + (level - 1) * 0.25) * dmgMult,
     range: base.range * (1 + (level - 1) * 0.1) * rangeMult,
     cooldown: finalCooldown,
     upgradeCost: Math.floor(base.cost * Math.pow(1.5, level)),
+    totalInvestment,
     cost: base.cost, // Base placement cost
     freezeDuration: base.freezeDuration, // Pass through for gameplay usage
     splashRadius: base.splashRadius, // Pass through for gameplay usage
