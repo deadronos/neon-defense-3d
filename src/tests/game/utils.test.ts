@@ -1,7 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
 import { TOWER_CONFIGS } from '../../constants';
-import { getTowerStats } from '../../game/utils';
+import {
+  calculateTowerRefundValue,
+  calculateTowerTotalInvestment,
+  getTowerStats,
+} from '../../game/utils';
 import { TowerType, UpgradeType, SynergyType } from '../../types';
 
 describe('getTowerStats', () => {
@@ -95,5 +99,15 @@ describe('getTowerStats', () => {
     });
     // clamp happens to 0.1 then divided by 1.15
     expect(statsWithSynergy.cooldown).toBeCloseTo(0.1 / 1.15);
+  });
+
+  it('calculates cumulative tower investment and pro-rated refund value', () => {
+    const base = TOWER_CONFIGS[TowerType.Basic];
+    const totalLevel1 = calculateTowerTotalInvestment(TowerType.Basic, 1);
+    const totalLevel2 = calculateTowerTotalInvestment(TowerType.Basic, 2);
+
+    expect(totalLevel1).toBe(base.cost);
+    expect(totalLevel2).toBe(base.cost + Math.floor(base.cost * 1.5));
+    expect(calculateTowerRefundValue(TowerType.Basic, 2)).toBe(Math.floor(totalLevel2 * 0.7));
   });
 });

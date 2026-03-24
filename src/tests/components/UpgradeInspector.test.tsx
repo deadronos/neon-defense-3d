@@ -4,7 +4,7 @@ import React from 'react';
 import { describe, expect, it, vi, afterEach } from 'vitest';
 
 import { UpgradeInspector } from '../../components/ui/UpgradeInspector';
-import { getTowerStats } from '../../game/utils';
+import { calculateTowerRefundValue, getTowerStats } from '../../game/utils';
 import { TowerType } from '../../types';
 
 describe('UpgradeInspector', () => {
@@ -169,5 +169,25 @@ describe('UpgradeInspector', () => {
 
     await user.click(upgradeBtnEnabled);
     expect(onUpgrade).toHaveBeenCalledWith('tower-1');
+  });
+
+  it('shows a pro-rated sell refund based on tower investment', () => {
+    const upgradedTower = { ...baseTower, level: 2 };
+    const refund = calculateTowerRefundValue(TowerType.Basic, upgradedTower.level);
+
+    render(
+      <UpgradeInspector
+        selectedTowerEntity={upgradedTower}
+        upgrades={{}}
+        money={999}
+        onClose={vi.fn()}
+        onUpgrade={vi.fn()}
+        onSell={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: /sell unit/i })).toHaveTextContent(
+      `Sell Unit (+$${refund})`,
+    );
   });
 });

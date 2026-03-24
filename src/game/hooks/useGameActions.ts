@@ -16,7 +16,7 @@ import { syncRenderState } from '../renderStateUtils';
 import type { RenderStateStoreState } from '../stores/renderStateStore';
 import type { RuntimeStoreState } from '../stores/runtimeStore';
 import type { buildEnemyTypeMap } from '../transforms';
-import { getTowerStats } from '../utils';
+import { calculateTowerRefundValue, getTowerStats } from '../utils';
 
 type PlaySfx = (id: string) => void;
 
@@ -206,35 +206,14 @@ export const useGameActions = ({
 
   const nextRoguePhase = useCallback(
     (seed: string) => {
-      // Phase Transition:
-      // 1. Maintain Money/Lives/Upgrades (handled by Reducer)
-      // 2. Clear Board (resetEngine)
-      // 3. Update Phase/Seed (Reducer)
-      // 4. Refund Towers? (Already verified: we should refund generic value or just let player keep money)
-      //    Ideally, before resetting engine, we sum up tower costs and add to money.
-      //    Since resetEngine wipes everything, we need a custom "SellAllAndStartNextPhase" action?
-      //    Or we just assume "Warp" auto-sells everything.
-      //    Current implementation: We must dispatch a 'sellAll' or compute value first.
-      //    Let's iterate towers in runtimeRef to compute refund.
-
       const towers = runtimeRef.current.engine.towers;
       let refund = 0;
       for (const t of towers) {
-        // Simple refund calculation: cost
-        // Or rely on stats cost cache.
-        // Let's assume average cost or metadata.
-        // actually, tower entity doesn't store cost, but config does.
-        const stats = getTowerStats(t.type as TowerType, t.level, {
-          upgrades: runtimeRef.current.ui.upgrades,
-        });
-        // Refund: Current Value.
-        refund += stats.cost; // Base cost roughly.
-        // For exactness we might need cumulative cost.
-        // For MVP Roguelite: Refund 75% or 100% of BASE cost.
+        refund += calculateTowerRefundValue(t.type as TowerType, t.level);
       }
 
       if (refund > 0) {
-        dispatch({ type: 'uiAction', action: { type: 'spendMoney', amount: -refund } }); // Negative spend = Refund
+        dispatch({ type: 'uiAction', action: { type: 'grantMoney', amount: refund } });
       }
 
       dispatch({ type: 'uiAction', action: { type: 'nextRoguePhase', seed } });

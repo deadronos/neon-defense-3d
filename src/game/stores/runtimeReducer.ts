@@ -7,7 +7,7 @@ import type { EngineState } from '../engine/types';
 import { createInitialUiState, uiReducer } from '../engine/uiReducer';
 import type { UiState } from '../engine/uiReducer';
 import { calculateSynergies } from '../synergies';
-import { getTowerStats } from '../utils';
+import { calculateTowerRefundValue, getTowerStats } from '../utils';
 
 export interface RuntimeState extends EngineRuntimeState {
   engine: EngineState;
@@ -81,8 +81,7 @@ export const runtimeReducer = (state: RuntimeState, action: RuntimeAction): Runt
     case 'sellTower': {
       const tower = state.engine.towers.find((t) => t.id === action.id);
       if (!tower) return state;
-      const config = TOWER_CONFIGS[tower.type as TowerType];
-      const refund = Math.floor(config.cost * 0.7);
+      const refund = calculateTowerRefundValue(tower.type as TowerType, tower.level);
 
       const filteredTowers = state.engine.towers.filter((t) => t.id !== action.id);
       const synergies = calculateSynergies(filteredTowers);
@@ -95,7 +94,7 @@ export const runtimeReducer = (state: RuntimeState, action: RuntimeAction): Runt
         engine: applyEnginePatch(state.engine, {
           towers: synergedTowers,
         }),
-        ui: { ...state.ui, money: state.ui.money + refund, selectedEntityId: null },
+        ui: uiReducer(state.ui, { type: 'grantMoney', amount: refund }),
       };
     }
     default:
