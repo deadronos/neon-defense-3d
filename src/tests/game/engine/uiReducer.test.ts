@@ -75,6 +75,12 @@ describe('engine uiReducer', () => {
     expect(next.money).toBe(0);
   });
 
+  it('grantMoney increases money', () => {
+    const initial = { ...createInitialUiState(), money: 10 };
+    const next = uiReducer(initial, { type: 'grantMoney', amount: 25 });
+    expect(next.money).toBe(35);
+  });
+
   it('setGraphicsQuality updates graphics preset', () => {
     const initial = createInitialUiState();
     const next = uiReducer(initial, { type: 'setGraphicsQuality', quality: 'low' });

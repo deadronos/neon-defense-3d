@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { TOWER_CONFIGS } from '../../../constants';
-import { getTowerStats } from '../../../game/utils';
+import { getTowerStats, calculateTowerRefundValue } from '../../../game/utils';
 import type { TowerEntity, UpgradeType } from '../../../types';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
@@ -45,12 +44,10 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
     activeSynergies: selectedTowerEntity.activeSynergies,
   });
   const canAfford = money >= nextStats.upgradeCost;
-
-  const config = TOWER_CONFIGS[selectedTowerEntity.type];
-  const refund = Math.floor(config.cost * 0.7);
+  const refund = calculateTowerRefundValue(selectedTowerEntity.type, selectedTowerEntity.level);
 
   return (
-    <div className="flex flex-col gap-3 min-w-[200px] border-t sm:border-t-0 sm:border-l border-zinc-800 pt-4 sm:pt-0 sm:pl-6 justify-center">
+    <div className="flex flex-col gap-3 min-w-50 border-t sm:border-t-0 sm:border-l border-zinc-800 pt-4 sm:pt-0 sm:pl-6 justify-center">
       <div className="flex justify-end mb-auto">
         <Button
           variant="ghost"

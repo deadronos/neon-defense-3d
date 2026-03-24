@@ -46,6 +46,7 @@ export type UiAction =
   | { type: 'startNextSector' }
   | { type: 'purchaseUpgrade'; upgrade: UpgradeType; cost: number }
   | { type: 'spendMoney'; amount: number }
+  | { type: 'grantMoney'; amount: number }
   | { type: 'setGameStatus'; gameStatus: UiState['gameStatus'] }
   | { type: 'setGraphicsQuality'; quality: GraphicsQuality }
   | { type: 'setSelectedTower'; tower: TowerType | null }
@@ -198,6 +199,8 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
     }
     case 'spendMoney':
       return { ...state, money: Math.max(0, state.money - action.amount) };
+    case 'grantMoney':
+      return { ...state, money: state.money + action.amount };
     case 'setGameStatus':
       return { ...state, gameStatus: action.gameStatus };
     case 'setGraphicsQuality':

@@ -16,7 +16,7 @@ import { syncRenderState } from '../renderStateUtils';
 import type { RenderStateStoreState } from '../stores/renderStateStore';
 import type { RuntimeStoreState } from '../stores/runtimeStore';
 import type { buildEnemyTypeMap } from '../transforms';
-import { getTowerStats } from '../utils';
+import { calculateTowerRefundValue, getTowerStats } from '../utils';
 
 type PlaySfx = (id: string) => void;
 
@@ -209,14 +209,11 @@ export const useGameActions = ({
       const towers = runtimeRef.current.engine.towers;
       let refund = 0;
       for (const t of towers) {
-        const stats = getTowerStats(t.type as TowerType, t.level, {
-          upgrades: runtimeRef.current.ui.upgrades,
-        });
-        refund += stats.totalInvestment;
+        refund += calculateTowerRefundValue(t.type as TowerType, t.level);
       }
 
       if (refund > 0) {
-        dispatch({ type: 'uiAction', action: { type: 'spendMoney', amount: -refund } }); // Negative spend = Refund
+        dispatch({ type: 'uiAction', action: { type: 'grantMoney', amount: refund } });
       }
 
       dispatch({ type: 'uiAction', action: { type: 'nextRoguePhase', seed } });

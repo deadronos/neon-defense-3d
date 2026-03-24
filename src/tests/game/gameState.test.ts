@@ -109,7 +109,36 @@ describe('GameProvider (engine-backed)', () => {
     });
 
     expect(result.current.towers).toHaveLength(0);
-    expect(result.current.gameState.money).toBe(60);
+    expect(result.current.gameState.money).toBe(112);
+  });
+
+  it('refunds pro-rated tower investment when advancing a roguelite phase', () => {
+    const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
+
+    act(() => {
+      result.current.startRogueliteRun('seed-1');
+    });
+
+    act(() => {
+      result.current.placeTower(0, 0, TowerType.Basic);
+    });
+
+    const towerId = result.current.towers[0]?.id;
+    expect(towerId).toBeDefined();
+
+    act(() => {
+      result.current.upgradeTower(towerId);
+    });
+
+    expect(result.current.gameState.money).toBe(25);
+
+    act(() => {
+      result.current.nextRoguePhase('seed-2');
+    });
+
+    expect(result.current.gameState.roguePhase).toBe(2);
+    expect(result.current.towers).toHaveLength(0);
+    expect(result.current.gameState.money).toBe(112);
   });
 
   it('does not place a tower if unaffordable (e.g. Sniper at game start)', () => {
