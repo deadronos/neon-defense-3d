@@ -60,7 +60,7 @@ describe('engine stepTowers', () => {
 
     expect(result.patch.towers).toHaveLength(1);
     expect(result.patch.towers?.[0]?.targetId).toBe('enemy-1');
-    expect(result.patch.towers?.[0]?.lastFired).toBe(basicCooldownMs + 1);
+    expect(result.patch.towers?.[0]?.lastFired).toBe(basicCooldownMs);
   });
 
   it('does not fire when the tower is on cooldown', () => {

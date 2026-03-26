@@ -43,6 +43,7 @@ export interface EngineProjectile {
   color: string;
   freezeDuration?: number;
   splashRadius?: number;
+  lastTargetPosition?: EngineVector3;
 }
 
 export interface EngineEffectIntent {

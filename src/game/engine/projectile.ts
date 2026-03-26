@@ -23,7 +23,6 @@ export interface StepProjectilesOptions {
 }
 
 const DEFAULT_TILE_SIZE = 2;
-const PROJECTILE_PROGRESS_RATE = 3; // Matches legacy behavior: progress += deltaSeconds * 3
 const EFFECT_DURATION_SECONDS = 0.8;
 const DEFAULT_EFFECT_SCALE = 0.4;
 
@@ -75,14 +74,32 @@ export const stepProjectiles = (
 
   for (const projectile of state.projectiles) {
     const target = enemiesById.get(projectile.targetId);
-    if (!target) continue;
+    let targetPos = projectile.lastTargetPosition ?? projectile.origin;
+    if (target) {
+      const p = enemyPositions.get(target.id) ?? ensureEnemyPosition(target, impactContext);
+      targetPos = [p[0], p[1], p[2]];
+    } else if (!projectile.lastTargetPosition) {
+      continue;
+    }
+    const dist = Math.hypot(
+      targetPos[0] - projectile.origin[0],
+      targetPos[1] - projectile.origin[1],
+      targetPos[2] - projectile.origin[2],
+    );
+    const progressRate = dist > 0 ? projectile.speed / dist : 1;
 
-    const nextProgress = projectile.progress + deltaSeconds * PROJECTILE_PROGRESS_RATE;
+    const nextProgress = projectile.progress + deltaSeconds * progressRate;
+
+    // Always persist the updated known position
+    const updatedProjectile = {
+      ...projectile,
+      lastTargetPosition: targetPos,
+      progress: nextProgress,
+    };
     if (nextProgress >= 1) {
       if (projectile.splashRadius != null && projectile.splashRadius > 0) {
         // We can look up the target position directly if it exists, otherwise compute it.
-        const impactPos =
-          enemyPositions.get(target.id) ?? ensureEnemyPosition(target, impactContext);
+        const impactPos = targetPos;
 
         // Visual Effect for AOE Impact
         const explosion = createExplosionEffect(
@@ -107,7 +124,7 @@ export const stepProjectiles = (
             frameTotalDamage += projectile.damage;
           },
         );
-      } else {
+      } else if (target) {
         addHit(hits, projectile.targetId, projectile.damage);
         applyFreeze(freezeHits, projectile.targetId, projectile.freezeDuration);
         frameTotalDamage += projectile.damage;
@@ -115,7 +132,7 @@ export const stepProjectiles = (
       continue;
     }
 
-    activeProjectiles.push({ ...projectile, progress: nextProgress });
+    activeProjectiles.push(updatedProjectile);
   }
 
   let nextEnemies: EngineEnemy[] = state.enemies;
