@@ -26,6 +26,25 @@ describe('engine wave prep and start', () => {
     expect(result.patch.wave?.timerMs).toBe(1900);
     expect(result.patch.wave?.enemiesRemainingToSpawn).toBe(6);
   });
+
+  it('keeps boss waves at the base enemy count and reserves bosses for the tail of the wave', () => {
+    const state = applyEnginePatch(createInitialEngineState(), {
+      wave: {
+        wave: 4,
+        phase: 'preparing',
+        enemiesRemainingToSpawn: 0,
+        enemiesAlive: 0,
+        timerMs: 0,
+        spawnIntervalMs: 1000,
+      },
+    });
+
+    const result = stepWave(state, path, makeContext(0));
+
+    expect(result.events.immediate).toEqual([{ type: 'WaveStarted', wave: 5 }]);
+    expect(result.patch.wave?.enemiesRemainingToSpawn).toBe(12);
+    expect(result.patch.wave?.spawnIntervalMs).toBe(1500);
+  });
 });
 
 describe('engine wave spawning', () => {

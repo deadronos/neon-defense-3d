@@ -60,7 +60,42 @@ describe('engine stepTowers', () => {
 
     expect(result.patch.towers).toHaveLength(1);
     expect(result.patch.towers?.[0]?.targetId).toBe('enemy-1');
-    expect(result.patch.towers?.[0]?.lastFired).toBe(basicCooldownMs + 1);
+    expect(result.patch.towers?.[0]?.lastFired).toBe(basicCooldownMs);
+  });
+
+  it('preserves cooldown remainder after a long idle gap without burst firing', () => {
+    const state = {
+      ...createInitialEngineState(),
+      enemies: [
+        {
+          id: 'enemy-1',
+          type: 'Drone',
+          pathIndex: 0,
+          progress: 0,
+          hp: 10,
+          reward: 10,
+          speed: 0,
+        },
+      ],
+      towers: [
+        {
+          id: 'tower-1',
+          type: TowerType.Basic,
+          level: 1,
+          gridPosition: [0, 0] as [number, number],
+          lastFired: 0,
+        },
+      ],
+    };
+
+    const result = stepTowers(
+      state,
+      path,
+      { deltaMs: 16, nowMs: 5000, rng: () => 0.5 },
+      { tileSize: 2 },
+    );
+
+    expect(result.patch.towers?.[0]?.lastFired).toBe(4800);
   });
 
   it('does not fire when the tower is on cooldown', () => {

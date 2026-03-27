@@ -34,9 +34,8 @@ const createWaveConfig = (wave: number) => {
   const types: EnemyTypeConfig[] = [ENEMY_TYPES.BASIC];
   if (wave >= 2) types.push(ENEMY_TYPES.FAST);
   if (wave >= 5) types.push(ENEMY_TYPES.TANK);
-  if (wave % 5 === 0) types.push(ENEMY_TYPES.BOSS);
-
-  return { count, intervalMs, types };
+  const bossCount = wave % 5 === 0 ? Math.floor(wave / 5) : 0;
+  return { count, bossCount, intervalMs, types };
 };
 
 export const createInitialWaveState = (
@@ -61,9 +60,10 @@ const spawnEnemy = (
   wave: number,
   rng: () => number,
   idCounters: EngineIdCounters,
+  isBoss: boolean = false,
 ): { enemy: EngineEnemy; idCounters: EngineIdCounters } => {
   const config = createWaveConfig(wave);
-  const typeConfig = chooseEnemyType(config.types, rng);
+  const typeConfig = isBoss ? ENEMY_TYPES.BOSS : chooseEnemyType(config.types, rng);
   const waveMultiplier = wave;
 
   const hp = typeConfig.hpBase * (1 + (waveMultiplier - 1) * 0.4);
@@ -162,7 +162,10 @@ export const stepWave = (
 
     while (remaining > 0 && timerMs <= 0) {
       if (pathWaypoints.length === 0) break;
-      const spawnResult = spawnEnemy(state, waveState.wave, context.rng, idCounters);
+
+      const config = createWaveConfig(waveState.wave);
+      const isBoss = remaining <= config.bossCount;
+      const spawnResult = spawnEnemy(state, waveState.wave, context.rng, idCounters, isBoss);
       idCounters = spawnResult.idCounters;
       spawnList.push(spawnResult.enemy);
       timerMs += spawnIntervalMs;

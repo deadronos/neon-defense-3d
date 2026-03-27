@@ -62,7 +62,7 @@ export const getTowerStats = (
   const finalCooldown = levelCooldown / fireRateMult;
 
   return {
-    damage: base.damage * (1 + (level - 1) * 0.25) * dmgMult,
+    damage: Math.floor(base.damage * Math.pow(1.5, level - 1) * dmgMult),
     range: base.range * (1 + (level - 1) * 0.1) * rangeMult,
     cooldown: finalCooldown,
     upgradeCost: Math.floor(base.cost * Math.pow(1.5, level)),

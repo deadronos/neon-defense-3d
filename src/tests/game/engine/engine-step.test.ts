@@ -112,7 +112,7 @@ describe('engine stepEngine', () => {
 
     expect(result.patch.projectiles?.length).toBe(1);
     expect(result.patch.projectiles?.[0].targetId).toBe('e1');
-    expect(result.patch.towers?.[0].lastFired).toBe(1000);
+    expect(result.patch.towers?.[0].lastFired).toBe(800); // 0 + cooldown (800)
   });
 
   it('projectile hits enemy, deals damage, and grants money on kill', () => {

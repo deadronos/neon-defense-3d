@@ -44,6 +44,7 @@ describe('renderStateUtils.syncRenderState', () => {
           progress: 0.5,
           damage: 10,
           color: '#fff',
+          lastTargetPosition: [10, 1, 0],
         },
       ],
       effects: [
@@ -81,6 +82,7 @@ describe('renderStateUtils.syncRenderState', () => {
     const p = renderState.projectiles[0];
     expect(renderState.projectilePositions.get('p1')).toEqual(p.position);
     expect(renderState.previousProjectilePositions.has('p1')).toBe(true);
+    expect(p.lastTargetPosition).toEqual([10, 1, 0]);
 
     // Effects
     expect(renderState.effects.length).toBe(1);
@@ -118,5 +120,38 @@ describe('renderStateUtils.syncRenderState', () => {
 
     expect(renderState.enemies.length).toBe(0);
     expect(renderState.previousEnemyPositions.has('e1')).toBe(false);
+  });
+
+  it('uses last known target position when the live target is missing', () => {
+    const renderState = createInitialRenderState();
+
+    const engineState: EngineState = {
+      enemies: [],
+      towers: [],
+      projectiles: [
+        {
+          id: 'p1',
+          origin: [0, 0, 0],
+          targetId: 'missing-target',
+          speed: 1,
+          progress: 0.5,
+          damage: 10,
+          color: '#fff',
+          lastTargetPosition: [10, 0, 0],
+        },
+      ],
+      effects: [],
+      wave: null,
+      idCounters: { enemy: 0, tower: 0, projectile: 0, effect: 0 },
+      pendingEvents: [],
+    };
+
+    syncRenderState(engineState, renderState, {
+      enemyTypeMap: new Map(),
+      pathWaypoints,
+      tileSize: TILE_SIZE,
+    });
+
+    expect(renderState.projectiles[0].position).toEqual([5, 0, 0]);
   });
 });

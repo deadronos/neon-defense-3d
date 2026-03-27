@@ -22,7 +22,7 @@ describe('getTowerStats', () => {
     const stats = getTowerStats(TowerType.Basic, 2);
     const base = TOWER_CONFIGS[TowerType.Basic];
     // damage: base * (1 + (2-1)*0.25) = base * 1.25
-    expect(stats.damage).toBe(base.damage * 1.25);
+    expect(stats.damage).toBe(Math.floor(base.damage * Math.pow(1.5, 2 - 1)));
     // range: base * (1 + (2-1)*0.1) = base * 1.1
     expect(stats.range).toBe(base.range * 1.1);
     // cooldown: base * (1 - (2-1)*0.05) = base * 0.95

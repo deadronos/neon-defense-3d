@@ -139,6 +139,8 @@ export interface ProjectileEntity {
   startPos: Position3;
   /** Current world position of the projectile. */
   position: Position3;
+  /** Last known target world position, used when the live target is no longer available. */
+  lastTargetPosition?: Position3;
   /** ID of the target enemy. */
   targetId: string | null;
   /** Speed of the projectile. */

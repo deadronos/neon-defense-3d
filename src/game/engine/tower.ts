@@ -102,6 +102,7 @@ export const stepTowers = (
 
     let targetId: string | undefined;
     let minDistanceSquared = Infinity;
+    let targetPosition: EngineVector3 | undefined;
 
     if (spatialGrid) {
       forEachNearbyEnemy(
@@ -119,6 +120,7 @@ export const stepTowers = (
           if (d2 <= rangeSquared && d2 < minDistanceSquared) {
             minDistanceSquared = d2;
             targetId = enemy.id;
+            targetPosition = [position[0], position[1], position[2]];
           }
         },
       );
@@ -129,6 +131,7 @@ export const stepTowers = (
         if (d2 <= rangeSquared && d2 < minDistanceSquared) {
           minDistanceSquared = d2;
           targetId = enemy.id;
+          targetPosition = [scratchEnemyPos[0], scratchEnemyPos[1], scratchEnemyPos[2]];
         }
       }
     }
@@ -156,11 +159,14 @@ export const stepTowers = (
       color,
       freezeDuration: stats.freezeDuration,
       splashRadius: stats.splashRadius,
+      lastTargetPosition: targetPosition,
     });
 
     events.immediate.push({ type: 'ProjectileFired', projectileId, towerId: tower.id });
 
-    const nextTower: EngineTower = { ...tower, lastFired: context.nowMs, targetId };
+    const cyclesElapsed = Math.max(1, Math.floor((context.nowMs - tower.lastFired) / cooldownMs));
+    const nextLastFired = tower.lastFired + cyclesElapsed * cooldownMs;
+    const nextTower: EngineTower = { ...tower, lastFired: nextLastFired, targetId };
     nextTowers ??= state.towers.slice();
     nextTowers[index] = nextTower;
   }
