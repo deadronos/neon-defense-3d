@@ -251,12 +251,13 @@ export const syncRenderState = (
       previousProjectilePositions.set(proj.id, lastPos);
     }
     const target = renderState.enemiesById.get(proj.targetId);
-    // If we have a render-time enemy target, lerp toward its known world position (avoids using engine types).
-    const pos: Position3 = target
+    const targetPosition = target?.position ?? proj.lastTargetPosition;
+    // If we have a render-time enemy target or a last-known target position, lerp toward it.
+    const pos: Position3 = targetPosition
       ? ([
-          lerp(proj.origin[0], target.position[0], proj.progress),
-          lerp(proj.origin[1], target.position[1], proj.progress),
-          lerp(proj.origin[2], target.position[2], proj.progress),
+          lerp(proj.origin[0], targetPosition[0], proj.progress),
+          lerp(proj.origin[1], targetPosition[1], proj.progress),
+          lerp(proj.origin[2], targetPosition[2], proj.progress),
         ] as Position3)
       : (proj.origin as Position3);
 
@@ -269,6 +270,7 @@ export const syncRenderState = (
       id: proj.id,
       startPos: proj.origin,
       position: pos,
+      lastTargetPosition: proj.lastTargetPosition,
       targetId: proj.targetId,
       speed: proj.speed,
       progress: proj.progress,

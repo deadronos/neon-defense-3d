@@ -164,10 +164,9 @@ export const stepTowers = (
 
     events.immediate.push({ type: 'ProjectileFired', projectileId, towerId: tower.id });
 
-    const nextLastFired = tower.lastFired + cooldownMs;
-    // Prevent towers from firing too fast if they were idle for a long time
-    const clampedLastFired = Math.max(context.nowMs - cooldownMs * 2, nextLastFired);
-    const nextTower: EngineTower = { ...tower, lastFired: clampedLastFired, targetId };
+    const cyclesElapsed = Math.max(1, Math.floor((context.nowMs - tower.lastFired) / cooldownMs));
+    const nextLastFired = tower.lastFired + cyclesElapsed * cooldownMs;
+    const nextTower: EngineTower = { ...tower, lastFired: nextLastFired, targetId };
     nextTowers ??= state.towers.slice();
     nextTowers[index] = nextTower;
   }

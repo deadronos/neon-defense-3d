@@ -35,7 +35,7 @@ const createWaveConfig = (wave: number) => {
   if (wave >= 2) types.push(ENEMY_TYPES.FAST);
   if (wave >= 5) types.push(ENEMY_TYPES.TANK);
   const bossCount = wave % 5 === 0 ? Math.floor(wave / 5) : 0;
-  return { count: count + bossCount, bossCount, intervalMs, types };
+  return { count, bossCount, intervalMs, types };
 };
 
 export const createInitialWaveState = (
