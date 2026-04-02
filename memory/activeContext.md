@@ -8,6 +8,8 @@
 
 ## Recent changes (code highlights)
 
+- **Dependencies:** Refreshed npm packages to the latest available versions, then pinned ESLint back to the latest compatible 9.x release because the current React/import plugin ecosystem does not yet support ESLint 10.
+- **Tooling:** Added `ignoreDeprecations: "6.0"` to `tsconfig.json` so TypeScript 6 can run cleanly with the existing `baseUrl` path alias setup.
 - **State:** Split GameState into Zustand stores (runtime/render/gameSpeed) and moved the runtime reducer into a store module.
 - **Refactor:** Extracted GameState logic into hooks/context builders, split SettingsModal into sections with an import/export hook, and modularized persistence helpers under `src/game/persistence/`.
 - **Lint:** Fixed new ESLint rule failures (async handler promises, hook deps) and replaced `enum` exports with `as const` value objects + union types in `src/types.ts`.
