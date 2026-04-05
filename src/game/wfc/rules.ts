@@ -6,37 +6,41 @@ import { TileType } from '../../types';
  * Directions: [Top, Right, Bottom, Left]
  */
 
+const ALL_TYPES = [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base];
+
+const SOME_TYPES = [TileType.Grass, TileType.Path];
+
 export const ADJACENCY = {
   [TileType.Grass]: {
-    top: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    right: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    bottom: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    left: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
+    top: ALL_TYPES,
+    right: ALL_TYPES,
+    bottom: ALL_TYPES,
+    left: ALL_TYPES,
   },
   [TileType.Path]: {
     // Paths generally connect to other paths, spawns, or bases.
     // We want to avoid paths dead-ending into grass, but strictly solving this
     // with local rules is hard. We rely on the "Verify Global Path" step for that.
     // However, to make it look "neat", we can say:
-    top: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    right: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    bottom: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    left: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
+    top: ALL_TYPES,
+    right: ALL_TYPES,
+    bottom: ALL_TYPES,
+    left: ALL_TYPES,
   },
   [TileType.Spawn]: {
     // Spawns must connect to a path.
     // In our simplified WFC, we might just treat them as "Path-like" but unique.
-    top: [TileType.Grass, TileType.Path],
-    right: [TileType.Grass, TileType.Path],
-    bottom: [TileType.Grass, TileType.Path],
-    left: [TileType.Grass, TileType.Path],
+    top: SOME_TYPES,
+    right: SOME_TYPES,
+    bottom: SOME_TYPES,
+    left: SOME_TYPES,
   },
   [TileType.Base]: {
     // Bases must connect to a path.
-    top: [TileType.Grass, TileType.Path],
-    right: [TileType.Grass, TileType.Path],
-    bottom: [TileType.Grass, TileType.Path],
-    left: [TileType.Grass, TileType.Path],
+    top: SOME_TYPES,
+    right: SOME_TYPES,
+    bottom: SOME_TYPES,
+    left: SOME_TYPES,
   },
 };
 
