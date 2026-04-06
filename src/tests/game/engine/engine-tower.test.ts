@@ -3,10 +3,17 @@ import { describe, expect, it } from 'vitest';
 import { TOWER_CONFIGS } from '../../../constants';
 import { createInitialEngineState } from '../../../game/engine/state';
 import { stepTowers } from '../../../game/engine/tower';
-import type { EngineVector2 } from '../../../game/engine/types';
+import type { EngineVector2, EngineTower, EngineEnemy, EngineState } from '../../../game/engine/types';
 import { TowerType } from '../../../types';
 
 /* eslint-disable max-lines-per-function */
+
+
+const setupTowerTest = (towers: Partial<EngineTower>[], enemies: Partial<EngineEnemy>[]) => ({
+  ...createInitialEngineState(),
+  enemies,
+  towers,
+} as any as EngineState);
 
 const path: [number, number][] = [
   [0, 0],
@@ -20,9 +27,17 @@ describe('engine stepTowers', () => {
     1000;
 
   it('spawns a projectile with deterministic id counters when an enemy is in range', () => {
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
+    const state = setupTowerTest(
+      [
+        {
+          id: 'tower-1',
+          type: TowerType.Basic,
+          level: 1,
+          gridPosition: [0, 0] as [number, number],
+          lastFired: 0,
+        },
+      ],
+      [
         {
           id: 'enemy-1',
           type: 'Drone',
@@ -32,17 +47,8 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ],
-      towers: [
-        {
-          id: 'tower-1',
-          type: TowerType.Basic,
-          level: 1,
-          gridPosition: [0, 0] as [number, number],
-          lastFired: 0,
-        },
-      ],
-    };
+      ]
+    );
 
     const result = stepTowers(
       state,
@@ -64,9 +70,17 @@ describe('engine stepTowers', () => {
   });
 
   it('preserves cooldown remainder after a long idle gap without burst firing', () => {
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
+    const state = setupTowerTest(
+      [
+        {
+          id: 'tower-1',
+          type: TowerType.Basic,
+          level: 1,
+          gridPosition: [0, 0] as [number, number],
+          lastFired: 0,
+        },
+      ],
+      [
         {
           id: 'enemy-1',
           type: 'Drone',
@@ -76,17 +90,8 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ],
-      towers: [
-        {
-          id: 'tower-1',
-          type: TowerType.Basic,
-          level: 1,
-          gridPosition: [0, 0] as [number, number],
-          lastFired: 0,
-        },
-      ],
-    };
+      ]
+    );
 
     const result = stepTowers(
       state,
@@ -99,9 +104,17 @@ describe('engine stepTowers', () => {
   });
 
   it('does not fire when the tower is on cooldown', () => {
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
+    const state = setupTowerTest(
+      [
+        {
+          id: 'tower-1',
+          type: TowerType.Basic,
+          level: 1,
+          gridPosition: [0, 0] as [number, number],
+          lastFired: 0,
+        },
+      ],
+      [
         {
           id: 'enemy-1',
           type: 'Drone',
@@ -111,17 +124,8 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ],
-      towers: [
-        {
-          id: 'tower-1',
-          type: TowerType.Basic,
-          level: 1,
-          gridPosition: [0, 0] as [number, number],
-          lastFired: 0,
-        },
-      ],
-    };
+      ]
+    );
 
     const result = stepTowers(
       state,
@@ -137,9 +141,17 @@ describe('engine stepTowers', () => {
   });
 
   it('targets the nearest enemy when multiple are in range', () => {
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
+    const state = setupTowerTest(
+      [
+        {
+          id: 'tower-1',
+          type: TowerType.Basic,
+          level: 1,
+          gridPosition: [0, 0] as [number, number],
+          lastFired: 0,
+        },
+      ],
+      [
         {
           id: 'enemy-close',
           type: 'Drone',
@@ -158,17 +170,8 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ],
-      towers: [
-        {
-          id: 'tower-1',
-          type: TowerType.Basic,
-          level: 1,
-          gridPosition: [0, 0] as [number, number],
-          lastFired: 0,
-        },
-      ],
-    };
+      ]
+    );
 
     const result = stepTowers(
       state,
@@ -182,20 +185,8 @@ describe('engine stepTowers', () => {
   });
 
   it('adds freeze or splash metadata based on tower config', () => {
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
-        {
-          id: 'enemy-1',
-          type: 'Drone',
-          pathIndex: 0,
-          progress: 0,
-          hp: 10,
-          reward: 10,
-          speed: 0,
-        },
-      ],
-      towers: [
+    const state = setupTowerTest(
+      [
         {
           id: 'tower-1',
           type: TowerType.Cryo,
@@ -211,7 +202,18 @@ describe('engine stepTowers', () => {
           lastFired: 0,
         },
       ],
-    };
+      [
+        {
+          id: 'enemy-1',
+          type: 'Drone',
+          pathIndex: 0,
+          progress: 0,
+          hp: 10,
+          reward: 10,
+          speed: 0,
+        },
+      ]
+    );
 
     const result = stepTowers(
       state,
@@ -243,9 +245,17 @@ describe('engine stepTowers', () => {
     // Base Range^2 = 25. No fire.
     // Upgrade 1 (+5%) => Range 5.25. Range^2 = 27.56. Fire.
 
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
+    const state = setupTowerTest(
+      [
+        {
+          id: 'tower-1',
+          type: TowerType.Basic,
+          level: 1,
+          gridPosition: [0, 0] as [number, number],
+          lastFired: 0,
+        },
+      ],
+      [
         {
           id: 'enemy-far',
           type: 'Drone',
@@ -255,17 +265,8 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ],
-      towers: [
-        {
-          id: 'tower-1',
-          type: TowerType.Basic,
-          level: 1,
-          gridPosition: [0, 0] as [number, number],
-          lastFired: 0,
-        },
-      ],
-    };
+      ]
+    );
 
     // 1. Verify no fire without upgrade
     const resultNoUpgrade = stepTowers(

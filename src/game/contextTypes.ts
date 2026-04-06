@@ -56,36 +56,17 @@ export interface GameContextProps {
   clearAnnouncement: () => void;
 }
 
-export interface GameUiContextProps {
-  gameState: GameState;
-  waveState: WaveState | null;
-  step: (deltaSeconds: number, nowSeconds: number) => void;
-  removeEffect: (id: string) => void;
-  placeTower: (x: number, z: number, type: TowerType) => void;
-  startGame: () => void;
-  resetGame: () => void;
-  selectedTower: TowerType | null;
-  setSelectedTower: (t: TowerType | null) => void;
-  selectedEntityId: string | null;
-  setSelectedEntityId: (id: string | null) => void;
-  upgradeTower: (id: string) => void;
-  sellTower: (id: string) => void;
-  startNextSector: () => void;
-  purchaseUpgrade: (type: UpgradeType, cost: number) => void;
-  setGraphicsQuality: (quality: GraphicsQuality) => void;
-  resetCheckpoint: () => { ok: boolean; error?: string };
-  factoryReset: () => void;
-  applyCheckpointSave: (save: SaveV1) => void;
-  exportCheckpointJson: () => { json: string; hasCheckpoint: boolean };
-  skipWave: () => void;
-  // Roguelite features
-  startRogueliteRun: (seed: string) => void;
-  nextRoguePhase: (seed: string) => void;
-  setCustomMapLayout: (layout: number[][]) => void;
-  gameSpeed: number;
-  setGameSpeed: (speed: number) => void;
-  clearAnnouncement: () => void;
-}
+export type GameUiContextProps = Omit<
+  GameContextProps,
+  | 'enemies'
+  | 'towers'
+  | 'projectiles'
+  | 'effects'
+  | 'mapGrid'
+  | 'pathWaypoints'
+  | 'isValidPlacement'
+  | 'renderStateRef'
+>;
 
 export interface RenderStateContextProps {
   renderStateRef: MutableRefObject<RenderState>;

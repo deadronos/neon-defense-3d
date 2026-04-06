@@ -6,37 +6,41 @@ import { TileType } from '../../types';
  * Directions: [Top, Right, Bottom, Left]
  */
 
+const allTypes = () => [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base];
+
+const pathLikeTypes = () => [TileType.Grass, TileType.Path];
+
 export const ADJACENCY = {
   [TileType.Grass]: {
-    top: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    right: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    bottom: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    left: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
+    top: allTypes(),
+    right: allTypes(),
+    bottom: allTypes(),
+    left: allTypes(),
   },
   [TileType.Path]: {
     // Paths generally connect to other paths, spawns, or bases.
     // We want to avoid paths dead-ending into grass, but strictly solving this
     // with local rules is hard. We rely on the "Verify Global Path" step for that.
     // However, to make it look "neat", we can say:
-    top: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    right: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    bottom: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
-    left: [TileType.Grass, TileType.Path, TileType.Spawn, TileType.Base],
+    top: allTypes(),
+    right: allTypes(),
+    bottom: allTypes(),
+    left: allTypes(),
   },
   [TileType.Spawn]: {
     // Spawns must connect to a path.
     // In our simplified WFC, we might just treat them as "Path-like" but unique.
-    top: [TileType.Grass, TileType.Path],
-    right: [TileType.Grass, TileType.Path],
-    bottom: [TileType.Grass, TileType.Path],
-    left: [TileType.Grass, TileType.Path],
+    top: pathLikeTypes(),
+    right: pathLikeTypes(),
+    bottom: pathLikeTypes(),
+    left: pathLikeTypes(),
   },
   [TileType.Base]: {
     // Bases must connect to a path.
-    top: [TileType.Grass, TileType.Path],
-    right: [TileType.Grass, TileType.Path],
-    bottom: [TileType.Grass, TileType.Path],
-    left: [TileType.Grass, TileType.Path],
+    top: pathLikeTypes(),
+    right: pathLikeTypes(),
+    bottom: pathLikeTypes(),
+    left: pathLikeTypes(),
   },
 };
 

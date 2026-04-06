@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
 
 import { stepProjectiles } from '../../../game/engine/projectile';
+import type { EngineProjectile, EngineEnemy, EngineState } from '../../../game/engine/types';
 import { createInitialEngineState } from '../../../game/engine/state';
 
 /* eslint-disable max-lines-per-function */
+
+
+const setupProjectileTest = (projectiles: Partial<EngineProjectile>[], enemies: Partial<EngineEnemy>[]) => ({
+  ...createInitialEngineState(),
+  enemies,
+  projectiles,
+} as any as EngineState);
 
 const path: [number, number][] = [
   [0, 0],
@@ -12,9 +20,19 @@ const path: [number, number][] = [
 
 describe('engine stepProjectiles', () => {
   it('resolves hits, kills enemies, spawns effects, and defers rewards', () => {
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
+    const state = setupProjectileTest(
+      [
+        {
+          id: 'projectile-1',
+          origin: [0, 2, 0] as [number, number, number],
+          targetId: 'enemy-1',
+          speed: 20,
+          progress: 0.99,
+          damage: 50,
+          color: '#fff',
+        },
+      ],
+      [
         {
           id: 'enemy-1',
           type: 'Drone',
@@ -26,19 +44,8 @@ describe('engine stepProjectiles', () => {
           color: '#ff0055',
           scale: 0.4,
         },
-      ],
-      projectiles: [
-        {
-          id: 'projectile-1',
-          origin: [0, 2, 0] as [number, number, number],
-          targetId: 'enemy-1',
-          speed: 20,
-          progress: 0.99,
-          damage: 50,
-          color: '#fff',
-        },
-      ],
-    };
+      ]
+    );
 
     const result = stepProjectiles(
       state,
@@ -83,10 +90,8 @@ describe('engine stepProjectiles', () => {
       reward: 10,
     };
 
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [enemy1, enemy2],
-      projectiles: [
+    const state = setupProjectileTest(
+      [
         {
           id: 'proj-1',
           origin: [0, 2, 0] as [number, number, number],
@@ -98,7 +103,8 @@ describe('engine stepProjectiles', () => {
           splashRadius: 1.0,
         },
       ],
-    };
+      [enemy1, enemy2]
+    );
 
     const result = stepProjectiles(
       state,
@@ -114,20 +120,8 @@ describe('engine stepProjectiles', () => {
   });
 
   it('applies shield damage before HP damage', () => {
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
-        {
-          id: 'enemy-1',
-          type: 'Drone',
-          pathIndex: 0,
-          progress: 0,
-          hp: 100,
-          shield: 20,
-          reward: 10,
-        },
-      ],
-      projectiles: [
+    const state = setupProjectileTest(
+      [
         {
           id: 'projectile-1',
           origin: [0, 2, 0] as [number, number, number],
@@ -138,7 +132,18 @@ describe('engine stepProjectiles', () => {
           color: '#fff',
         },
       ],
-    };
+      [
+        {
+          id: 'enemy-1',
+          type: 'Drone',
+          pathIndex: 0,
+          progress: 0,
+          hp: 100,
+          shield: 20,
+          reward: 10,
+        },
+      ]
+    );
 
     const result = stepProjectiles(
       state,
@@ -155,21 +160,8 @@ describe('engine stepProjectiles', () => {
   });
 
   it('uses the max freeze duration when multiple hits apply freeze', () => {
-    const state = {
-      ...createInitialEngineState(),
-      enemies: [
-        {
-          id: 'enemy-1',
-          type: 'Drone',
-          pathIndex: 0,
-          progress: 0,
-          hp: 100,
-          shield: 0,
-          reward: 10,
-          frozen: 0,
-        },
-      ],
-      projectiles: [
+    const state = setupProjectileTest(
+      [
         {
           id: 'projectile-1',
           origin: [0, 2, 0] as [number, number, number],
@@ -191,7 +183,19 @@ describe('engine stepProjectiles', () => {
           freezeDuration: 2,
         },
       ],
-    };
+      [
+        {
+          id: 'enemy-1',
+          type: 'Drone',
+          pathIndex: 0,
+          progress: 0,
+          hp: 100,
+          shield: 0,
+          reward: 10,
+          frozen: 0,
+        },
+      ]
+    );
 
     const result = stepProjectiles(
       state,
