@@ -3,17 +3,22 @@ import { describe, expect, it } from 'vitest';
 import { TOWER_CONFIGS } from '../../../constants';
 import { createInitialEngineState } from '../../../game/engine/state';
 import { stepTowers } from '../../../game/engine/tower';
-import type { EngineVector2, EngineTower, EngineEnemy, EngineState } from '../../../game/engine/types';
+import type {
+  EngineVector2,
+  EngineTower,
+  EngineEnemy,
+  EngineState,
+} from '../../../game/engine/types';
 import { TowerType } from '../../../types';
 
 /* eslint-disable max-lines-per-function */
 
-
-const setupTowerTest = (towers: Partial<EngineTower>[], enemies: Partial<EngineEnemy>[]) => ({
-  ...createInitialEngineState(),
-  enemies,
-  towers,
-} as any as EngineState);
+const setupTowerTest = (towers: Partial<EngineTower>[], enemies: Partial<EngineEnemy>[]) =>
+  ({
+    ...createInitialEngineState(),
+    enemies,
+    towers,
+  }) as any as EngineState;
 
 const path: [number, number][] = [
   [0, 0],
@@ -47,7 +52,7 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ]
+      ],
     );
 
     const result = stepTowers(
@@ -90,7 +95,7 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ]
+      ],
     );
 
     const result = stepTowers(
@@ -124,7 +129,7 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ]
+      ],
     );
 
     const result = stepTowers(
@@ -170,7 +175,7 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ]
+      ],
     );
 
     const result = stepTowers(
@@ -212,7 +217,7 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ]
+      ],
     );
 
     const result = stepTowers(
@@ -265,7 +270,7 @@ describe('engine stepTowers', () => {
           reward: 10,
           speed: 0,
         },
-      ]
+      ],
     );
 
     // 1. Verify no fire without upgrade

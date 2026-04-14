@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { TileType } from '../../../types';
 import { ADJACENCY } from '../../../game/wfc/rules';
+import { TileType } from '../../../types';
 
 describe('WFC adjacency rules', () => {
   it('uses independent neighbor arrays per direction', () => {
