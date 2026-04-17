@@ -65,3 +65,4 @@ ehthumbs.db
 
 # Misc
 *.tgz
+.worktrees/

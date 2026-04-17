@@ -1,17 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
 import { stepProjectiles } from '../../../game/engine/projectile';
-import type { EngineProjectile, EngineEnemy, EngineState } from '../../../game/engine/types';
 import { createInitialEngineState } from '../../../game/engine/state';
+import type { EngineProjectile, EngineEnemy, EngineState } from '../../../game/engine/types';
 
 /* eslint-disable max-lines-per-function */
 
-
-const setupProjectileTest = (projectiles: Partial<EngineProjectile>[], enemies: Partial<EngineEnemy>[]) => ({
-  ...createInitialEngineState(),
-  enemies,
-  projectiles,
-} as any as EngineState);
+const setupProjectileTest = (
+  projectiles: Partial<EngineProjectile>[],
+  enemies: Partial<EngineEnemy>[],
+) =>
+  ({
+    ...createInitialEngineState(),
+    enemies,
+    projectiles,
+  }) as any as EngineState;
 
 const path: [number, number][] = [
   [0, 0],
@@ -44,7 +47,7 @@ describe('engine stepProjectiles', () => {
           color: '#ff0055',
           scale: 0.4,
         },
-      ]
+      ],
     );
 
     const result = stepProjectiles(
@@ -103,7 +106,7 @@ describe('engine stepProjectiles', () => {
           splashRadius: 1.0,
         },
       ],
-      [enemy1, enemy2]
+      [enemy1, enemy2],
     );
 
     const result = stepProjectiles(
@@ -142,7 +145,7 @@ describe('engine stepProjectiles', () => {
           shield: 20,
           reward: 10,
         },
-      ]
+      ],
     );
 
     const result = stepProjectiles(
@@ -194,7 +197,7 @@ describe('engine stepProjectiles', () => {
           reward: 10,
           frozen: 0,
         },
-      ]
+      ],
     );
 
     const result = stepProjectiles(
