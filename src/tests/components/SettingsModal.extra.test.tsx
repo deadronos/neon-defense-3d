@@ -114,7 +114,7 @@ describe('SettingsModal extras', () => {
       save: sample,
       warnings: ['warn1'],
       errors: [],
-    } as MigrateResult);
+    });
 
     render(
       <GameProvider>

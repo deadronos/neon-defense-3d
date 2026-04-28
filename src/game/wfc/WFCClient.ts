@@ -34,7 +34,7 @@ class WFCClient {
         seed,
         width,
         height,
-      } as GenerateMapMessage);
+      });
     });
   }
 

@@ -22,6 +22,7 @@ export default [
       '.git/**',
       '.github/**',
       '.codex/**',
+      '.worktrees/**',
       '**/*.min.js',
       '**/*.bundle.js',
     ],

@@ -259,7 +259,7 @@ export const syncRenderState = (
           lerp(proj.origin[1], targetPosition[1], proj.progress),
           lerp(proj.origin[2], targetPosition[2], proj.progress),
         ] as Position3)
-      : (proj.origin as Position3);
+      : proj.origin;
 
     if (!lastPos) {
       previousProjectilePositions.set(proj.id, pos);

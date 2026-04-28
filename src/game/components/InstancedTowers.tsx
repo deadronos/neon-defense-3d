@@ -94,7 +94,7 @@ export const InstancedTowers: React.FC = () => {
 
         if (tower.id === selectedEntityId) {
           const stats = getTowerStats(tower.type, tower.level, {
-            upgrades: gameState.upgrades as { [key in UpgradeType]?: number },
+            upgrades: gameState.upgrades,
             activeSynergies: tower.activeSynergies,
           });
           dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
