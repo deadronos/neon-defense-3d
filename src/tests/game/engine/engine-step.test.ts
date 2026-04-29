@@ -65,7 +65,7 @@ describe('engine stepEngine', () => {
           progress: 0.95,
           hp: 50,
           speed: 3,
-        } as EngineEnemy,
+        },
       ],
     });
 

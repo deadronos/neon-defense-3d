@@ -29,7 +29,7 @@ export const buildRuntimeFromCheckpoint = (
     ),
     upgrades: Object.fromEntries(
       Object.entries(save.ui.upgrades).filter(([k]) => knownUpgradeKeys.has(k)),
-    ) as UiState['upgrades'],
+    ),
     selectedEntityId: null,
     selectedTower: null,
     // Increment session nonce to force a full scene remount

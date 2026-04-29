@@ -119,6 +119,6 @@ self.onmessage = ({ data }: MessageEvent<GenerateMapMessage>) => {
       map: [],
       success: false,
       seed,
-    } as MapGeneratedMessage);
+    });
   }
 };
