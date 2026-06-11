@@ -48,9 +48,11 @@
 
 ---
 
-## 5 Suggested Improvements
+## 5 Suggested Improvements (Issue-Ready Backlog)
 
-### 1. Refactor `GameState.tsx` (Code Quality)
+The following items are ready to be tracked as GitHub issues after this review. They are ordered to improve first-load performance, UI clarity, and the overall neon presentation.
+
+### 1. Issue: Split heavy game state from UI state to reduce re-renders
 
 **Context:** `GameState.tsx` is holding too much responsibility (UI state, Render state, World state, Game logic bridge).
 **Proposal:** Split the state management.
@@ -59,7 +61,7 @@
 - Separate `UIContext` into its own domain.
 - This will reduce re-renders (Context API triggers all consumers on update) and improve maintainability.
 
-### 2. Shader-Based Living Terrain (Visuals)
+### 2. Issue: Add animated neon terrain and richer hit feedback
 
 **Context:** Currently, `World.tsx` uses standard meshes for the grid.
 **Proposal:** Replace the static grid lines with a **Custom Shader Material**.
@@ -67,7 +69,7 @@
 - Create a "Retro Grid" shader that scrolls with time, pulses to the beat of interaction, or glows brighter near towers.
 - This would drastically upgrade the "Neon" aesthetic compared to static line segments.
 
-### 3. Global Tech Tree / Meta-Progression (Gameplay)
+### 3. Issue: Introduce a meta-progression / research system for long-term replay value
 
 **Context:** The game feels session-based.
 **Proposal:** Add a **Meta-Progression System**.
@@ -76,7 +78,7 @@
 - Spend Shards in a Main Menu "Research Lab" to unlock permanent stats (e.g., +5% Range, Start with +100 Credits).
 - Note: This requires persisting a `UserProfile` to `localStorage`.
 
-### 4. Interactive Map Editor (Feature)
+### 4. Issue: Build an in-game map editor for custom layouts and replayability
 
 **Context:** Maps are hardcoded in `constants.ts`.
 **Proposal:** Build an in-game **Map Editor**.
@@ -85,7 +87,7 @@
 - Serialize maps to JSON to share or load.
 - This leverages the existing tile-based engine and adds immense replayability.
 
-### 5. Advanced Spatial Audio (Audio/Immersion)
+### 5. Issue: Improve performance and audio immersion with adaptive quality and positional sound
 
 **Context:** `Synth.ts` exists but could be richer.
 **Proposal:** Implement **Positional Audio**.
