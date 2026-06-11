@@ -17,6 +17,7 @@
 - DESIGN024 - Current map indexing & state
 - DESIGN025 - GameState refactor to Zustand stores
 - DESIGN026 - Refactor monolithic modules
+- DESIGN027 - Adaptive DPR + Synth refactor + engine hot-path tightening
 
 ## Completed
 
