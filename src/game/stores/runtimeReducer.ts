@@ -24,6 +24,11 @@ export type RuntimeAction =
   | { type: 'upgradeTower'; id: string }
   | { type: 'sellTower'; id: string };
 
+export type BattleAction = Exclude<RuntimeAction, { type: 'uiAction' }>;
+
+export const battleReducer = (state: RuntimeState, action: BattleAction): RuntimeState =>
+  runtimeReducer(state, action);
+
 export const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeState => {
   switch (action.type) {
     case 'resetEngine':
