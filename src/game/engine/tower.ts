@@ -60,6 +60,7 @@ export const stepTowers = (
   const scratchEnemyPos = cache?.scratchEnemyPos ?? [0, 0, 0];
   const enemyPositions = cache?.enemyPositions;
   const enemyPositionPool = cache?.enemyPositionPool;
+    const targetPositionPool = cache?.targetPositionPool;
 
   if (cache && enemyPositions && enemyPositionPool) {
     resetEnemyPositionsCache(cache);
@@ -103,6 +104,17 @@ export const stepTowers = (
     let targetId: string | undefined;
     let minDistanceSquared = Infinity;
     let targetPosition: EngineVector3 | undefined;
+    const allocTargetPosition = (x: number, y: number, z: number): [number, number, number] => {
+      const pooled =
+        targetPositionPool && targetPositionPool.length > 0 ? targetPositionPool.pop() : undefined;
+      if (pooled) {
+        pooled[0] = x;
+        pooled[1] = y;
+        pooled[2] = z;
+        return pooled;
+      }
+      return [x, y, z];
+    };
 
     if (spatialGrid) {
       forEachNearbyEnemy(
@@ -120,7 +132,7 @@ export const stepTowers = (
           if (d2 <= rangeSquared && d2 < minDistanceSquared) {
             minDistanceSquared = d2;
             targetId = enemy.id;
-            targetPosition = [position[0], position[1], position[2]];
+              targetPosition = allocTargetPosition(position[0], position[1], position[2]);
           }
         },
       );
@@ -131,7 +143,11 @@ export const stepTowers = (
         if (d2 <= rangeSquared && d2 < minDistanceSquared) {
           minDistanceSquared = d2;
           targetId = enemy.id;
-          targetPosition = [scratchEnemyPos[0], scratchEnemyPos[1], scratchEnemyPos[2]];
+            targetPosition = allocTargetPosition(
+              scratchEnemyPos[0],
+              scratchEnemyPos[1],
+              scratchEnemyPos[2],
+            );
         }
       }
     }
