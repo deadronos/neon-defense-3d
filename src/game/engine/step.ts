@@ -38,6 +38,8 @@ export interface EngineCache {
   // Reusable spatial grid + scratch vectors
   spatialGrid?: SpatialGrid;
   scratchEnemyPos: EngineMutableVector3;
+  /** Reusable Vector3 tuples for the per-tower target position. */
+  targetPositionPool: EngineMutableVector3[];
 }
 
 export interface StepEngineOptions {
