@@ -1,44 +1,43 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 
-const TARGET_FPS = 60;
-const FPS_TOLERANCE = 5;
+import { computeNextDpr, type DprTuning } from '../perf/dprTuning';
+import { useFrameStats } from '../perf/useFrameStats';
+
+const TUNING: DprTuning = {
+  targetFps: 60,
+  fpsTolerance: 5,
+  minDpr: 0.5,
+  maxDpr: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1,
+  step: 0.1,
+};
 const CHECK_INTERVAL_MS = 500;
-const MIN_DPR = 0.5;
-const MAX_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 1;
-const STEP = 0.1;
+const MIN_SAMPLES_BEFORE_DPR = 2;
 
 export const DynamicResScaler = () => {
   const setDpr = useThree((state) => state.setDpr);
-  const frameCount = useRef(0);
-  const lastTime = useRef(performance.now());
-  const dprRef = useRef(MAX_DPR);
+  const stats = useFrameStats({ windowMs: 1000 });
+  const dprRef = useRef(TUNING.maxDpr);
+  const lastCheckRef = useRef(0);
 
   useEffect(() => {
+    const start = performance.now();
+    stats.recordFrame(start);
+    lastCheckRef.current = start;
     setDpr(dprRef.current);
-  }, [setDpr]);
+  }, [setDpr, stats]);
 
   useFrame(() => {
-    frameCount.current += 1;
     const now = performance.now();
-    const elapsed = now - lastTime.current;
+    stats.recordFrame(now);
+    if (now - lastCheckRef.current < CHECK_INTERVAL_MS) return;
+    lastCheckRef.current = now;
+    if (stats.sampleCount < MIN_SAMPLES_BEFORE_DPR) return;
 
-    if (elapsed < CHECK_INTERVAL_MS) return;
-
-    const fps = Math.round((frameCount.current * 1000) / elapsed);
-    frameCount.current = 0;
-    lastTime.current = now;
-
-    let nextDpr = dprRef.current;
-    if (fps < TARGET_FPS - FPS_TOLERANCE) {
-      nextDpr = Math.max(MIN_DPR, dprRef.current - STEP);
-    } else if (fps > TARGET_FPS + FPS_TOLERANCE) {
-      nextDpr = Math.min(MAX_DPR, dprRef.current + STEP);
-    }
-
-    if (nextDpr !== dprRef.current) {
-      dprRef.current = nextDpr;
-      setDpr(nextDpr);
+    const next = computeNextDpr(dprRef.current, stats.fps, TUNING);
+    if (next !== dprRef.current) {
+      dprRef.current = next;
+      setDpr(next);
     }
   });
 

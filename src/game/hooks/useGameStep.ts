@@ -42,6 +42,7 @@ export const useGameStep = ({
     nextEnemies: [],
     pathSegmentLengths: [],
     scratchEnemyPos: [0, 0, 0],
+    targetPositionPool: [],
   });
 
   const killStreakRef = useRef({ count: 0, lastTime: 0 });

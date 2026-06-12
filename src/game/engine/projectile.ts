@@ -68,6 +68,15 @@ export const stepProjectiles = (
     tileSize,
   };
 
+  const targetPositionPool = cache?.targetPositionPool;
+  const releaseTargetPosition = (projectile: {
+    lastTargetPosition?: readonly [number, number, number];
+  }) => {
+    if (!targetPositionPool) return;
+    const lp = projectile.lastTargetPosition;
+    if (lp === undefined) return;
+    targetPositionPool.push(lp as unknown as EngineMutableVector3);
+  };
   for (const enemy of state.enemies) {
     enemiesById.set(enemy.id, enemy);
   }
@@ -129,6 +138,7 @@ export const stepProjectiles = (
         applyFreeze(freezeHits, projectile.targetId, projectile.freezeDuration);
         frameTotalDamage += projectile.damage;
       }
+      releaseTargetPosition(projectile);
       continue;
     }
 
