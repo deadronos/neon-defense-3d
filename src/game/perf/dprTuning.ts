@@ -13,11 +13,7 @@ export interface DprTuning {
 
 /** Pure: returns the next DPR given the current value, the measured FPS,
  *  and the tuning. Returns `currentDpr` if no change is needed. */
-export const computeNextDpr = (
-  currentDpr: number,
-  fps: number,
-  tuning: DprTuning,
-): number => {
+export const computeNextDpr = (currentDpr: number, fps: number, tuning: DprTuning): number => {
   if (!Number.isFinite(fps)) return currentDpr;
   if (fps < tuning.targetFps - tuning.fpsTolerance) {
     return Math.max(tuning.minDpr, currentDpr - tuning.step);
