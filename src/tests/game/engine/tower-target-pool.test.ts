@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
 
-import { stepTowers } from '../../../game/engine/tower';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../../constants';
 import type { EngineCache, EngineTickContext } from '../../../game/engine/step';
+import { stepTowers } from '../../../game/engine/tower';
 import type {
   EngineState,
   EngineTower,
   EngineEnemy,
   EngineVector2,
 } from '../../../game/engine/types';
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../../constants';
 
 const path: readonly EngineVector2[] = [
   [0, 0],
@@ -67,7 +67,7 @@ const makeCache = (): EngineCache => ({
 describe('stepTowers targetPositionPool', () => {
   it('draws from the pool when present and grows on miss', () => {
     const enemy = makeEnemy('e1', 0, 0.5);
-     const tower = makeTower('t1', 'Basic');
+    const tower = makeTower('t1', 'Basic');
     const state = makeState([enemy], [tower]);
     const cache = makeCache();
     const pooled = [9, 9, 9] as [number, number, number];
@@ -84,7 +84,7 @@ describe('stepTowers targetPositionPool', () => {
 
   it('allocates a new tuple when the pool is empty', () => {
     const enemy = makeEnemy('e1', 0, 0.5);
-     const tower = makeTower('t1', 'Basic');
+    const tower = makeTower('t1', 'Basic');
     const state = makeState([enemy], [tower]);
     const cache = makeCache();
 
@@ -97,7 +97,7 @@ describe('stepTowers targetPositionPool', () => {
 
   it('falls back to a fresh tuple when cache.targetPositionPool is missing', () => {
     const enemy = makeEnemy('e1', 0, 0.5);
-     const tower = makeTower('t1', 'Basic');
+    const tower = makeTower('t1', 'Basic');
     const state = makeState([enemy], [tower]);
     const cache = makeCache();
     // Intentionally clear the field to simulate legacy callers.

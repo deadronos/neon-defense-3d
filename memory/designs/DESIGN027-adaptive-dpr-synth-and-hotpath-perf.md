@@ -86,20 +86,16 @@ export function useFrameStats(config: FrameStatsConfig = {}): RollingFrameStats 
 
 ```typescript
 export interface DprTuning {
-  targetFps: number;       // 60
-  fpsTolerance: number;    // 5
-  minDpr: number;          // 0.5
-  maxDpr: number;          // 2
-  step: number;            // 0.1
+  targetFps: number; // 60
+  fpsTolerance: number; // 5
+  minDpr: number; // 0.5
+  maxDpr: number; // 2
+  step: number; // 0.1
 }
 
 /** Pure: returns the next DPR given the current value, the measured FPS,
  *  and the tuning. Returns `currentDpr` if no change is needed. */
-export const computeNextDpr = (
-  currentDpr: number,
-  fps: number,
-  tuning: DprTuning,
-): number => {
+export const computeNextDpr = (currentDpr: number, fps: number, tuning: DprTuning): number => {
   if (!Number.isFinite(fps)) return currentDpr;
   if (fps < tuning.targetFps - tuning.fpsTolerance) {
     return Math.max(tuning.minDpr, currentDpr - tuning.step);
@@ -162,7 +158,7 @@ export const DynamicResScaler = () => {
 
 Behavior change vs. the current code:
 
-- The FPS sample is now taken every frame (cheap), not only when `elapsed >= CHECK_INTERVAL_MS`. The check interval still gates the *decision*; this matches the spec ("sustained FPS changes") and makes the new "ignore FPS until 2 samples" guard well-defined.
+- The FPS sample is now taken every frame (cheap), not only when `elapsed >= CHECK_INTERVAL_MS`. The check interval still gates the _decision_; this matches the spec ("sustained FPS changes") and makes the new "ignore FPS until 2 samples" guard well-defined.
 - The `MIN_SAMPLES_BEFORE_DPR` guard prevents the scaler from reacting to the initial `fps = 0` sample on the first frame.
 - All other tuning values (`MIN_DPR`, `MAX_DPR`, `STEP`, `TARGET_FPS`, `FPS_TOLERANCE`, `CHECK_INTERVAL_MS`) are unchanged.
 
@@ -257,17 +253,17 @@ if (cache?.targetPositionPool) {
 }
 ```
 
-The pooled tuple is *not* returned to the pool when the projectile is created — the projectile needs to own its `lastTargetPosition` for the duration of its flight. Pool release happens when the projectile is consumed in `stepProjectiles` (see 3.2).
+The pooled tuple is _not_ returned to the pool when the projectile is created — the projectile needs to own its `lastTargetPosition` for the duration of its flight. Pool release happens when the projectile is consumed in `stepProjectiles` (see 3.2).
 
 #### 3.2 Pool the target-position tuple in `stepProjectiles`
 
-When a projectile is consumed (progress >= 1), push its `lastTargetPosition` back onto `targetPositionPool` *only if* that position came from the pool. We track this by storing the source on the projectile (or by structuring the pool so any `lastTargetPosition` that came from the pool is a tuple identity we recognize). Cleanest: store `lastTargetPosition: EngineMutableVector3` (mutable tuple) on the projectile, and the pool is the same array as the scratch positions; release the projectile's `lastTargetPosition` back to the pool when the projectile is consumed.
+When a projectile is consumed (progress >= 1), push its `lastTargetPosition` back onto `targetPositionPool` _only if_ that position came from the pool. We track this by storing the source on the projectile (or by structuring the pool so any `lastTargetPosition` that came from the pool is a tuple identity we recognize). Cleanest: store `lastTargetPosition: EngineMutableVector3` (mutable tuple) on the projectile, and the pool is the same array as the scratch positions; release the projectile's `lastTargetPosition` back to the pool when the projectile is consumed.
 
 This is a small refactor that crosses `stepTowers` and `stepProjectiles`; both modules need to read/write `targetPositionPool`. Both already receive the shared `EngineCache`.
 
 #### 3.3 `buildSpatialGrid` inner clamp
 
-The current code computes `clampedX` and `clampedZ` once per enemy, then `index = clampedZ * width + clampedX`. No change is required for the inner clamp itself, but the redundant `Math.max(0, Math.min(...))` pair is collapsed into a single inline `((x < 0 ? 0 : x > width - 1 ? width - 1 : x))` expression. This is a stylistic micro-opt; it's included only if the resulting code is *clearer*, not just shorter. If the change makes the code less readable, skip it.
+The current code computes `clampedX` and `clampedZ` once per enemy, then `index = clampedZ * width + clampedX`. No change is required for the inner clamp itself, but the redundant `Math.max(0, Math.min(...))` pair is collapsed into a single inline `((x < 0 ? 0 : x > width - 1 ? width - 1 : x))` expression. This is a stylistic micro-opt; it's included only if the resulting code is _clearer_, not just shorter. If the change makes the code less readable, skip it.
 
 #### 3.4 `EngineCache` shape
 
@@ -334,21 +330,21 @@ The default cache initializer in `useGameStep` adds `targetPositionPool: []`. No
 
 ### 5. Error handling & edge cases
 
-| Area | Failure mode | Behavior |
-| --- | --- | --- |
-| `RollingFrameStats` | First frame after mount (no prior timestamp) | `lastDeltaMs` defaults to `16.667`; `fps` is `0` until a second sample lands. `DynamicResScaler` ignores `stats.fps` until `sampleCount >= 2`. |
-| `RollingFrameStats` | Clock skew (`performance.now()` goes backwards) | Cull is `<` (strict), so backwards jumps keep older samples. `fps` may transiently read 0 or low, which `computeNextDpr` treats as a low-FPS signal and drops DPR by one step. Acceptable; recovers in one window. |
-| `computeNextDpr` | `fps = NaN` or `±Infinity` | Guarded: `Number.isFinite(fps) === false` ⇒ return `currentDpr` unchanged. |
-| `computeNextDpr` | `currentDpr` outside `[minDpr, maxDpr]` | Result is clamped to `[minDpr, maxDpr]`. |
-| `DynamicResScaler` | Mounted without a `Canvas` (SSR, unit test) | `useThree` returns the test mock; no change vs. current behavior. |
-| `SfxBufferCache` | Unknown buffer name | Returns `undefined`. `Synth.playSFX` already handles `undefined` (no-op). |
-| `SfxBufferCache` | Buffer factory throws | Error propagates to `Synth.playSFX`. Same failure surface as today. |
-| `SynthArpScheduler` | `ctx` closed before `stop()` | `osc.stop()` and `osc.disconnect()` wrapped in `try`/`catch` (matches the existing `safeStop` pattern). |
-| `SynthArpScheduler` | `setTimeout` fires after `stop()` | `scheduleAhead` checks `isRunning` and returns early. |
-| `SynthArpScheduler` | Tab backgrounded | `setTimeout` throttled to 1Hz; scheduler continues to run but does no visible work. Audio engine clock also slows. Acceptable. |
-| Engine tuple pool | Pool exhaustion (more allocations than the pool can satisfy) | Falls through to a fresh `[x, y, z]` allocation. Pool grows on miss; not released back. Mirrors `enemyPositionPool`. |
-| Engine tuple pool | Pool grows unbounded | Bounded by high-water mark of projectile/tower concurrency, which is naturally bounded by game design. Same as today. |
-| Engine snapshot test | Stochastic `Math.random` | Test uses a deterministic seeded RNG (mulberry32 shim) passed via `EngineTickContext.rng`. |
+| Area                 | Failure mode                                                 | Behavior                                                                                                                                                                                                           |
+| -------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `RollingFrameStats`  | First frame after mount (no prior timestamp)                 | `lastDeltaMs` defaults to `16.667`; `fps` is `0` until a second sample lands. `DynamicResScaler` ignores `stats.fps` until `sampleCount >= 2`.                                                                     |
+| `RollingFrameStats`  | Clock skew (`performance.now()` goes backwards)              | Cull is `<` (strict), so backwards jumps keep older samples. `fps` may transiently read 0 or low, which `computeNextDpr` treats as a low-FPS signal and drops DPR by one step. Acceptable; recovers in one window. |
+| `computeNextDpr`     | `fps = NaN` or `±Infinity`                                   | Guarded: `Number.isFinite(fps) === false` ⇒ return `currentDpr` unchanged.                                                                                                                                         |
+| `computeNextDpr`     | `currentDpr` outside `[minDpr, maxDpr]`                      | Result is clamped to `[minDpr, maxDpr]`.                                                                                                                                                                           |
+| `DynamicResScaler`   | Mounted without a `Canvas` (SSR, unit test)                  | `useThree` returns the test mock; no change vs. current behavior.                                                                                                                                                  |
+| `SfxBufferCache`     | Unknown buffer name                                          | Returns `undefined`. `Synth.playSFX` already handles `undefined` (no-op).                                                                                                                                          |
+| `SfxBufferCache`     | Buffer factory throws                                        | Error propagates to `Synth.playSFX`. Same failure surface as today.                                                                                                                                                |
+| `SynthArpScheduler`  | `ctx` closed before `stop()`                                 | `osc.stop()` and `osc.disconnect()` wrapped in `try`/`catch` (matches the existing `safeStop` pattern).                                                                                                            |
+| `SynthArpScheduler`  | `setTimeout` fires after `stop()`                            | `scheduleAhead` checks `isRunning` and returns early.                                                                                                                                                              |
+| `SynthArpScheduler`  | Tab backgrounded                                             | `setTimeout` throttled to 1Hz; scheduler continues to run but does no visible work. Audio engine clock also slows. Acceptable.                                                                                     |
+| Engine tuple pool    | Pool exhaustion (more allocations than the pool can satisfy) | Falls through to a fresh `[x, y, z]` allocation. Pool grows on miss; not released back. Mirrors `enemyPositionPool`.                                                                                               |
+| Engine tuple pool    | Pool grows unbounded                                         | Bounded by high-water mark of projectile/tower concurrency, which is naturally bounded by game design. Same as today.                                                                                              |
+| Engine snapshot test | Stochastic `Math.random`                                     | Test uses a deterministic seeded RNG (mulberry32 shim) passed via `EngineTickContext.rng`.                                                                                                                         |
 
 ### 6. Testing strategy
 
@@ -376,7 +372,7 @@ The default cache initializer in `useGameStep` adds `targetPositionPool: []`. No
 
 - `src/tests/components/DynamicResScaler.test.tsx` — existing 3 tests must still pass. No edits expected; if a test depends on the inline `performance.now` mock, adjust the import path.
 
-**Tests explicitly *not* added in this PR (per validation = A):**
+**Tests explicitly _not_ added in this PR (per validation = A):**
 
 - DevTools-trace-based frame-time tests.
 - Playwright perf assertions.
