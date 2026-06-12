@@ -1,3 +1,4 @@
+import { SynthArpScheduler, type ArpSchedulerOptions } from './internal/synthArp';
 import { SfxBufferCache, type SfxBufferFactory } from './internal/synthBuffers';
 
 const SFX_FACTORY: SfxBufferFactory = {
@@ -7,6 +8,15 @@ const SFX_FACTORY: SfxBufferFactory = {
   sell: (ctx) => Synth.makeSellBuffer(ctx),
   click: (ctx) => Synth.makeClickBuffer(ctx),
   error: (ctx) => Synth.makeErrorBuffer(ctx),
+};
+
+const ARP_OPTIONS: ArpSchedulerOptions = {
+  notes: [220, 277.18, 329.63, 392],
+  intervalSec: 0.18,
+  noteDurationSec: 0.14,
+  peakGain: 0.6,
+  lookaheadSec: 0.05,
+  schedulerIntervalMs: 25,
 };
 
 export class Synth {
@@ -181,9 +191,7 @@ export class Synth {
   delayFeedback: GainNode | null = null;
   lfo: OscillatorNode | null = null;
   lfoGain: GainNode | null = null;
-  arpOsc: OscillatorNode | null = null;
-  arpGain: GainNode | null = null;
-  arpInterval: number | null = null;
+  arpScheduler: SynthArpScheduler | null = null;
 
   // Convolver (impulse) reverb
   convolver: ConvolverNode | null = null;
@@ -283,29 +291,12 @@ export class Synth {
 
     // Small arpeggio to add movement
     try {
-      this.arpOsc = this.ctx.createOscillator();
-      this.arpOsc.type = 'triangle';
-      this.arpGain = this.ctx.createGain();
-      this.arpGain.gain.value = 0.0; // start silent
-      this.arpOsc.connect(this.arpGain);
-      this.arpGain.connect(bgmGain);
-      this.arpOsc.start();
-
-      const notes = [220, 277.18, 329.63, 392]; // A minor-ish arpeggio
-      let idx = 0;
-      this.arpInterval = window.setInterval(() => {
-        if (!this.arpOsc || !this.arpGain) return;
-        const note = notes[idx % notes.length];
-        // quick per-note envelope
-        this.arpOsc.frequency.value = note;
-        this.arpGain.gain.value = 0.6;
-        setTimeout(() => {
-          if (this.arpGain) this.arpGain.gain.value = 0.0;
-        }, 140);
-        idx++;
-      }, 180);
+      // Arpeggio on the audio clock (sample-accurate, no per-note JS task).
+      this.arpScheduler = new SynthArpScheduler(this.ctx, bgmGain, ARP_OPTIONS);
+      this.arpScheduler.start();
     } catch (err) {
       console.warn('[AUDIO] Failed to create arpeggiator:', err);
+      this.arpScheduler = null;
     }
 
     // finally connect the submix to the music bus if not connected earlier
@@ -351,11 +342,8 @@ export class Synth {
     for (const n of this.bgmNodes) this.safeStop(n);
     this.bgmNodes = [];
 
-    this.safeStop(this.arpOsc);
-    this.arpOsc = null;
-
-    this.safeClearInterval(this.arpInterval);
-    this.arpInterval = null;
+    this.arpScheduler?.stop();
+    this.arpScheduler = null;
 
     this.safeStop(this.lfo);
     this.lfo = null;
