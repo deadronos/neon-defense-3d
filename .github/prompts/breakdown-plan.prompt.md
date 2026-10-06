@@ -406,7 +406,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create Feature Issue
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: epic } = await github.rest.issues.get({
@@ -440,12 +440,12 @@ jobs:
     steps:
       - name: Move to In Review
         if: github.event.action == 'opened'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         # Move related issues to "In Review" column
 
       - name: Move to Done
         if: github.event.action == 'closed' && github.event.pull_request.merged
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         # Move related issues to "Done" column
 ```
 
