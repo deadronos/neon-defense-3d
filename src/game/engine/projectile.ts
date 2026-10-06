@@ -26,6 +26,70 @@ const DEFAULT_TILE_SIZE = 2;
 const EFFECT_DURATION_SECONDS = 0.8;
 const DEFAULT_EFFECT_SCALE = 0.4;
 
+interface EnemyImpactResult {
+  survivors: EngineEnemy[];
+  effects: EngineEffectIntent[];
+  killedEvents: EngineEvent[];
+  nextEffectCounter: number;
+}
+
+const applyEnemyImpacts = (
+  state: EngineState,
+  hits: ReadonlyMap<string, number>,
+  freezeHits: ReadonlyMap<string, number>,
+  enemyPositions: ReadonlyMap<string, EngineMutableVector3>,
+  impactContext: ImpactContext,
+  greedMultiplier: number,
+  effectCounter: number,
+  nowSeconds: number,
+): EnemyImpactResult => {
+  const survivors: EngineEnemy[] = [];
+  const effects: EngineEffectIntent[] = [];
+  const killedEvents: EngineEvent[] = [];
+  let nextEffectCounter = effectCounter;
+
+  for (const enemy of state.enemies) {
+    const damage = hits.get(enemy.id) ?? 0;
+    if (damage <= 0) {
+      survivors.push(enemy);
+      continue;
+    }
+
+    const currentShield = enemy.shield ?? 0;
+    const shieldDamage = Math.min(currentShield, damage);
+    const hpDamage = damage - shieldDamage;
+
+    const remainingShield = currentShield - shieldDamage;
+    const remainingHp = enemy.hp - hpDamage;
+
+    const addedFreeze = freezeHits.get(enemy.id);
+    const frozenValue = enemy.frozen ?? 0;
+    const nextFrozen = addedFreeze !== undefined ? Math.max(frozenValue, addedFreeze) : frozenValue;
+
+    if (remainingHp <= 0) {
+      const reward = Math.floor((enemy.reward ?? 0) * greedMultiplier);
+      killedEvents.push({ type: 'EnemyKilled', enemyId: enemy.id, reward });
+
+      const position = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy, impactContext);
+      const explosion = createExplosionEffect(
+        nextEffectCounter,
+        position,
+        enemy.color,
+        enemy.scale ?? DEFAULT_EFFECT_SCALE,
+        nowSeconds,
+        EFFECT_DURATION_SECONDS,
+      );
+      nextEffectCounter = explosion.newCounter;
+      effects.push(explosion.effect);
+      continue;
+    }
+
+    survivors.push({ ...enemy, hp: remainingHp, shield: remainingShield, frozen: nextFrozen });
+  }
+
+  return { survivors, effects, killedEvents, nextEffectCounter };
+};
+
 /* eslint-disable sonarjs/cognitive-complexity, complexity */
 export const stepProjectiles = (
   state: EngineState,
@@ -149,56 +213,20 @@ export const stepProjectiles = (
   let nextEffects: EngineEffectIntent[] = state.effects;
 
   if (hits.size > 0) {
-    const survivors: EngineEnemy[] = [];
-
-    for (const enemy of state.enemies) {
-      const damage = hits.get(enemy.id) ?? 0;
-      if (damage <= 0) {
-        survivors.push(enemy);
-        continue;
-      }
-
-      const currentShield = enemy.shield ?? 0;
-      const shieldDamage = Math.min(currentShield, damage);
-      const hpDamage = damage - shieldDamage;
-
-      const remainingShield = currentShield - shieldDamage;
-      const remainingHp = enemy.hp - hpDamage;
-
-      const addedFreeze = freezeHits.get(enemy.id);
-      const frozenValue = enemy.frozen ?? 0;
-      const nextFrozen =
-        addedFreeze !== undefined ? Math.max(frozenValue, addedFreeze) : frozenValue;
-
-      if (remainingHp <= 0) {
-        const reward = Math.floor((enemy.reward ?? 0) * greedMultiplier);
-        const killedEvent: EngineEvent = {
-          type: 'EnemyKilled',
-          enemyId: enemy.id,
-          reward,
-        };
-        events.deferred.push(killedEvent);
-
-        const position = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy, impactContext);
-
-        const explosion = createExplosionEffect(
-          nextEffectCounter,
-          position,
-          enemy.color,
-          enemy.scale ?? DEFAULT_EFFECT_SCALE,
-          context.nowMs / 1000,
-          EFFECT_DURATION_SECONDS,
-        );
-        nextEffectCounter = explosion.newCounter;
-        addedEffects.push(explosion.effect);
-
-        continue;
-      }
-
-      survivors.push({ ...enemy, hp: remainingHp, shield: remainingShield, frozen: nextFrozen });
-    }
-
-    nextEnemies = survivors;
+    const impact = applyEnemyImpacts(
+      state,
+      hits,
+      freezeHits,
+      enemyPositions,
+      impactContext,
+      greedMultiplier,
+      nextEffectCounter,
+      context.nowMs / 1000,
+    );
+    nextEnemies = impact.survivors;
+    nextEffectCounter = impact.nextEffectCounter;
+    events.deferred.push(...impact.killedEvents);
+    addedEffects.push(...impact.effects);
   }
 
   if (addedEffects.length > 0) {

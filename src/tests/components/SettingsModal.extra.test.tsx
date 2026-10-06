@@ -18,7 +18,7 @@ vi.mock('../../game/audio/useAudio', () => ({
 import { SettingsModal } from '../../components/ui/SettingsModal';
 import { useAudio } from '../../game/audio/useAudio';
 import { GameProvider } from '../../game/GameState';
-import type { MigrateResult, SaveV1 } from '../../game/persistence';
+import type { SaveV1 } from '../../game/persistence';
 import * as persistence from '../../game/persistence';
 
 describe('SettingsModal extras', () => {

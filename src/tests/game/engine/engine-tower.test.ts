@@ -18,7 +18,7 @@ const setupTowerTest = (towers: Partial<EngineTower>[], enemies: Partial<EngineE
     ...createInitialEngineState(),
     enemies,
     towers,
-  }) as any as EngineState;
+  }) as unknown as EngineState;
 
 const path: [number, number][] = [
   [0, 0],

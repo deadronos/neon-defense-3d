@@ -3,7 +3,7 @@
  * Mocks browser APIs like matchMedia and ResizeObserver that are not available in the test environment.
  */
 // Setup file for Vitest + Testing Library
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 
 const env = globalThis as unknown as {
   matchMedia?: unknown;

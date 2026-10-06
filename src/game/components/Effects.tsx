@@ -50,7 +50,7 @@ export const InstancedExplosions: React.FC<{
     const activeEffectIds = activeEffectIdsRef.current;
     activeEffectIds.clear();
 
-    for (let listPos = 0; listPos < pool.activeListSize; ) {
+    for (let listPos = 0; listPos < pool.activeListSize;) {
       const i = pool.activeList[listPos];
 
       pool.life[i] -= delta;

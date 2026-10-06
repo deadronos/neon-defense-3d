@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import * as THREE from 'three';
 
 import { TOWER_CONFIGS } from '../../constants';
-import type { UpgradeType, TowerEntity } from '../../types';
+import type { TowerEntity } from '../../types';
 import { useGameUi, useRenderState } from '../gameContexts';
 import { getTowerStats } from '../utils';
 

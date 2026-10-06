@@ -91,9 +91,7 @@ export class SynthArpScheduler {
   private tick(): void {
     if (!this.isRunning) return;
     this.scheduleAhead();
-    if (this.isRunning) {
-      this.timerId = setTimeout(() => this.tick(), this.options.schedulerIntervalMs);
-    }
+    this.timerId = setTimeout(() => this.tick(), this.options.schedulerIntervalMs);
   }
 
   private scheduleAhead(): void {

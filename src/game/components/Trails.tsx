@@ -77,7 +77,7 @@ export const InstancedTrails: React.FC = () => {
       }
     }
 
-    for (let listPos = 0; listPos < pool.activeListSize; ) {
+    for (let listPos = 0; listPos < pool.activeListSize;) {
       const i = pool.activeList[listPos];
 
       pool.life[i] -= delta;

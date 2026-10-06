@@ -6,15 +6,11 @@ export const TEMP_COLOR = new THREE.Color();
 
 function ensureVertexColors(geometry: THREE.BufferGeometry) {
   const position = geometry.getAttribute('position') as
-    | THREE.BufferAttribute
-    | THREE.InterleavedBufferAttribute
-    | undefined;
+    THREE.BufferAttribute | THREE.InterleavedBufferAttribute | undefined;
   if (position === undefined) return;
 
   const existing = geometry.getAttribute('color') as
-    | THREE.BufferAttribute
-    | THREE.InterleavedBufferAttribute
-    | undefined;
+    THREE.BufferAttribute | THREE.InterleavedBufferAttribute | undefined;
   if (existing?.count === position.count) return;
 
   const colors = new Float32Array(position.count * 3);
