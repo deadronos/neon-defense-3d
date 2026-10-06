@@ -1,4 +1,4 @@
-export type SfxBufferFactory = Record<string, (ctx: AudioContext) => AudioBuffer>;
+export type SfxBufferFactory = Record<string, ((ctx: AudioContext) => AudioBuffer) | undefined>;
 
 /** Lazily builds and caches SFX AudioBuffers. First call to a name
  *  generates the buffer; subsequent calls reuse it. The factory is

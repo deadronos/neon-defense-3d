@@ -10,9 +10,8 @@ test('verify build menu', async ({ page }) => {
   await page.waitForTimeout(2000);
 
   // Find the Basic Tower button (Pulse Cannon)
-  // Code: `Select ${name}, Cost ${cost}` e.g. "Select Pulse Cannon, Cost 50"
-  // Note: No $ symbol in the aria-label
-  const basicTower = page.getByRole('button', { name: /select pulse cannon, cost 50/i });
+  // Code: `${isSelected ? 'Deselect' : 'Select'} ${config.name}` e.g. "Select Pulse Cannon"
+  const basicTower = page.getByRole('button', { name: /select pulse cannon/i });
   await expect(basicTower).toBeVisible();
 
   // Hover to show tooltip

@@ -1,4 +1,4 @@
-import type { GenerateMapMessage, MapGeneratedMessage } from './wfc.worker';
+import type { MapGeneratedMessage } from './wfc.worker';
 
 class WFCClient {
   private worker: Worker;

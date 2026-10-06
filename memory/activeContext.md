@@ -8,6 +8,7 @@
 
 ## Recent changes (code highlights)
 
+- **Dependencies (TASK026):** Refreshed all packages to the latest _compatible_ versions (React 19.3, three 0.186, R3F 9.8, Vitest 5, jsdom 30, jest-dom 7, Vite 8.3, Playwright 1.63, Prettier 3.9). Kept `eslint` on 9.39.5 and `typescript` on 6.0.3 because the ESLint 10 / TS 7 plugin ecosystem (`eslint-plugin-import`/`react`/`jsx-a11y`, `@typescript-eslint`) does not support them yet. Also fixed the jest-dom v7 Vitest type import, the Vite 8 `__dirname` config warning, a stale E2E aria-label assertion, and cleared the remaining lint warnings (now 0 problems). `npm audit` reports 0 vulnerabilities.
 - **Dependencies:** Refreshed npm packages to the latest available versions, then pinned ESLint back to the latest compatible 9.x release because the current React/import plugin ecosystem does not yet support ESLint 10.
 - **Tooling:** Added `ignoreDeprecations: "6.0"` to `tsconfig.json` so TypeScript 6 can run cleanly with the existing `baseUrl` path alias setup.
 - **State:** Split GameState into Zustand stores (runtime/render/gameSpeed) and moved the runtime reducer into a store module.

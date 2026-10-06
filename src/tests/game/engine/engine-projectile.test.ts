@@ -14,7 +14,7 @@ const setupProjectileTest = (
     ...createInitialEngineState(),
     enemies,
     projectiles,
-  }) as any as EngineState;
+  }) as unknown as EngineState;
 
 const path: [number, number][] = [
   [0, 0],

@@ -17,6 +17,7 @@
 
 ## Completed
 
+- [TASK026] Dependency refresh — upgrade to latest compatible packages, fix upgrade errors (jest-dom v7 vitest types, Vite config, formatting), clear lint warnings (2026-10-07)
 - [TASK016] Audio & UI responsiveness — Synth improvements + procedural reverb + responsive TopBar/BuildMenu/UpgradeInspector (2026-01-03)
 - [TASK023] Refactor monolithic modules — split GameState, SettingsModal, persistence (2026-01-05)
 - [TASK024] Fix ESLint errors after new rules (2026-01-05)

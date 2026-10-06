@@ -2,6 +2,7 @@
 
 ## What works
 
+- **Dependencies (TASK026):** All packages are on their latest compatible versions (React 19.3, three 0.186, Vitest 5, jsdom 30, Vite 8.3). `npm run format:check`, `lint` (0 problems), `typecheck`, `test` (208 tests), `build`, and `e2e` all pass; `npm audit` is clean. ESLint 9 / TypeScript 6 remain pinned pending ecosystem support for ESLint 10 / TS 7.
 - Project scaffolding and developer scripts (`dev`, `build`, `test`, `e2e`) are present and configured.
 - Core gameplay loop, wave manager, tower placement, projectile collisions, and rendering are implemented under `src/game`.
 - GameState refactor: runtime/render/gameSpeed moved into Zustand stores with provider wiring.
