@@ -90,7 +90,7 @@ const applyEnemyImpacts = (
   return { survivors, effects, killedEvents, nextEffectCounter };
 };
 
-/* eslint-disable sonarjs/cognitive-complexity, complexity */
+/* eslint-disable complexity */
 export const stepProjectiles = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -247,4 +247,4 @@ export const stepProjectiles = (
 
   return { patch, events };
 };
-/* eslint-enable sonarjs/cognitive-complexity, complexity */
+/* eslint-enable complexity */

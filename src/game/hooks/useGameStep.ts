@@ -48,7 +48,7 @@ export const useGameStep = ({
   const killStreakRef = useRef({ count: 0, lastTime: 0 });
 
   const step = useCallback(
-    // eslint-disable-next-line sonarjs/cognitive-complexity, complexity
+    // eslint-disable-next-line complexity
     (deltaSeconds: number, nowSeconds: number) => {
       const snapshot = runtimeRef.current;
       if (snapshot.ui.gameStatus !== 'playing') return;

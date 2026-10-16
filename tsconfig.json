@@ -13,13 +13,12 @@
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "allowImportingTsExtensions": true,
-    "ignoreDeprecations": "6.0",
-    "noEmit": true
+    "noEmit": true,
+    "erasableSyntaxOnly": true
   },
   "exclude": ["dist", "build", "coverage", "node_modules"]
 }

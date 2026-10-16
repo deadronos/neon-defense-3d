@@ -48,8 +48,8 @@ describe('Spatial Grid', () => {
     const grid = buildSpatialGrid(enemies, mockWaypoints, tileSize, width, height);
 
     // Grid index = z * width + x
-    const idx1 = 0 * width + 0;
-    const idx2 = 0 * width + 5; // x=5
+    const idx1 = 0; // z=0, x=0
+    const idx2 = 5; // z=0, x=5
     const idx3 = 5 * width + 9; // x=clamped 9, z=5
 
     expect(grid[idx1]).toContain(e1);

@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
-import { describe, it, vi, beforeEach } from 'vitest';
+import { describe, it, vi, beforeEach, type MockInstance } from 'vitest';
 
 vi.mock('../../game/audio/useAudio', () => ({
   useAudio: vi.fn().mockReturnValue({
@@ -63,7 +63,7 @@ describe('SettingsModal extras', () => {
   it('download export triggers link click', async () => {
     const user = userEvent.setup();
     const origCreate = document.createElement.bind(document);
-    let clickSpy: ReturnType<typeof vi.spyOn> | undefined = undefined;
+    let clickSpy: MockInstance | undefined = undefined;
     vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
       const el = origCreate(tagName);
       if (tagName === 'a') {
@@ -147,6 +147,7 @@ describe('SettingsModal extras', () => {
     // Create a file-like object whose text() rejects
     const badFile = new File(['{}'], 'bad.json', { type: 'application/json' });
     // Mock File.prototype.text for this test to simulate read failure
+    // eslint-disable-next-line typescript/unbound-method -- restored onto the prototype below
     const origText = File.prototype.text;
     File.prototype.text = function () {
       return Promise.reject(new Error('readfail'));

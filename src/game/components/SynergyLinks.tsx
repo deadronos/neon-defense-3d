@@ -24,7 +24,7 @@ export const SynergyLinks: React.FC = () => {
   // We can use a shader material or just animate colors/opacity.
   // For MVP: LineSegments with vertex colors.
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
+  // eslint-disable-next-line complexity
   useFrame(({ clock }) => {
     if (!geometryRef.current) return;
 

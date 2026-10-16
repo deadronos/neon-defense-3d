@@ -31,6 +31,8 @@ export const buildSpatialGrid = (
 ): SpatialGrid => {
   const size = width * height;
   const reused = reuseGrid?.length === size ? reuseGrid : undefined;
+  // Preallocate a sized array; every slot is filled in the loop below.
+  // eslint-disable-next-line unicorn/no-new-array
   const grid: SpatialGrid = reused ?? new Array<EngineEnemy[]>(size);
 
   if (reused) {

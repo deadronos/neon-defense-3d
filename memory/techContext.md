@@ -13,16 +13,20 @@
 
 - `react`, `react-dom` (v19.3)
 - `three` 0.186 (+ `@types/three`), `@react-three/fiber` 9.8, `@react-three/drei` 10.7, `@react-three/postprocessing` 3.1
-- `vite` 8.3 (build/dev), `typescript` 6.0, `vitest` 5 + `@vitest/coverage-v8` 5 (tests), `jsdom` 30
+- `vite` 8.3 (build/dev), `typescript` 7.0, `vitest` 5 + `@vitest/coverage-v8` 5 (tests), `jsdom` 30
 - `@testing-library/*` (jest-dom v7 — import matchers from `@testing-library/jest-dom/vitest` in the setup file)
 - `playwright` 1.64 for e2e tests and screenshots
 
-### Tooling compatibility pins
+### Lint / format toolchain (Oxc)
 
-- `eslint` is held at **9.39.5** (not 10.x): `eslint-plugin-import`, `eslint-plugin-react`, and
-  `eslint-plugin-jsx-a11y` do not yet accept ESLint 10. `eslint-plugin-unicorn` is held at
-  **65.0.1** because v66+ requires ESLint ≥10.4.
-- `typescript` is held at **6.0.3**: the latest `@typescript-eslint` (8.x) supports TS `<6.1.0`.
+- **oxlint** (`.oxlintrc.json`) + **oxlint-tsgolint** for type-aware rules (`oxlint --type-aware`).
+  Replaced ESLint + `@typescript-eslint`, whose TS `<6.1` cap blocked TypeScript 7.
+- **oxfmt** (`.oxfmtrc.json`) replaced Prettier; it also sorts imports (replaces `import/order`).
+- Enums are banned via `erasableSyntaxOnly` in `tsconfig.json` (replaces `no-restricted-syntax`).
+- Not carried over: `eslint-plugin-sonarjs` (needs TypeScript's JS API, which TS 7 doesn't ship),
+  `import/no-unresolved` / `no-extraneous-dependencies` (tsc covers unresolved imports),
+  `react/jsx-no-leaked-render`, `unicorn/better-regex`.
+- TS 7 removed `baseUrl`; the `@/*` alias is `"paths": { "@/*": ["./src/*"] }`.
 
 ## Developer commands
 

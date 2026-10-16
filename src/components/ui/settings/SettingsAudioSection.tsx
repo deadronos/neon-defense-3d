@@ -21,8 +21,11 @@ export const SettingsAudioSection: React.FC<SettingsAudioSectionProps> = ({
     <h3 className="text-lg font-bold text-white mb-2">Audio</h3>
     <div className="space-y-4 max-w-md">
       <div className="flex items-center gap-4">
-        <label className="text-gray-300 text-sm w-16">Master</label>
+        <label htmlFor="settings-volume-master" className="text-gray-300 text-sm w-16">
+          Master
+        </label>
         <input
+          id="settings-volume-master"
           type="range"
           min="0"
           max="1"
@@ -33,8 +36,11 @@ export const SettingsAudioSection: React.FC<SettingsAudioSectionProps> = ({
         />
       </div>
       <div className="flex items-center gap-4">
-        <label className="text-gray-300 text-sm w-16">SFX</label>
+        <label htmlFor="settings-volume-sfx" className="text-gray-300 text-sm w-16">
+          SFX
+        </label>
         <input
+          id="settings-volume-sfx"
           type="range"
           min="0"
           max="1"
@@ -45,8 +51,11 @@ export const SettingsAudioSection: React.FC<SettingsAudioSectionProps> = ({
         />
       </div>
       <div className="flex items-center gap-4">
-        <label className="text-gray-300 text-sm w-16">Music</label>
+        <label htmlFor="settings-volume-music" className="text-gray-300 text-sm w-16">
+          Music
+        </label>
         <input
+          id="settings-volume-music"
           type="range"
           min="0"
           max="1"

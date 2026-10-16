@@ -113,7 +113,7 @@ const startNextWave = (
   return { wave: nextWaveState, events: [{ type: 'WaveStarted', wave: nextWave }] };
 };
 
-/* eslint-disable sonarjs/cognitive-complexity, complexity */
+/* eslint-disable complexity */
 export const stepWave = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -196,4 +196,4 @@ export const stepWave = (
 
   return { patch, events };
 };
-/* eslint-enable sonarjs/cognitive-complexity, complexity */
+/* eslint-enable complexity */

@@ -2,6 +2,7 @@
 
 ## What works
 
+- **Tooling (TASK028):** Lint/format run on oxlint (type-aware via oxlint-tsgolint) + oxfmt; TypeScript is 7.0. Every dependency is on its latest version (`npm outdated` is empty).
 - **Dependencies (TASK026):** All packages are on their latest compatible versions (React 19.3, three 0.186, Vitest 5, jsdom 30, Vite 8.3). `npm run format:check`, `lint` (0 problems), `typecheck`, `test` (208 tests), `build`, and `e2e` all pass; `npm audit` is clean. ESLint 9 / TypeScript 6 remain pinned pending ecosystem support for ESLint 10 / TS 7.
 - Project scaffolding and developer scripts (`dev`, `build`, `test`, `e2e`) are present and configured.
 - Core gameplay loop, wave manager, tower placement, projectile collisions, and rendering are implemented under `src/game`.

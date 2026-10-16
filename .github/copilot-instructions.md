@@ -76,28 +76,30 @@
   - **Lint:** `npm run lint` → auto-fix with `npm run lint:fix`
   - **Type check:** `npm run typecheck`
   - **Tests:** `npm run test`
-- Prettier formatting rules (authoritative): **semi: true**, **singleQuote: true**, **trailingComma: all**, **printWidth: 100**, **tabWidth: 2**, **endOfLine: auto**.
+- Formatting is done by **oxfmt** (`.oxfmtrc.json`, authoritative): **semi: true**, **singleQuote: true**, **trailingComma: all**, **printWidth: 100**, **tabWidth: 2**, LF line endings. oxfmt also sorts imports.
+- Linting is done by **oxlint** with type-aware rules (`.oxlintrc.json`, `oxlint --type-aware` via `oxlint-tsgolint`). Inline `eslint-disable` comments are honored by oxlint.
 - TypeScript & safety:
   - Project uses `strict` mode. Avoid `any`; prefer `unknown` + narrowing or explicit types.
   - Handle promises explicitly (no-floating-promises); prefer `await` or explicit error handling.
-  - Use `import type` for type-only imports (`@typescript-eslint/consistent-type-imports` enforced).
-  - Prefer union types over enums for tree-shaking.
+  - Use `import type` for type-only imports (`typescript/consistent-type-imports` enforced).
+  - Prefer union types over enums for tree-shaking (enums are rejected by `erasableSyntaxOnly` in `tsconfig.json`).
 - React conventions:
   - Follow hooks rules strictly — `rules-of-hooks` and `exhaustive-deps` are errors.
   - Avoid using array indices as `key` for dynamic lists.
   - Favor stable references (use `useCallback`/`useMemo` only where it prevents re-renders).
 - Imports & modules:
-  - Follow configured import order (builtin → external → internal `@/**` → parent → sibling → index).
-  - Avoid circular imports and unresolved modules (`import/no-cycle`, `import/no-unresolved`).
+  - Import order (builtin → external → internal `@/**` → parent → sibling → index) is applied automatically by `npm run format`.
+  - Avoid circular imports (`import/no-cycle`); unresolved modules are caught by `npm run typecheck`.
 - Code quality:
-  - Prefer `const` where possible; keep functions focused (prefer <150 LOC); cognitive complexity should be low (<15).
+  - Prefer `const` where possible; keep functions focused (prefer <150 LOC); complexity should be low (<15).
   - Keep console usage minimal (`console.warn` / `console.error` allowed, avoid `console.log` in PRs).
 - IDE & CI:
-  - Install ESLint + Prettier editor plugins for live feedback.
-  - Fix lint/format/type errors locally before pushing; Prettier violations are treated as ESLint errors here.
+  - Install the Oxc editor extension for live oxlint/oxfmt feedback.
+  - Fix lint/format/type errors locally before pushing; CI-equivalent checks are `format:check`, `lint`, `typecheck`, `test`.
 - Gotchas:
   - `react/no-unknown-property` is intentionally disabled for game components in `src/game/**` and `src/components/**`.
-  - `@typescript-eslint/no-explicit-any` is currently a **warning** (discouraged but allowed in limited scenarios); prefer better types or document why `any` is necessary.
+  - `typescript/no-explicit-any` is currently a **warning** (discouraged but allowed in limited scenarios); prefer better types or document why `any` is necessary.
+  - React Compiler rules (`react/refs`, `react/purity`, `react/immutability`, `react/set-state-in-effect`, `react/use-memo`) are intentionally off: the R3F game loop reads refs and mutates pooled objects during render.
   - Treat hook and promise-related rules as blocking errors — fix them before merging.
 
 ## 6. Detailed Instruction References

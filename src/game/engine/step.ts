@@ -72,7 +72,7 @@ export const stepEngine = (
   patch.towers = towerResult.patch.towers ?? patch.towers;
   patch.projectiles = towerResult.patch.projectiles ?? patch.projectiles;
   if (towerResult.patch.idCounters) {
-    patch.idCounters = { ...(patch.idCounters ?? {}), ...towerResult.patch.idCounters };
+    patch.idCounters = { ...patch.idCounters, ...towerResult.patch.idCounters };
   }
   workingState = applyEnginePatch(workingState, towerResult.patch);
 
@@ -90,7 +90,7 @@ export const stepEngine = (
   patch.projectiles = projectileResult.patch.projectiles ?? patch.projectiles;
   patch.effects = projectileResult.patch.effects ?? patch.effects;
   if (projectileResult.patch.idCounters) {
-    patch.idCounters = { ...(patch.idCounters ?? {}), ...projectileResult.patch.idCounters };
+    patch.idCounters = { ...patch.idCounters, ...projectileResult.patch.idCounters };
   }
   workingState = applyEnginePatch(workingState, projectileResult.patch);
 

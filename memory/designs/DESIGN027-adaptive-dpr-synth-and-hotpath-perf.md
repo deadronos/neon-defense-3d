@@ -73,6 +73,7 @@ The `samples` array is a monotonically-growing-and-culled list of timestamps. Th
 
 ```typescript
 import { useMemo } from 'react';
+
 import { RollingFrameStats, type FrameStatsConfig } from './frameStats';
 
 export function useFrameStats(config: FrameStatsConfig = {}): RollingFrameStats {

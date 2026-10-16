@@ -330,11 +330,17 @@ describe('persistence (Tier-B checkpoint)', () => {
     const { result } = renderHook(() => useGame(), { wrapper: GameProvider });
 
     // Start game and place a tower
-    act(() => void result.current.startGame());
-    act(() => void result.current.placeTower(0, 0, TowerType.Basic));
+    act(() => {
+      result.current.startGame();
+    });
+    act(() => {
+      result.current.placeTower(0, 0, TowerType.Basic);
+    });
 
     // Advance time to trigger WaveStarted and autosave
-    act(() => void result.current.step(5.1, 5.1));
+    act(() => {
+      result.current.step(5.1, 5.1);
+    });
 
     await waitFor(() => {
       expect(loadCheckpoint()).not.toBeNull();
@@ -347,8 +353,12 @@ describe('persistence (Tier-B checkpoint)', () => {
     // Sell the tower and tick to update gridOccupancy
     const towerId = result.current.towers[0]?.id;
     expect(towerId).toBeDefined();
-    act(() => void result.current.sellTower(towerId));
-    act(() => void result.current.step(0.016, 5.116)); // trigger syncRenderState
+    act(() => {
+      result.current.sellTower(towerId);
+    });
+    act(() => {
+      result.current.step(0.016, 5.116);
+    }); // trigger syncRenderState
 
     // Now (0,0) should be free
     expect(result.current.towers).toHaveLength(0);

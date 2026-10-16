@@ -37,7 +37,7 @@ export class ParticlePool {
     this.velocity = new Float32Array(count * 3);
     this.scale = new Float32Array(count);
     this.color = new Float32Array(count * 3);
-    this.associatedEffectId = new Array(count).fill(null);
+    this.associatedEffectId = Array.from({ length: count }, () => null);
     this.curIndex = 0;
   }
 
