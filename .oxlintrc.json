@@ -1,0 +1,112 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "react", "jsx-a11y", "import", "unicorn", "oxc"],
+  "categories": {
+    "correctness": "warn"
+  },
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "settings": {
+    "react": { "version": "19" }
+  },
+  "ignorePatterns": [
+    "dist/**",
+    "build/**",
+    ".vite/**",
+    "public/**",
+    "coverage/**",
+    ".cache/**",
+    ".github/**",
+    ".codex/**",
+    ".worktrees/**",
+    "**/*.min.js",
+    "**/*.bundle.js"
+  ],
+  "rules": {
+    // React Core
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-no-constructed-context-values": "warn",
+    "react/jsx-key": ["error", { "checkFragmentShorthand": true }],
+    "react/no-array-index-key": "warn",
+
+    // React Hooks (Critical for game loop)
+    "react/rules-of-hooks": "error",
+    "react/exhaustive-deps": "error",
+
+    // React Compiler rules (enabled by oxlint's `correctness` category). The project does not use
+    // the React Compiler, and the R3F game loop intentionally reads refs / mutates pooled objects
+    // during render, so these stay off (they were never enabled under ESLint either).
+    "react/refs": "off",
+    "react/purity": "off",
+    "react/immutability": "off",
+    "react/set-state-in-effect": "off",
+    "react/use-memo": "off",
+
+    // React Refresh (HMR)
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+
+    // TypeScript
+    "typescript/explicit-module-boundary-types": "off",
+    "typescript/no-explicit-any": "warn",
+    "typescript/consistent-type-imports": "error",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+
+    // TypeScript - Strictness (type-aware, via oxlint-tsgolint)
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/no-unnecessary-condition": "warn",
+    "typescript/prefer-nullish-coalescing": "warn",
+    "typescript/prefer-optional-chain": "warn",
+    "typescript/strict-boolean-expressions": [
+      "warn",
+      { "allowNullableBoolean": true, "allowNullableString": true }
+    ],
+    "typescript/no-unnecessary-type-assertion": "error",
+
+    // Import/Module (unresolved imports are caught by tsc; ordering by oxfmt sortImports)
+    "import/no-duplicates": "error",
+    "import/no-cycle": "error",
+
+    // Accessibility: modals use `role="dialog"` on a styled <div> rather than a native <dialog>
+    "jsx-a11y/prefer-tag-over-role": "off",
+
+    // Code Quality (enums are banned via tsconfig `erasableSyntaxOnly`)
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "prefer-const": "error",
+    "complexity": ["warn", 15],
+    "max-lines-per-function": [
+      "warn",
+      { "max": 150, "skipComments": true, "skipBlankLines": true }
+    ],
+
+    // Boolean simplification (replaces eslint-plugin-sonarjs, which needs the TS 5/6 JS API)
+    "no-unneeded-ternary": "error",
+    "typescript/no-unnecessary-boolean-literal-compare": "error",
+
+    // Unicorn - Modern JS Patterns
+    "unicorn/catch-error-name": ["error", { "name": "err" }],
+    "unicorn/consistent-function-scoping": "warn",
+    "unicorn/no-array-for-each": "warn",
+    "unicorn/no-null": "off",
+    "unicorn/prefer-array-find": "error",
+    "unicorn/prefer-array-flat-map": "warn",
+    "unicorn/prefer-array-some": "warn",
+    "unicorn/prefer-default-parameters": "warn",
+    "unicorn/prefer-includes": "error",
+    "unicorn/prefer-modern-math-apis": "warn",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-number-properties": "warn",
+    "unicorn/prefer-optional-catch-binding": "warn",
+    "unicorn/prefer-string-starts-ends-with": "error",
+    "unicorn/prefer-ternary": "warn",
+    "unicorn/throw-new-error": "error"
+  },
+  "overrides": [
+    {
+      "files": ["src/game/**/*.tsx", "src/components/**/*.tsx"],
+      "rules": { "react/no-unknown-property": "off" }
+    }
+  ]
+}

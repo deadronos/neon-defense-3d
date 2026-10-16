@@ -1,6 +1,5 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-
 /* eslint-disable max-lines-per-function */
 
 import { useGame } from '../../game/gameContexts';

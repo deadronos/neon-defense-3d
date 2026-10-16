@@ -36,7 +36,7 @@ const isBuildable = (grid: TileType[][], x: number, z: number): boolean => {
   return grid[z][x] === TileType.Grass;
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity, complexity
+// eslint-disable-next-line complexity
 export const migrateSave = (input: unknown): MigrateResult => {
   const warnings: string[] = [];
   const errors: string[] = [];

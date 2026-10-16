@@ -1141,15 +1141,15 @@ Create `src/tests/game/engine/tower-target-pool.test.ts`:
 ```typescript
 import { describe, it, expect } from 'vitest';
 
-import { stepTowers } from '../../../game/engine/tower';
+import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../../constants';
 import type { EngineCache, EngineTickContext } from '../../../game/engine/step';
+import { stepTowers } from '../../../game/engine/tower';
 import type {
   EngineState,
   EngineTower,
   EngineEnemy,
   EngineVector2,
 } from '../../../game/engine/types';
-import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../../constants';
 
 const path: readonly EngineVector2[] = [
   [0, 0],

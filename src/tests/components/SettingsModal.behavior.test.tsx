@@ -79,7 +79,7 @@ describe('SettingsModal behavior', () => {
       const user = userEvent.setup();
       await user.click(refreshBtn);
 
-      await waitFor(() => expect(textarea.value).toContain('\"new\":1'), { timeout: 2000 });
+      await waitFor(() => expect(textarea.value).toContain('"new":1'), { timeout: 2000 });
     });
 
     it('reset success refreshes export JSON', async () => {

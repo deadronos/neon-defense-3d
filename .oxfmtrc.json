@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "quoteProps": "as-needed",
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "node_modules",
+    "dist",
+    "build",
+    ".vite",
+    "public",
+    "coverage",
+    ".cache",
+    ".git",
+    "*.min.js",
+    "*.bundle.js",
+    ".github",
+    ".codex",
+    ".worktrees",
+    "test-results",
+    "playwright-report",
+    "package-lock.json"
+  ],
+  "sortImports": {
+    "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+    "internalPattern": ["@/"],
+    "newlinesBetween": true,
+    "order": "asc",
+    "ignoreCase": true
+  }
+}

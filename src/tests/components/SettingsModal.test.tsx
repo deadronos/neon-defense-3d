@@ -39,6 +39,31 @@ const Harness = ({ open }: { open: boolean }) => {
 };
 
 // eslint-disable-next-line max-lines-per-function
+const TestApp = () => {
+  const game = useGame();
+  const firstSpot = useMemo(() => findFirstBuildableSpot(game.mapGrid), [game.mapGrid]);
+
+  useEffect(() => {
+    if (game.gameState.gameStatus !== 'playing') return;
+    if (!firstSpot) return;
+    if (game.towers.length > 0) return;
+
+    // Ensure a tower exists before wave 1 starts so autosave has something to include.
+    game.placeTower(firstSpot[0], firstSpot[1], TowerType.Basic);
+  }, [game, firstSpot, game.gameState.gameStatus, game.towers.length]);
+
+  return (
+    <>
+      <div data-testid="status">{game.gameState.gameStatus}</div>
+      <div data-testid="towers">{game.towers.length}</div>
+      <UI />
+      <button type="button" onClick={() => game.step(5.1, 5.1)}>
+        Trigger wave start
+      </button>
+    </>
+  );
+};
+
 describe('SettingsModal', () => {
   beforeEach(() => {
     localStorage.clear();
@@ -83,31 +108,6 @@ describe('SettingsModal', () => {
 
   it('enables Reset Checkpoint if an autosave happens while the modal is open (full UI flow)', async () => {
     const user = userEvent.setup();
-
-    const TestApp = () => {
-      const game = useGame();
-      const firstSpot = useMemo(() => findFirstBuildableSpot(game.mapGrid), [game.mapGrid]);
-
-      useEffect(() => {
-        if (game.gameState.gameStatus !== 'playing') return;
-        if (!firstSpot) return;
-        if (game.towers.length > 0) return;
-
-        // Ensure a tower exists before wave 1 starts so autosave has something to include.
-        game.placeTower(firstSpot[0], firstSpot[1], TowerType.Basic);
-      }, [game, firstSpot, game.gameState.gameStatus, game.towers.length]);
-
-      return (
-        <>
-          <div data-testid="status">{game.gameState.gameStatus}</div>
-          <div data-testid="towers">{game.towers.length}</div>
-          <UI />
-          <button type="button" onClick={() => game.step(5.1, 5.1)}>
-            Trigger wave start
-          </button>
-        </>
-      );
-    };
 
     render(
       <GameProvider>

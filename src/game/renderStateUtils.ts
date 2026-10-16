@@ -56,7 +56,7 @@ export const createInitialRenderState = (): RenderState => ({
  * Synchronizes the game engine state into the mutable render state.
  * Reuses objects where possible to minimize garbage collection.
  */
-/* eslint-disable sonarjs/cognitive-complexity, complexity */
+/* eslint-disable complexity */
 export const syncRenderState = (
   engine: EngineState,
   renderState: RenderState,
@@ -298,4 +298,4 @@ export const syncRenderState = (
     createdAt: e.createdAt,
   }));
 };
-/* eslint-enable sonarjs/cognitive-complexity, complexity */
+/* eslint-enable complexity */

@@ -59,7 +59,7 @@ const selectTowerWorldPosition = (tower: EngineTower, tileSize: number): EngineV
   tower.gridPosition[1] * tileSize,
 ];
 
-/* eslint-disable sonarjs/cognitive-complexity, complexity */
+/* eslint-disable complexity */
 export const stepTowers = (
   state: EngineState,
   pathWaypoints: readonly EngineVector2[],
@@ -209,4 +209,4 @@ export const stepTowers = (
 
   return { patch, events };
 };
-/* eslint-enable sonarjs/cognitive-complexity, complexity */
+/* eslint-enable complexity */

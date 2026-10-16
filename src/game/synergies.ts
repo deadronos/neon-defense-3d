@@ -34,7 +34,7 @@ export const SYNERGIES: Record<SynergyType, SynergyDef> = {
 /**
  * Calculates active synergies for all towers.
  */
-/* eslint-disable sonarjs/cognitive-complexity */
+/* eslint-disable complexity */
 export const calculateSynergies = (
   towers: { id: string; type: string; gridPosition: readonly [number, number] }[],
 ): Map<string, ActiveSynergy[]> => {
@@ -98,4 +98,4 @@ export const calculateSynergies = (
 
   return synergyMap;
 };
-/* eslint-enable sonarjs/cognitive-complexity */
+/* eslint-enable complexity */
