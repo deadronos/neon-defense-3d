@@ -15,7 +15,7 @@
 - `three` 0.186 (+ `@types/three`), `@react-three/fiber` 9.8, `@react-three/drei` 10.7, `@react-three/postprocessing` 3.1
 - `vite` 8.3 (build/dev), `typescript` 6.0, `vitest` 5 + `@vitest/coverage-v8` 5 (tests), `jsdom` 30
 - `@testing-library/*` (jest-dom v7 — import matchers from `@testing-library/jest-dom/vitest` in the setup file)
-- `playwright` 1.63 for e2e tests and screenshots
+- `playwright` 1.64 for e2e tests and screenshots
 
 ### Tooling compatibility pins
 
