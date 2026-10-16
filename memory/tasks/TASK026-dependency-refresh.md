@@ -2,7 +2,7 @@
 
 **Status:** Completed  
 **Added:** 2026-10-07  
-**Updated:** 2026-10-07
+**Updated:** 2026-10-17
 
 ## Original Request
 
@@ -77,3 +77,20 @@ Notes / follow-ups:
   favour of `THREE.Timer`; the warning is library-side (fiber is already latest) and safe.
 - Revisit ESLint 10 and TypeScript 7 once `eslint-plugin-import`/`eslint-plugin-react`/
   `eslint-plugin-jsx-a11y` support them and `@typescript-eslint` supports TS ≥7.
+
+## Follow-up refresh (2026-10-17)
+
+Re-ran the refresh on `chore/deps-upgrade-2026-10`. All patch/minor updates applied:
+`react`/`react-dom` 19.3.1, `@react-three/fiber` 9.8.2, `@react-three/postprocessing` 3.2.0,
+Radix UI (scroll-area 1.4, separator 1.2, slot 1.5, tooltip 1.4.1), `lucide-react` 1.58.0,
+`vite` 8.3.4, `vitest`/`@vitest/coverage-v8` 5.0.5, `jsdom` 30.1.3, `@playwright/test`/`playwright`
+1.64.1, `prettier` 3.9.10, `@typescript-eslint/*` 8.71.2, `@types/node` 26.6.5, `postcss` 8.5.30,
+`eslint-plugin-prettier` 5.5.7, `@testing-library/user-event` 14.6.8.
+
+Pins re-checked and still blocked: `eslint-plugin-import` 2.32.0, `eslint-plugin-react` 7.37.5 and
+`eslint-plugin-jsx-a11y` 6.10.2 still cap at ESLint 9; `@typescript-eslint` 8.71.2 still requires
+TS `<6.1.0` (TS 7.0.2 is out). `eslint` 9.39.5 / `eslint-plugin-unicorn` 65.0.1 / `typescript` 6.0.3
+remain pinned.
+
+No code changes were needed. format, lint (0 problems), typecheck, test (208), build, e2e
+(1 passed / 1 skipped) all pass; `npm audit` reports 0 vulnerabilities.
