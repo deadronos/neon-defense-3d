@@ -19,7 +19,7 @@ export default defineConfig({
   ],
   webServer: {
     command: 'npm run dev -- --port 3000',
-    port: 5174,
+    port: 3000,
     reuseExistingServer: true,
   },
 });
