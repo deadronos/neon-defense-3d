@@ -1,106 +1,102 @@
 import { useFrame } from '@react-three/fiber';
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import * as THREE from 'three';
 
-import { SynergyType } from '../../types';
+import { SynergyType, type TowerEntity } from '../../types';
 import { useRenderState } from '../gameContexts';
 
 const SYNERGY_COLORS: Record<SynergyType, THREE.Color> = {
-  [SynergyType.SYNCHRONIZED_FIRE]: new THREE.Color('#00f2ff'), // Cyan
-  [SynergyType.TRIANGULATION]: new THREE.Color('#9d00ff'), // Purple
-  [SynergyType.COVER_FIRE_SOURCE]: new THREE.Color('#00ff00'), // Green
-  [SynergyType.COVER_FIRE_RECEIVER]: new THREE.Color('#00ff00'), // Green
+  [SynergyType.SYNCHRONIZED_FIRE]: new THREE.Color('#00f2ff').multiplyScalar(4),
+  [SynergyType.TRIANGULATION]: new THREE.Color('#9d00ff').multiplyScalar(12),
+  [SynergyType.COVER_FIRE_SOURCE]: new THREE.Color('#00ff00').multiplyScalar(4),
+  [SynergyType.COVER_FIRE_RECEIVER]: new THREE.Color('#00ff00').multiplyScalar(4),
 };
 
-export const SynergyLinks: React.FC = () => {
+const sameTopology = (previous: readonly TowerEntity[], towers: readonly TowerEntity[]) =>
+  previous.length === towers.length &&
+  previous.every((tower, index) => {
+    const next = towers[index];
+    return (
+      tower.id === next.id &&
+      tower.position[0] === next.position[0] &&
+      tower.position[2] === next.position[2] &&
+      tower.activeSynergies === next.activeSynergies
+    );
+  });
+
+function updateGeometry(geometry: THREE.BufferGeometry, towers: readonly TowerEntity[]) {
+  const towerMap = new Map(towers.map((tower) => [tower.id, tower]));
+  const processedLinks = new Set<string>();
+  const positions: number[] = [];
+  const colors: number[] = [];
+
+  for (const tower of towers) {
+    if (!tower.activeSynergies) continue;
+
+    for (const synergy of tower.activeSynergies) {
+      const partner = towerMap.get(synergy.partnerId);
+      if (!partner) continue;
+
+      const [first, second] = [tower.id, partner.id].sort();
+      const type =
+        synergy.type === SynergyType.COVER_FIRE_RECEIVER
+          ? SynergyType.COVER_FIRE_SOURCE
+          : synergy.type;
+      const key = JSON.stringify([first, second, type]);
+      if (processedLinks.has(key)) continue;
+      processedLinks.add(key);
+
+      positions.push(
+        tower.position[0],
+        1,
+        tower.position[2],
+        partner.position[0],
+        1,
+        partner.position[2],
+      );
+      const { r, g, b } = SYNERGY_COLORS[type];
+      colors.push(r, g, b, r, g, b);
+    }
+  }
+
+  // Release the existing GPU attributes before replacing them.
+  geometry.dispose();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+  geometry.computeBoundingSphere();
+}
+
+export const SynergyLinks = () => {
   const renderStateRef = useRenderState();
   const geometryRef = useRef<THREE.BufferGeometry>(null);
+  const materialRef = useRef<THREE.LineBasicMaterial>(null);
+  const previousTowersRef = useRef<readonly TowerEntity[]>([]);
 
-  // Create a pool of positions to avoid allocations every frame?
-  // For simplicity, we'll recreate the position attribute if needed,
-  // but since topology changes only on build/sell, we can perhaps optimize.
-  // Visuals pulse, so maybe geometry is static but material changes?
-  // The design says "pulsing cyan laser" etc.
-  // We can use a shader material or just animate colors/opacity.
-  // For MVP: LineSegments with vertex colors.
-
-  // eslint-disable-next-line complexity
   useFrame(({ clock }) => {
-    if (!geometryRef.current) return;
+    const geometry = geometryRef.current;
+    const material = materialRef.current;
+    if (!geometry || !material) return;
 
     const towers = renderStateRef.current.towers;
-    const positions: number[] = [];
-    const colors: number[] = [];
-    const time = clock.getElapsedTime();
-
-    // Map needed to find partner positions
-    const towerMap = new Map<string, (typeof towers)[0]>();
-    for (const t of towers) towerMap.set(t.id, t);
-
-    const processedLinks = new Set<string>();
-
-    for (const tower of towers) {
-      // Tower Position
-      const tPos = tower.position; // [x, y, z] is world pos?
-      // In toTowerEntity: [grid * TILE, 0.5, grid * TILE]
-      // We want lines to be a bit higher, say y=1.0 to clear base meshes.
-      const y = 1.0;
-
-      if (!tower.activeSynergies) continue;
-
-      for (const syn of tower.activeSynergies) {
-        // Unique key for strict undirected graph: sort IDs
-        const ids = [tower.id, syn.partnerId].sort();
-        const linkKey = `${ids[0]}-${ids[1]}-${syn.type}`;
-
-        if (processedLinks.has(linkKey)) continue;
-        processedLinks.add(linkKey);
-
-        const partner = towerMap.get(syn.partnerId);
-        if (!partner) continue;
-
-        // Add line segment
-        // From
-        positions.push(tPos[0], y, tPos[2]);
-        // To
-        positions.push(partner.position[0], y, partner.position[2]);
-
-        // Color
-        // If pulsing, we can mod luminance.
-        const baseColor = SYNERGY_COLORS[syn.type];
-
-        // Pulse logic
-        let intensity = 1.0;
-        if (syn.type === SynergyType.SYNCHRONIZED_FIRE) {
-          intensity = 0.5 + 0.5 * Math.sin(time * 10);
-        } else if (syn.type === SynergyType.TRIANGULATION) {
-          intensity = 0.8 + 0.2 * Math.sin(time * 2);
-        } else {
-          // Flow effect?
-          intensity = 0.5 + 0.5 * Math.sin(time * 3 + tPos[0]);
-        }
-
-        const r = baseColor.r * intensity;
-        const g = baseColor.g * intensity;
-        const b = baseColor.b * intensity;
-
-        // Push colors for both vertices
-        colors.push(r, g, b);
-        colors.push(r, g, b);
-      }
+    const previous = previousTowersRef.current;
+    if (towers !== previous && !sameTopology(previous, towers)) {
+      updateGeometry(geometry, towers);
     }
+    previousTowersRef.current = towers;
 
-    // Update geometry
-    const geo = geometryRef.current;
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    geo.computeBoundingSphere();
+    material.opacity = 0.65 + 0.25 * Math.sin(clock.elapsedTime * 4);
   });
 
   return (
     <lineSegments>
       <bufferGeometry ref={geometryRef} />
-      <lineBasicMaterial vertexColors transparent opacity={0.6} toneMapped={false} linewidth={2} />
+      <lineBasicMaterial
+        ref={materialRef}
+        vertexColors
+        transparent
+        depthWrite={false}
+        toneMapped={false}
+      />
     </lineSegments>
   );
 };

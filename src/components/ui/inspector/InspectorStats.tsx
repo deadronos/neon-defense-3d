@@ -48,7 +48,11 @@ export const InspectorStats: React.FC<InspectorStatsProps> = ({
         <span className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">Rate</span>
         <div className="flex items-baseline gap-1.5">
           <span className="text-xl font-mono text-white">{(1 / current.cooldown).toFixed(1)}</span>
-          <span className="text-xs font-mono text-emerald-400">UP</span>
+          <span className="text-xs font-mono text-emerald-400">
+            {next.cooldown === current.cooldown
+              ? 'MAX'
+              : `+${(1 / next.cooldown - 1 / current.cooldown).toFixed(1)}/s`}
+          </span>
         </div>
       </div>
     </div>

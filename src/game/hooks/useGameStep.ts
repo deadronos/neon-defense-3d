@@ -1,5 +1,4 @@
 import { useCallback, useRef } from 'react';
-import type { MutableRefObject } from 'react';
 
 import { TILE_SIZE } from '../../constants';
 import { UpgradeType } from '../../types';
@@ -14,22 +13,20 @@ import type { buildEnemyTypeMap } from '../transforms';
 type PlaySfx = (id: string) => void;
 
 interface UseGameStepParams {
-  runtimeRef: MutableRefObject<RuntimeStoreState['runtime']>;
+  getRuntime: () => RuntimeStoreState['runtime'];
   renderStateRef: RenderStateStoreState['renderStateRef'];
   dispatch: RuntimeStoreState['dispatch'];
   enginePathWaypoints: readonly EngineVector2[];
   enemyTypeMap: ReturnType<typeof buildEnemyTypeMap>;
-  gameSpeed: number;
   playSFX: PlaySfx;
 }
 
 export const useGameStep = ({
-  runtimeRef,
+  getRuntime,
   renderStateRef,
   dispatch,
   enginePathWaypoints,
   enemyTypeMap,
-  gameSpeed,
   playSFX,
 }: UseGameStepParams) => {
   const engineCacheRef = useRef<EngineCache>({
@@ -50,10 +47,10 @@ export const useGameStep = ({
   const step = useCallback(
     // eslint-disable-next-line complexity
     (deltaSeconds: number, nowSeconds: number) => {
-      const snapshot = runtimeRef.current;
+      const snapshot = getRuntime();
       if (snapshot.ui.gameStatus !== 'playing') return;
 
-      const deltaMs = deltaSeconds * 1000 * gameSpeed;
+      const deltaMs = deltaSeconds * 1000;
       const nowMs = nowSeconds * 1000;
       const greedLevel = snapshot.ui.upgrades[UpgradeType.GLOBAL_GREED] ?? 0;
       const greedMultiplier = 1 + greedLevel * 0.05;
@@ -136,7 +133,7 @@ export const useGameStep = ({
 
       dispatch({ type: 'applyTickResult', result });
     },
-    [dispatch, enemyTypeMap, enginePathWaypoints, gameSpeed, playSFX, renderStateRef, runtimeRef],
+    [dispatch, enemyTypeMap, enginePathWaypoints, getRuntime, playSFX, renderStateRef],
   );
 
   return { step };

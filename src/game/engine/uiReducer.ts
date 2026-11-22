@@ -3,6 +3,8 @@ import type { GraphicsQuality, TowerType } from '../../types';
 
 import type { EngineEvent } from './events';
 
+export const MAX_LIVES = 20;
+
 export interface UiState {
   money: number;
   lives: number;
@@ -60,7 +62,7 @@ export type UiAction =
 
 export const createInitialUiState = (): UiState => ({
   money: 150,
-  lives: 20,
+  lives: MAX_LIVES,
   wave: 1,
   waveStartedNonce: 0,
   lastWaveStartedWave: 0,
@@ -136,7 +138,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       return {
         ...state,
         gameStatus: 'playing',
-        lives: 20,
+        lives: MAX_LIVES,
         money: 150,
         wave: 1,
         waveStartedNonce: 0,
@@ -151,7 +153,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       return {
         ...state,
         gameStatus: 'idle',
-        lives: 20,
+        lives: MAX_LIVES,
         money: 150,
         wave: 1,
         waveStartedNonce: 0,
@@ -170,7 +172,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       };
     case 'startNextSector': {
       const greedLevel = state.upgrades[UpgradeType.GLOBAL_GREED] ?? 0;
-      const startMoney = 150 * (1 + greedLevel * 0.05);
+      const startMoney = Math.floor(150 * (1 + greedLevel * 0.05));
       return {
         ...state,
         currentMapIndex: state.currentMapIndex + 1,
@@ -220,7 +222,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         ...state,
         gameMode: 'ROGUELITE',
         gameStatus: 'playing',
-        lives: 20,
+        lives: MAX_LIVES,
         money: 150, // Keep starting money 150 for fresh run
         wave: 1,
         roguePhase: 1,

@@ -21,10 +21,10 @@
 
 High-severity, user-visible bugs with tight scope and immediate impact. Land regression tests for each fix in the same PR.
 
-- [ ] **#120** — Fix `2x`/`4x` game speed desync breaking tower fire rates (`GameLoop.tsx`, `useGameStep.ts`, `tower.ts`)
-- [ ] **#124** — Fix HUD & Upgrade Inspector display bugs: 1.5× upgrade cost mismatch, `20%` health readout, fractional `$157.5` currency, off-by-one Game Over wave count, hardcoded `"UP"` fire-rate delta (`InspectorActions.tsx`, `InspectorStats.tsx`, `TopBar.tsx`, `GameOverScreen.tsx`, `uiReducer.ts`)
-- [ ] **#128** — Fix invisible `SynergyLinks`, missing synergy range ring, and per-frame buffer allocations (`renderStateUtils.ts`, `SynergyLinks.tsx`, `InstancedTowers.tsx`)
-- [ ] **#133** — Fix `DynamicResScaler` inability to recover DPR on 60 Hz displays (`dprTuning.ts`, `DynamicResScaler.tsx`)
+- [x] **#120** — Fix `2x`/`4x` game speed desync breaking tower fire rates (`GameLoop.tsx`, `useGameStep.ts`, `tower.ts`)
+- [x] **#124** — Fix HUD & Upgrade Inspector display bugs: 1.5× upgrade cost mismatch, `20%` health readout, fractional `$157.5` currency, off-by-one Game Over wave count, hardcoded `"UP"` fire-rate delta (`InspectorActions.tsx`, `InspectorStats.tsx`, `TopBar.tsx`, `GameOverScreen.tsx`, `uiReducer.ts`)
+- [x] **#128** — Fix invisible `SynergyLinks`, missing synergy range ring, and per-frame buffer allocations (`renderStateUtils.ts`, `SynergyLinks.tsx`, `InstancedTowers.tsx`)
+- [x] **#133** — Fix `DynamicResScaler` inability to recover DPR on 60 Hz displays (`dprTuning.ts`, `DynamicResScaler.tsx`)
 
 **Suggested PR split:**
 

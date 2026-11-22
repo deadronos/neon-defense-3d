@@ -28,36 +28,32 @@ describe('DynamicResScaler', () => {
     nowSpy.mockRestore();
   });
 
-  it('decreases DPR on low FPS and increases back on high FPS', async () => {
+  it('recovers at 60 Hz only after sustained healthy samples', () => {
     render(<DynamicResScaler />);
-
-    await waitFor(() => {
-      expect(setDpr).toHaveBeenCalled();
-    });
-
     const initialDpr = setDpr.mock.calls[0]?.[0] ?? 1;
 
     now = 1000;
-    act(() => {
-      frameCallback?.();
-    });
-    const afterLowFps = setDpr.mock.calls.at(-1)?.[0] ?? initialDpr;
-    expect(afterLowFps).toBeCloseTo(initialDpr - 0.1, 5);
+    act(() => frameCallback?.());
+    expect(setDpr).toHaveBeenLastCalledWith(initialDpr - 0.1);
 
-    for (let i = 0; i < 39; i += 1) {
-      now = 1400;
+    const runFrames = (fps: number, seconds: number) => {
       act(() => {
-        frameCallback?.();
+        for (let i = 0; i < fps * seconds; i += 1) {
+          now += 1000 / fps;
+          frameCallback?.();
+        }
       });
-    }
+    };
 
-    now = 1500;
-    act(() => {
-      frameCallback?.();
-    });
-
-    const afterHighFps = setDpr.mock.calls.at(-1)?.[0] ?? initialDpr;
-    expect(afterHighFps).toBeCloseTo(initialDpr, 5);
+    runFrames(56, 2);
+    expect(setDpr).toHaveBeenCalledTimes(2);
+    runFrames(60, 0.5);
+    expect(setDpr).toHaveBeenCalledTimes(2);
+    runFrames(56, 2);
+    expect(setDpr).toHaveBeenCalledTimes(2);
+    runFrames(60, 3);
+    expect(setDpr).toHaveBeenLastCalledWith(initialDpr);
+    expect(setDpr).toHaveBeenCalledTimes(3);
   });
 
   it('clamps DPR to the minimum bound under sustained low FPS', async () => {

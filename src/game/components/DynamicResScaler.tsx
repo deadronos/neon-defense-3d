@@ -13,12 +13,14 @@ const TUNING: DprTuning = {
 };
 const CHECK_INTERVAL_MS = 500;
 const MIN_SAMPLES_BEFORE_DPR = 2;
+const RECOVERY_CHECKS = 3;
 
 export const DynamicResScaler = () => {
   const setDpr = useThree((state) => state.setDpr);
   const stats = useFrameStats({ windowMs: 1000 });
   const dprRef = useRef(TUNING.maxDpr);
   const lastCheckRef = useRef(0);
+  const recoveryChecksRef = useRef(0);
 
   useEffect(() => {
     const start = performance.now();
@@ -32,10 +34,16 @@ export const DynamicResScaler = () => {
     stats.recordFrame(now);
     if (now - lastCheckRef.current < CHECK_INTERVAL_MS) return;
     lastCheckRef.current = now;
-    if (stats.sampleCount < MIN_SAMPLES_BEFORE_DPR) return;
+    if (stats.sampleCount < MIN_SAMPLES_BEFORE_DPR) {
+      recoveryChecksRef.current = 0;
+      return;
+    }
 
     const next = computeNextDpr(dprRef.current, stats.fps, TUNING);
+    recoveryChecksRef.current = next > dprRef.current ? recoveryChecksRef.current + 1 : 0;
+    if (next > dprRef.current && recoveryChecksRef.current < RECOVERY_CHECKS) return;
     if (next !== dprRef.current) {
+      recoveryChecksRef.current = 0;
       dprRef.current = next;
       setDpr(next);
     }

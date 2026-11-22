@@ -18,7 +18,7 @@ export const computeNextDpr = (currentDpr: number, fps: number, tuning: DprTunin
   if (fps < tuning.targetFps - tuning.fpsTolerance) {
     return Math.max(tuning.minDpr, currentDpr - tuning.step);
   }
-  if (fps > tuning.targetFps + tuning.fpsTolerance) {
+  if (fps >= tuning.targetFps - 2) {
     return Math.min(tuning.maxDpr, currentDpr + tuning.step);
   }
   return currentDpr;

@@ -39,11 +39,11 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
     }
   }, [isConfirmingSell]);
 
-  const nextStats = getTowerStats(selectedTowerEntity.type, selectedTowerEntity.level + 1, {
+  const currentStats = getTowerStats(selectedTowerEntity.type, selectedTowerEntity.level, {
     upgrades,
     activeSynergies: selectedTowerEntity.activeSynergies,
   });
-  const canAfford = money >= nextStats.upgradeCost;
+  const canAfford = money >= currentStats.upgradeCost;
   const refund = calculateTowerRefundValue(selectedTowerEntity.type, selectedTowerEntity.level);
 
   return (
@@ -70,7 +70,7 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
           variant="secondary"
           className={`mt-0.5 h-4 text-[10px] font-mono ${canAfford ? 'text-cyan-300 bg-cyan-950' : 'text-zinc-500 bg-zinc-900'}`}
         >
-          ${nextStats.upgradeCost}
+          ${currentStats.upgradeCost}
         </Badge>
       </Button>
 

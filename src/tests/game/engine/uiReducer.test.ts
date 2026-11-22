@@ -53,7 +53,7 @@ describe('engine uiReducer', () => {
       ...createInitialUiState(),
       gameStatus: 'victory' as const,
       currentMapIndex: 0,
-      upgrades: { [UpgradeType.GLOBAL_GREED]: 2 },
+      upgrades: { [UpgradeType.GLOBAL_GREED]: 1 },
       selectedEntityId: 't1',
       selectedTower: TowerType.Basic,
     };
@@ -62,7 +62,7 @@ describe('engine uiReducer', () => {
     expect(next.gameStatus).toBe('playing');
     expect(next.currentMapIndex).toBe(1);
     expect(next.wave).toBe(1);
-    expect(next.money).toBeCloseTo(150 * 1.1);
+    expect(next.money).toBe(157);
     expect(next.totalDamageDealt).toBe(0);
     expect(next.totalCurrencyEarned).toBe(0);
     expect(next.selectedEntityId).toBeNull();

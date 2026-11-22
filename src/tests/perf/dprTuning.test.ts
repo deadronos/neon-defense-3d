@@ -12,9 +12,8 @@ const TUNING: DprTuning = {
 
 describe('computeNextDpr', () => {
   it('returns currentDpr unchanged when fps is inside the band', () => {
-    expect(computeNextDpr(1, 60, TUNING)).toBe(1);
-    expect(computeNextDpr(1, 62, TUNING)).toBe(1);
-    expect(computeNextDpr(1, 58, TUNING)).toBe(1);
+    expect(computeNextDpr(1, 55, TUNING)).toBe(1);
+    expect(computeNextDpr(1, 57, TUNING)).toBe(1);
   });
 
   it('decreases dpr by step when fps is below target - tolerance', () => {
@@ -22,8 +21,8 @@ describe('computeNextDpr', () => {
     expect(computeNextDpr(0.6, 0, TUNING)).toBeCloseTo(0.5, 10);
   });
 
-  it('increases dpr by step when fps is above target + tolerance', () => {
-    expect(computeNextDpr(1.0, 90, TUNING)).toBeCloseTo(1.1, 10);
+  it('increases dpr by step when fps reaches the recovery threshold', () => {
+    expect(computeNextDpr(1.0, 60, TUNING)).toBeCloseTo(1.1, 10);
     expect(computeNextDpr(1.9, 240, TUNING)).toBeCloseTo(2.0, 10);
   });
 
