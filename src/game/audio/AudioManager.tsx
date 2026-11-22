@@ -1,23 +1,53 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { AudioManagerContext, type AudioContextValue } from './audioContext';
-import { synth } from './Synth';
+import { DEFAULT_VOLUMES, synth } from './Synth';
 
 const playSFX = (name: string) => {
   synth.playSFX(name);
 };
 
+const VOLUME_STORAGE_KEY = 'neon-defense:audio-volumes';
+type VolumeName = keyof typeof DEFAULT_VOLUMES;
+
+function clampVolume(value: unknown, fallback: number) {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? Math.min(1, Math.max(0, value))
+    : fallback;
+}
+
+function readVolume(name: VolumeName) {
+  const fallback = DEFAULT_VOLUMES[name];
+  try {
+    const stored = localStorage.getItem(VOLUME_STORAGE_KEY);
+    const volumes = stored
+      ? (JSON.parse(stored) as Partial<Record<VolumeName, unknown>> | null)
+      : null;
+    return clampVolume(volumes?.[name], fallback);
+  } catch {
+    return fallback;
+  }
+}
+
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [masterVolume, setMasterVolumeState] = useState(0.5);
-  const [sfxVolume, setSfxVolumeState] = useState(1.0);
-  const [musicVolume, setMusicVolumeState] = useState(0.3);
+  const [masterVolume, setMasterVolumeState] = useState(() => readVolume('masterVolume'));
+  const [sfxVolume, setSfxVolumeState] = useState(() => readVolume('sfxVolume'));
+  const [musicVolume, setMusicVolumeState] = useState(() => readVolume('musicVolume'));
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
 
-  // Initialize synth volumes
+  // Apply and persist the current volume settings.
   useEffect(() => {
     synth.setMasterVolume(masterVolume);
     synth.setSFXVolume(sfxVolume);
     synth.setMusicVolume(musicVolume);
+    try {
+      localStorage.setItem(
+        VOLUME_STORAGE_KEY,
+        JSON.stringify({ masterVolume, sfxVolume, musicVolume }),
+      );
+    } catch {
+      // Storage can be unavailable in restricted browser contexts.
+    }
   }, [masterVolume, sfxVolume, musicVolume]);
 
   const toggleMusic = useCallback(() => {
@@ -47,9 +77,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [isMusicPlaying]);
 
   const setMasterVolume = useCallback((val: number) => {
-    setMasterVolumeState(val);
+    const volume = clampVolume(val, DEFAULT_VOLUMES.masterVolume);
+    setMasterVolumeState(volume);
     try {
-      synth.setMasterVolume(val);
+      synth.setMasterVolume(volume);
     } catch (err) {
       // Non-fatal: log and continue
 
@@ -58,18 +89,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const setSFXVolume = useCallback((val: number) => {
-    setSfxVolumeState(val);
+    const volume = clampVolume(val, DEFAULT_VOLUMES.sfxVolume);
+    setSfxVolumeState(volume);
     try {
-      synth.setSFXVolume(val);
+      synth.setSFXVolume(volume);
     } catch (err) {
       console.warn('AudioManager: setSFXVolume failed', err);
     }
   }, []);
 
   const setMusicVolume = useCallback((val: number) => {
-    setMusicVolumeState(val);
+    const volume = clampVolume(val, DEFAULT_VOLUMES.musicVolume);
+    setMusicVolumeState(volume);
     try {
-      synth.setMusicVolume(val);
+      synth.setMusicVolume(volume);
     } catch (err) {
       console.warn('AudioManager: setMusicVolume failed', err);
     }

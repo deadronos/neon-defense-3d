@@ -6,9 +6,11 @@ import { useGame } from '../../game/gameContexts';
 import { GameProvider } from '../../game/GameState';
 import { TowerType } from '../../types';
 
+const { playSFX } = vi.hoisted(() => ({ playSFX: vi.fn() }));
+
 vi.mock('../../game/audio/useAudio', () => ({
   useAudio: () => ({
-    playSFX: vi.fn(),
+    playSFX,
   }),
 }));
 
@@ -145,12 +147,16 @@ describe('GameProvider (engine-backed)', () => {
 
     act(() => {
       result.current.startGame();
+      result.current.setSelectedTower(TowerType.Sniper);
     });
 
+    playSFX.mockClear();
     act(() => {
-      result.current.placeTower(2, 0, TowerType.Sniper);
+      result.current.placeTower(0, 0, TowerType.Sniper);
     });
 
+    expect(playSFX.mock.calls).toEqual([['error']]);
+    expect(result.current.selectedTower).toBe(TowerType.Sniper);
     expect(result.current.towers).toHaveLength(0);
     expect(result.current.gameState.money).toBe(150);
   });

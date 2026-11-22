@@ -7,17 +7,20 @@ export interface ArpSchedulerOptions {
   schedulerIntervalMs: number;
 }
 
+type ScheduledParam = Pick<AudioParam, 'value'> &
+  Partial<Pick<AudioParam, 'setValueAtTime' | 'linearRampToValueAtTime'>>;
+
 interface OscLike {
   start(): void;
   stop(): void;
   connect(node: unknown): void;
   disconnect(): void;
-  frequency: { value: number };
+  frequency: ScheduledParam;
   type: string;
 }
 
 interface EnvLike {
-  gain: { value: number };
+  gain: ScheduledParam;
   connect(node: unknown): void;
   disconnect(): void;
 }
@@ -95,12 +98,29 @@ export class SynthArpScheduler {
   }
 
   private scheduleAhead(): void {
-    const { lookaheadSec, intervalSec, notes, peakGain } = this.options;
-    const horizon = this.ctx.currentTime + lookaheadSec;
+    const { lookaheadSec, intervalSec, notes, peakGain, noteDurationSec } = this.options;
+    const now = this.ctx.currentTime;
+    const horizon = now + lookaheadSec;
+    if (this.nextNoteTime < now) {
+      this.noteIndex += Math.floor((now - this.nextNoteTime) / intervalSec);
+      this.nextNoteTime = now;
+    }
+    const duration = Math.min(noteDurationSec, intervalSec);
     while (this.nextNoteTime < horizon) {
       const note = notes[this.noteIndex % notes.length] ?? 0;
-      this.osc.frequency.value = note;
-      this.env.gain.value = peakGain;
+      const time = this.nextNoteTime;
+      const frequency = this.osc.frequency;
+      const gain = this.env.gain;
+      if (frequency.setValueAtTime) frequency.setValueAtTime(note, time);
+      else frequency.value = note;
+
+      if (gain.setValueAtTime && gain.linearRampToValueAtTime) {
+        gain.setValueAtTime(0, time);
+        gain.linearRampToValueAtTime(peakGain, time + Math.min(0.005, duration / 2));
+        gain.linearRampToValueAtTime(0, time + duration);
+      } else {
+        gain.value = peakGain;
+      }
       this.nextNoteTime += intervalSec;
       this.noteIndex += 1;
     }
