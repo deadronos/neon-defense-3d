@@ -2,6 +2,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 /* eslint-disable max-lines-per-function */
 
+import { INITIAL_MAP_LAYOUT } from '../../constants';
 import { useGame } from '../../game/gameContexts';
 import { GameProvider } from '../../game/GameState';
 import { TowerType } from '../../types';
@@ -116,6 +117,7 @@ describe('GameProvider (engine-backed)', () => {
 
     act(() => {
       result.current.startRogueliteRun('seed-1');
+      result.current.setCustomMapLayout(INITIAL_MAP_LAYOUT);
     });
 
     act(() => {

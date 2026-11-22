@@ -10,6 +10,10 @@ export interface SaveV1 {
   settings?: { quality?: Quality };
   ui: {
     currentMapIndex: number;
+    gameMode?: 'CLASSIC' | 'ROGUELITE';
+    roguePhase?: number;
+    customMapSeed?: string | null;
+    customMapLayout?: number[][] | null;
     money: number;
     lives: number;
     totalEarned: number;

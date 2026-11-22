@@ -48,7 +48,13 @@ export const useGameStep = ({
     // eslint-disable-next-line complexity
     (deltaSeconds: number, nowSeconds: number) => {
       const snapshot = getRuntime();
-      if (snapshot.ui.gameStatus !== 'playing') return;
+      const { ui } = snapshot;
+      if (ui.gameStatus !== 'playing') return;
+      if (
+        ui.gameMode === 'ROGUELITE' &&
+        (ui.roguePhaseCompleted || (ui.customMapSeed !== null && !ui.customMapLayout))
+      )
+        return;
 
       const deltaMs = deltaSeconds * 1000;
       const nowMs = nowSeconds * 1000;
@@ -59,7 +65,12 @@ export const useGameStep = ({
         snapshot.engine,
         enginePathWaypoints,
         { deltaMs, nowMs, rng: Math.random },
-        { tileSize: TILE_SIZE, greedMultiplier, upgrades: snapshot.ui.upgrades },
+        {
+          tileSize: TILE_SIZE,
+          greedMultiplier,
+          upgrades: ui.upgrades,
+          roguePhase: ui.gameMode === 'ROGUELITE' ? ui.roguePhase : undefined,
+        },
         engineCacheRef.current,
       );
 

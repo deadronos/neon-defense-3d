@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import type { ReactNode } from 'react';
 
 import type { GameState } from '../types';
@@ -28,8 +28,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     setGameSpeed,
   } = useGameStores();
 
-  const lastAutosavedNonceRef = useRef<number>(-1);
-  useAutosaveCheckpoint(ui, getRuntime, lastAutosavedNonceRef);
+  useAutosaveCheckpoint(ui, getRuntime);
 
   const { enemyTypeMap, mapGrid, pathWaypoints, enginePathWaypoints } = useGameMap(ui);
   const towers = useMemo(() => hudTowers.map(toTowerEntity), [hudTowers]);
@@ -63,7 +62,6 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     mapGrid,
     enemyTypeMap,
     playSFX,
-    lastAutosavedNonceRef,
   });
 
   const { step } = useGameStep({

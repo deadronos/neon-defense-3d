@@ -67,8 +67,8 @@ export const generatePath = (mapLayout: number[][]): Vector2[] => {
   let end: Vector2 | null = null;
 
   // Find start and end points
-  for (let z = 0; z < MAP_HEIGHT; z++) {
-    for (let x = 0; x < MAP_WIDTH; x++) {
+  for (let z = 0; z < mapLayout.length; z++) {
+    for (let x = 0; x < mapLayout[z].length; x++) {
       if (mapLayout[z][x] === 2) start = [x, z];
       if (mapLayout[z][x] === 3) end = [x, z];
     }
@@ -98,7 +98,7 @@ export const generatePath = (mapLayout: number[][]): Vector2[] => {
     ];
 
     for (const [nx, nz] of neighbors) {
-      if (nx >= 0 && nx < MAP_WIDTH && nz >= 0 && nz < MAP_HEIGHT) {
+      if (nz >= 0 && nz < mapLayout.length && nx >= 0 && nx < mapLayout[nz].length) {
         const type = mapLayout[nz][nx];
         const key = gridKey(nx, nz);
 

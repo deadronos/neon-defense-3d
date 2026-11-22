@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
-import type { MutableRefObject } from 'react';
 
 import { MAP_LAYOUTS, TILE_SIZE, generatePath } from '../../constants';
 import type { GraphicsQuality, TowerType, UpgradeType } from '../../types';
 import { TileType } from '../../types';
 import { gridKey } from '../../utils/gridKey';
+import { createInitialEngineState } from '../engine/state';
+import { uiReducer } from '../engine/uiReducer';
 import {
   buildRuntimeFromCheckpoint,
   clearCheckpoint,
@@ -27,7 +28,6 @@ interface UseGameActionsParams {
   mapGrid: TileType[][];
   enemyTypeMap: ReturnType<typeof buildEnemyTypeMap>;
   playSFX: PlaySfx;
-  lastAutosavedNonceRef: MutableRefObject<number>;
 }
 
 // eslint-disable-next-line max-lines-per-function
@@ -38,7 +38,6 @@ export const useGameActions = ({
   mapGrid,
   enemyTypeMap,
   playSFX,
-  lastAutosavedNonceRef,
 }: UseGameActionsParams) => {
   const isValidPlacement = useCallback(
     (x: number, z: number) => {
@@ -56,7 +55,9 @@ export const useGameActions = ({
 
   const placeTower = useCallback(
     (x: number, z: number, type: TowerType) => {
-      if (getRuntime().ui.gameStatus !== 'playing') return;
+      const { ui } = getRuntime();
+      if (ui.gameStatus !== 'playing') return;
+      if (ui.currentMapIndex < 0 && !ui.customMapLayout) return;
       if (!isValidPlacement(x, z)) {
         playSFX('error');
         return;
@@ -114,13 +115,14 @@ export const useGameActions = ({
     (save: SaveV1) => {
       const snapshot = getRuntime();
       const next = buildRuntimeFromCheckpoint(save, snapshot.ui);
-      // Reset autosave tracking so wave 1 (or any future wave) can autosave again after restore.
-      lastAutosavedNonceRef.current = -1;
       dispatch({ type: 'setRuntimeState', engine: next.engine, ui: next.ui });
 
       // Immediately sync render state so gridOccupancy is up-to-date for placement checks.
       // Without this, tower hover/placement would be broken until the first game tick.
-      const nextMapLayout = MAP_LAYOUTS[next.ui.currentMapIndex % MAP_LAYOUTS.length];
+      const nextMapLayout =
+        next.ui.currentMapIndex < 0
+          ? (next.ui.customMapLayout ?? MAP_LAYOUTS[0])
+          : MAP_LAYOUTS[next.ui.currentMapIndex % MAP_LAYOUTS.length];
       const nextPathWaypoints = generatePath(nextMapLayout);
       syncRenderState(next.engine, renderStateRef.current, {
         enemyTypeMap,
@@ -128,7 +130,7 @@ export const useGameActions = ({
         tileSize: TILE_SIZE,
       });
     },
-    [dispatch, enemyTypeMap, lastAutosavedNonceRef, renderStateRef, getRuntime],
+    [dispatch, enemyTypeMap, renderStateRef, getRuntime],
   );
 
   const resetCheckpoint = useCallback((): { ok: boolean; error?: string } => {
@@ -209,21 +211,30 @@ export const useGameActions = ({
   );
 
   const nextRoguePhase = useCallback(
-    (seed: string) => {
-      const towers = getRuntime().engine.towers;
+    (seed: string, layout?: number[][]) => {
+      const { engine, ui } = getRuntime();
+      const towers = engine.towers;
       let refund = 0;
       for (const t of towers) {
         refund += calculateTowerRefundValue(t.type as TowerType, t.level);
       }
 
-      if (refund > 0) {
-        dispatch({ type: 'uiAction', action: { type: 'grantMoney', amount: refund } });
-      }
-
-      dispatch({ type: 'uiAction', action: { type: 'nextRoguePhase', seed } });
-      dispatch({ type: 'resetEngine' });
+      const nextEngine = createInitialEngineState();
+      dispatch({
+        type: 'setRuntimeState',
+        engine: nextEngine,
+        ui: uiReducer(
+          { ...ui, money: ui.money + refund },
+          { type: 'nextRoguePhase', seed, layout: layout ?? null },
+        ),
+      });
+      syncRenderState(nextEngine, renderStateRef.current, {
+        enemyTypeMap,
+        pathWaypoints: generatePath(layout ?? MAP_LAYOUTS[0]),
+        tileSize: TILE_SIZE,
+      });
     },
-    [dispatch, getRuntime],
+    [dispatch, enemyTypeMap, getRuntime, renderStateRef],
   );
 
   const clearAnnouncement = useCallback(() => {

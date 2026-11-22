@@ -1,4 +1,47 @@
+import { MAP_HEIGHT, MAP_WIDTH, generatePath } from '../../constants';
+import { TileType } from '../../types';
+
+import type { SaveV1 } from './types';
 import { isRecord } from './utils';
+
+type MapMetadata = Pick<
+  SaveV1['ui'],
+  'gameMode' | 'roguePhase' | 'customMapSeed' | 'customMapLayout'
+>;
+
+const isMapLayout = (layout: unknown): layout is number[][] => {
+  if (!Array.isArray(layout) || layout.length !== MAP_HEIGHT) return false;
+  const tiles = new Set<unknown>(Object.values(TileType));
+  if (
+    !Array.from(layout).every(
+      (row: unknown) =>
+        Array.isArray(row) &&
+        row.length === MAP_WIDTH &&
+        Array.from(row).every((tile) => tiles.has(tile)),
+    )
+  )
+    return false;
+  const map = layout as number[][];
+  const cells = map.flat();
+  return (
+    cells.filter((tile) => tile === TileType.Spawn).length === 1 &&
+    cells.filter((tile) => tile === TileType.Base).length === 1 &&
+    generatePath(map).length > 0
+  );
+};
+
+export const hasValidMapMetadata = (
+  ui: Record<string, unknown>,
+): ui is Record<string, unknown> & MapMetadata => {
+  const { gameMode, roguePhase, customMapSeed, customMapLayout } = ui;
+  return (
+    (gameMode === undefined || gameMode === 'CLASSIC' || gameMode === 'ROGUELITE') &&
+    (roguePhase === undefined ||
+      (typeof roguePhase === 'number' && Number.isSafeInteger(roguePhase) && roguePhase >= 1)) &&
+    (customMapSeed == null || typeof customMapSeed === 'string') &&
+    (customMapLayout == null || isMapLayout(customMapLayout))
+  );
+};
 
 // eslint-disable-next-line complexity
 const validateUi = (ui: Record<string, unknown>, errors: string[]) => {
@@ -6,10 +49,12 @@ const validateUi = (ui: Record<string, unknown>, errors: string[]) => {
   if (
     typeof currentMapIndex !== 'number' ||
     !Number.isInteger(currentMapIndex) ||
-    currentMapIndex < 0
+    (currentMapIndex < 0 && !(currentMapIndex === -1 && ui.gameMode === 'ROGUELITE'))
   ) {
-    errors.push('ui.currentMapIndex must be an integer >= 0.');
+    errors.push('ui.currentMapIndex must be a nonnegative integer or -1 for Roguelite.');
   }
+
+  if (!hasValidMapMetadata(ui)) errors.push('Invalid procedural map metadata.');
 
   const money = ui.money;
   if (typeof money !== 'number' || !Number.isInteger(money) || money < 0) {

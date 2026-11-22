@@ -48,7 +48,7 @@ export interface GameContextProps {
   skipWave: () => void;
   // Roguelite features
   startRogueliteRun: (seed: string) => void;
-  nextRoguePhase: (seed: string) => void;
+  nextRoguePhase: (seed: string, layout?: number[][]) => void;
   setCustomMapLayout: (layout: number[][]) => void;
   gameSpeed: number;
   setGameSpeed: (speed: number) => void;
