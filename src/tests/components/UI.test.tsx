@@ -3,10 +3,10 @@ import userEvent from '@testing-library/user-event';
 import React from 'react';
 import { describe, it, vi } from 'vitest';
 
-// Mock the useGame hook to simulate victory flow
+// Mock the useGameUi hook to simulate victory flow
 vi.mock('../../game/gameContexts', () => {
   return {
-    useGame: () => ({
+    useGameUi: () => ({
       gameState: {
         gameStatus: 'victory',
         researchPoints: 5,
@@ -56,6 +56,6 @@ describe('UI component (victory flow)', () => {
     await user.click(actionBtn);
 
     // startNextSector is a mock that should be callable - we can assert the button exists and is clickable.
-    // The useGame mock returns a jest fn, but we don't have a handle here—ensuring no errors occurred is acceptable.
+    // The useGameUi mock returns a jest fn, but we don't have a handle here—ensuring no errors occurred is acceptable.
   });
 });

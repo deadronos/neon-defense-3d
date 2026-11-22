@@ -21,7 +21,7 @@ import { calculateTowerRefundValue, getTowerStats } from '../utils';
 type PlaySfx = (id: string) => void;
 
 interface UseGameActionsParams {
-  runtimeRef: MutableRefObject<RuntimeStoreState['runtime']>;
+  getRuntime: () => RuntimeStoreState['runtime'];
   dispatch: RuntimeStoreState['dispatch'];
   renderStateRef: RenderStateStoreState['renderStateRef'];
   mapGrid: TileType[][];
@@ -32,7 +32,7 @@ interface UseGameActionsParams {
 
 // eslint-disable-next-line max-lines-per-function
 export const useGameActions = ({
-  runtimeRef,
+  getRuntime,
   dispatch,
   renderStateRef,
   mapGrid,
@@ -56,7 +56,7 @@ export const useGameActions = ({
 
   const placeTower = useCallback(
     (x: number, z: number, type: TowerType) => {
-      if (runtimeRef.current.ui.gameStatus !== 'playing') return;
+      if (getRuntime().ui.gameStatus !== 'playing') return;
       if (!isValidPlacement(x, z)) {
         playSFX('error');
         return;
@@ -65,14 +65,14 @@ export const useGameActions = ({
       dispatch({ type: 'placeTower', x, z, towerType: type });
       dispatch({ type: 'uiAction', action: { type: 'setSelectedTower', tower: null } });
     },
-    [dispatch, isValidPlacement, playSFX, runtimeRef],
+    [dispatch, isValidPlacement, playSFX, getRuntime],
   );
 
   const upgradeTower = useCallback(
     (id: string) => {
       // Check if affordable? Logic is in reducer.
       // We'll optimistically play sound or check state here.
-      const state = runtimeRef.current;
+      const state = getRuntime();
       const tower = state.engine.towers.find((t) => t.id === id);
       if (tower) {
         const stats = getTowerStats(tower.type as TowerType, tower.level, {
@@ -87,7 +87,7 @@ export const useGameActions = ({
       }
       dispatch({ type: 'upgradeTower', id });
     },
-    [dispatch, playSFX, runtimeRef],
+    [dispatch, playSFX, getRuntime],
   );
 
   const sellTower = useCallback(
@@ -112,7 +112,7 @@ export const useGameActions = ({
 
   const applyCheckpointSave = useCallback(
     (save: SaveV1) => {
-      const snapshot = runtimeRef.current;
+      const snapshot = getRuntime();
       const next = buildRuntimeFromCheckpoint(save, snapshot.ui);
       // Reset autosave tracking so wave 1 (or any future wave) can autosave again after restore.
       lastAutosavedNonceRef.current = -1;
@@ -128,7 +128,7 @@ export const useGameActions = ({
         tileSize: TILE_SIZE,
       });
     },
-    [dispatch, enemyTypeMap, lastAutosavedNonceRef, renderStateRef, runtimeRef],
+    [dispatch, enemyTypeMap, lastAutosavedNonceRef, renderStateRef, getRuntime],
   );
 
   const resetCheckpoint = useCallback((): { ok: boolean; error?: string } => {
@@ -146,10 +146,10 @@ export const useGameActions = ({
   const exportCheckpointJson = useCallback((): { json: string; hasCheckpoint: boolean } => {
     const checkpoint = loadCheckpoint();
     if (checkpoint) return { json: JSON.stringify(checkpoint, null, 2), hasCheckpoint: true };
-    const snapshot = runtimeRef.current;
+    const snapshot = getRuntime();
     const live = serializeCheckpoint(snapshot.ui, snapshot.engine);
     return { json: JSON.stringify(live, null, 2), hasCheckpoint: false };
-  }, [runtimeRef]);
+  }, [getRuntime]);
 
   const startNextSector = useCallback(() => {
     dispatch({ type: 'uiAction', action: { type: 'startNextSector' } });
@@ -192,8 +192,12 @@ export const useGameActions = ({
   );
 
   const removeEffect = useCallback(
-    (id: string) => dispatch({ type: 'removeEffect', effectId: id }),
-    [dispatch],
+    (id: string) => {
+      dispatch({ type: 'removeEffect', effectId: id });
+      const renderState = renderStateRef.current;
+      renderState.effects = renderState.effects.filter((effect) => effect.id !== id);
+    },
+    [dispatch, renderStateRef],
   );
 
   const startRogueliteRun = useCallback(
@@ -206,7 +210,7 @@ export const useGameActions = ({
 
   const nextRoguePhase = useCallback(
     (seed: string) => {
-      const towers = runtimeRef.current.engine.towers;
+      const towers = getRuntime().engine.towers;
       let refund = 0;
       for (const t of towers) {
         refund += calculateTowerRefundValue(t.type as TowerType, t.level);
@@ -219,7 +223,7 @@ export const useGameActions = ({
       dispatch({ type: 'uiAction', action: { type: 'nextRoguePhase', seed } });
       dispatch({ type: 'resetEngine' });
     },
-    [dispatch, runtimeRef],
+    [dispatch, getRuntime],
   );
 
   const clearAnnouncement = useCallback(() => {

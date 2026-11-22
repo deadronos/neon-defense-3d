@@ -82,6 +82,21 @@ describe('stepTowers targetPositionPool', () => {
     expect(cache.targetPositionPool).toHaveLength(0);
   });
 
+  it('draws just one tuple when several candidates successively improve targeting', () => {
+    const enemies = [makeEnemy('far', 0, 0), makeEnemy('near', 0, 0.5), makeEnemy('closest', 1, 0)];
+    const cache = makeCache();
+    cache.targetPositionPool.push([0, 0, 0], [0, 0, 0], [0, 0, 0]);
+    const result = stepTowers(
+      makeState(enemies, [makeTower('t1', 'Basic')]),
+      path,
+      makeContext(),
+      {},
+      cache,
+    );
+    expect(result.patch.projectiles?.[0]?.targetId).toBe('closest');
+    expect(cache.targetPositionPool).toHaveLength(2);
+  });
+
   it('allocates a new tuple when the pool is empty', () => {
     const enemy = makeEnemy('e1', 0, 0.5);
     const tower = makeTower('t1', 'Basic');

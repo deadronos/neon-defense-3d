@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { useRef, useMemo } from 'react';
+import { useCallback, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
 import { useRenderState } from '../../gameContexts';
@@ -35,19 +35,17 @@ export const useInstancedUpdater = <T>(
   const renderStateRef = useRenderState();
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
-  const meshRefs = useRef<Record<string, THREE.InstancedMesh | null>>({});
-
-  // Initialize refs
-  if (Object.keys(meshRefs.current).length === 0) {
-    for (const key of meshKeys) {
-      meshRefs.current[key] = null;
-    }
-  }
-
-  // Helper to set ref
-  const setMeshRef = (key: string) => (mesh: THREE.InstancedMesh | null) => {
-    meshRefs.current[key] = mesh;
-  };
+  const meshRefs = useRef<Record<string, THREE.InstancedMesh | undefined>>({});
+  const callbacks = useRef<Record<string, (mesh: THREE.InstancedMesh | null) => void>>({});
+  const setMeshRef = useCallback((key: string) => {
+    callbacks.current[key] ??= (mesh) => {
+      meshRefs.current[key] = mesh ?? undefined;
+      if (!mesh) return;
+      ensureInstanceColor(mesh, mesh.instanceMatrix.count);
+      mesh.count = 0;
+    };
+    return callbacks.current[key];
+  }, []);
 
   useFrame(({ clock }) => {
     const renderState = renderStateRef.current;
@@ -57,43 +55,21 @@ export const useInstancedUpdater = <T>(
 
     const renderCount = Math.min(entities.length, count);
 
-    // Prepare meshes
-    const prepareMeshes = () => {
-      for (const key of meshKeys) {
-        const mesh = meshRefs.current[key];
-        if (mesh) {
-          ensureInstanceColor(mesh, count);
-          mesh.count = renderCount;
-        }
-      }
-    };
-    prepareMeshes();
-
-    // Update loop
-    for (let i = 0; i < renderCount; i++) {
-      const entity = entities[i];
-      // We pass the map of meshes (filtered for nulls? No, logic inside updateInstance should handle it or we cast)
-      // Actually, cleaner to pass the map of refs or values.
-      // Let's pass the map where keys are strings and values are the meshes.
-      // But typescript needs to know they are InstancedMesh.
-
-      const activeMeshes: Record<string, THREE.InstancedMesh | undefined> = {};
-      let hasMesh = false;
-      for (const key of meshKeys) {
-        if (meshRefs.current[key]) {
-          activeMeshes[key] = meshRefs.current[key]!;
-          hasMesh = true;
-        }
-      }
-
-      if (hasMesh) {
-        updateInstance(i, entity, dummy, activeMeshes, { time, alpha, renderState });
-      }
+    const activeMeshes = meshRefs.current;
+    const context = { time, alpha, renderState };
+    for (const key of meshKeys) {
+      const mesh = activeMeshes[key];
+      if (mesh) mesh.count = renderCount;
     }
 
-    // Flag updates
+    if (renderCount === 0) return;
+
+    for (let i = 0; i < renderCount; i++) {
+      updateInstance(i, entities[i], dummy, activeMeshes, context);
+    }
+
     for (const key of meshKeys) {
-      const mesh = meshRefs.current[key];
+      const mesh = activeMeshes[key];
       if (mesh) {
         mesh.instanceMatrix.needsUpdate = true;
         if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;

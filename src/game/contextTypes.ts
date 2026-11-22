@@ -59,7 +59,6 @@ export interface GameContextProps {
 export type GameUiContextProps = Omit<
   GameContextProps,
   | 'enemies'
-  | 'towers'
   | 'projectiles'
   | 'effects'
   | 'mapGrid'

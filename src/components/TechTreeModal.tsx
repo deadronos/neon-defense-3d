@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { useGame } from '../game/gameContexts';
+import { useGameUi } from '../game/gameContexts';
 import { UpgradeType } from '../types';
 
 interface TechTreeModalProps {
@@ -39,7 +39,7 @@ const UPGRADES = [
 const getCost = (level: number, baseCost: number) => baseCost + level;
 
 export const TechTreeModal: React.FC<TechTreeModalProps> = ({ onClose, actionLabel, onAction }) => {
-  const { gameState, purchaseUpgrade } = useGame();
+  const { gameState, purchaseUpgrade } = useGameUi();
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50 backdrop-blur-sm animate-in fade-in duration-200">

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 
 import { MAP_LAYOUTS, generatePath, getMapGrid } from '../../constants';
 import type { EngineEnemy, EngineVector2 } from '../engine/types';
-import type { RuntimeStoreState } from '../stores/runtimeStore';
+import type { RuntimeState } from '../stores/runtimeReducer';
 import {
   buildEnemyTypeMap,
   toEffectEntity,
@@ -12,59 +12,57 @@ import {
   toWaveState,
 } from '../transforms';
 
-export const useDerivedEntities = (runtime: RuntimeStoreState['runtime']) => {
+export const useGameMap = (ui: RuntimeState['ui']) => {
   const enemyTypeMap = useMemo(buildEnemyTypeMap, []);
 
   const mapLayout =
-    runtime.ui.currentMapIndex >= 0
-      ? MAP_LAYOUTS[runtime.ui.currentMapIndex % MAP_LAYOUTS.length]
-      : (runtime.ui.customMapLayout ?? MAP_LAYOUTS[0]);
+    ui.currentMapIndex >= 0
+      ? MAP_LAYOUTS[ui.currentMapIndex % MAP_LAYOUTS.length]
+      : (ui.customMapLayout ?? MAP_LAYOUTS[0]);
 
   const mapGrid = useMemo(() => getMapGrid(mapLayout), [mapLayout]);
   const pathWaypoints = useMemo(() => generatePath(mapLayout), [mapLayout]);
   const enginePathWaypoints: readonly EngineVector2[] = pathWaypoints;
 
+  return { enemyTypeMap, mapGrid, pathWaypoints, enginePathWaypoints };
+};
+
+export const useDerivedEntities = (
+  engine: RuntimeState['engine'],
+  enemyTypeMap: ReturnType<typeof buildEnemyTypeMap>,
+  enginePathWaypoints: readonly EngineVector2[],
+) => {
   const enemies = useMemo(
-    () =>
-      runtime.engine.enemies.map((enemy) =>
-        toEnemyEntity(enemy, enemyTypeMap, enginePathWaypoints),
-      ),
-    [runtime.engine.enemies, enemyTypeMap, enginePathWaypoints],
+    () => engine.enemies.map((enemy) => toEnemyEntity(enemy, enemyTypeMap, enginePathWaypoints)),
+    [engine.enemies, enemyTypeMap, enginePathWaypoints],
   );
 
   const enemiesById = useMemo(() => {
     const map = new Map<string, EngineEnemy>();
-    for (const enemy of runtime.engine.enemies) {
+    for (const enemy of engine.enemies) {
       map.set(enemy.id, enemy);
     }
     return map;
-  }, [runtime.engine.enemies]);
+  }, [engine.enemies]);
 
-  const towers = useMemo(
-    () => runtime.engine.towers.map((tower) => toTowerEntity(tower)),
-    [runtime.engine.towers],
-  );
+  const towers = useMemo(() => engine.towers.map((tower) => toTowerEntity(tower)), [engine.towers]);
 
   const projectiles = useMemo(
     () =>
-      runtime.engine.projectiles.map((projectile) =>
+      engine.projectiles.map((projectile) =>
         toProjectileEntity(projectile, enemiesById, enginePathWaypoints),
       ),
-    [runtime.engine.projectiles, enemiesById, enginePathWaypoints],
+    [engine.projectiles, enemiesById, enginePathWaypoints],
   );
 
   const effects = useMemo(
-    () => runtime.engine.effects.map((effect) => toEffectEntity(effect)),
-    [runtime.engine.effects],
+    () => engine.effects.map((effect) => toEffectEntity(effect)),
+    [engine.effects],
   );
 
-  const waveState = useMemo(() => toWaveState(runtime.engine.wave), [runtime.engine.wave]);
+  const waveState = useMemo(() => toWaveState(engine.wave), [engine.wave]);
 
   return {
-    enemyTypeMap,
-    mapGrid,
-    pathWaypoints,
-    enginePathWaypoints,
     enemies,
     towers,
     projectiles,

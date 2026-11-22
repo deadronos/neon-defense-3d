@@ -15,6 +15,7 @@ import type {
   EngineTickResult,
   EngineMutableVector3,
   EngineVector2,
+  EngineVector3,
 } from './types';
 
 export interface StepProjectilesOptions {
@@ -73,7 +74,7 @@ const applyEnemyImpacts = (
       const position = enemyPositions.get(enemy.id) ?? ensureEnemyPosition(enemy, impactContext);
       const explosion = createExplosionEffect(
         nextEffectCounter,
-        position,
+        [position[0], position[1], position[2]],
         enemy.color,
         enemy.scale ?? DEFAULT_EFFECT_SCALE,
         nowSeconds,
@@ -132,15 +133,12 @@ export const stepProjectiles = (
     tileSize,
   };
 
-  const targetPositionPool = cache?.targetPositionPool;
-  const releaseTargetPosition = (projectile: {
-    lastTargetPosition?: readonly [number, number, number];
-  }) => {
-    if (!targetPositionPool) return;
-    const lp = projectile.lastTargetPosition;
-    if (lp === undefined) return;
-    targetPositionPool.push(lp as unknown as EngineMutableVector3);
-  };
+  // Published tuples can outlive this tick. Share one immutable position per
+  // target instead of retaining mutable entries from the enemy position pool.
+  const targetPositions = cache
+    ? (cache.projectileTargetPositions ??= new Map<string, EngineVector3>())
+    : new Map<string, EngineVector3>();
+  targetPositions.clear();
   for (const enemy of state.enemies) {
     enemiesById.set(enemy.id, enemy);
   }
@@ -150,7 +148,17 @@ export const stepProjectiles = (
     let targetPos = projectile.lastTargetPosition ?? projectile.origin;
     if (target) {
       const p = enemyPositions.get(target.id) ?? ensureEnemyPosition(target, impactContext);
-      targetPos = [p[0], p[1], p[2]];
+      const previous = projectile.lastTargetPosition;
+      const shared = targetPositions.get(target.id);
+      if (shared) {
+        targetPos = shared;
+      } else {
+        targetPos =
+          previous && previous[0] === p[0] && previous[1] === p[1] && previous[2] === p[2]
+            ? previous
+            : [p[0], p[1], p[2]];
+        targetPositions.set(target.id, targetPos);
+      }
     } else if (!projectile.lastTargetPosition) {
       continue;
     }
@@ -163,12 +171,6 @@ export const stepProjectiles = (
 
     const nextProgress = projectile.progress + deltaSeconds * progressRate;
 
-    // Always persist the updated known position
-    const updatedProjectile = {
-      ...projectile,
-      lastTargetPosition: targetPos,
-      progress: nextProgress,
-    };
     if (nextProgress >= 1) {
       if (projectile.splashRadius != null && projectile.splashRadius > 0) {
         // We can look up the target position directly if it exists, otherwise compute it.
@@ -202,11 +204,14 @@ export const stepProjectiles = (
         applyFreeze(freezeHits, projectile.targetId, projectile.freezeDuration);
         frameTotalDamage += projectile.damage;
       }
-      releaseTargetPosition(projectile);
       continue;
     }
 
-    activeProjectiles.push(updatedProjectile);
+    activeProjectiles.push({
+      ...projectile,
+      lastTargetPosition: targetPos,
+      progress: nextProgress,
+    });
   }
 
   let nextEnemies: EngineEnemy[] = state.enemies;
