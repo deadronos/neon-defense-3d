@@ -22,6 +22,9 @@ export const InspectorStats: React.FC<InspectorStatsProps> = ({
     activeSynergies,
   });
 
+  const fireRateDelta = 1 / next.cooldown - 1 / current.cooldown;
+  const fireRatePrecision = fireRateDelta > 0 && fireRateDelta < 0.1 ? 2 : 1;
+
   return (
     <div className="grid grid-cols-3 gap-2 py-2">
       <div className="flex flex-col">
@@ -51,7 +54,7 @@ export const InspectorStats: React.FC<InspectorStatsProps> = ({
           <span className="text-xs font-mono text-emerald-400">
             {next.cooldown === current.cooldown
               ? 'MAX'
-              : `+${(1 / next.cooldown - 1 / current.cooldown).toFixed(1)}/s`}
+              : `+${fireRateDelta.toFixed(fireRatePrecision)}/s`}
           </span>
         </div>
       </div>

@@ -23,6 +23,26 @@ describe('UpgradeInspector', () => {
     vi.useRealTimers();
   });
 
+  it.each([
+    [TowerType.Sniper, 1, '+0.02/s'],
+    [TowerType.Missile, 1, '+0.03/s'],
+    [TowerType.Basic, 5, '+0.1/s'],
+    [TowerType.Rapid, 8, 'MAX'],
+  ])('shows the rate upgrade for %s at level %i', (type, level, label) => {
+    render(
+      <UpgradeInspector
+        selectedTowerEntity={{ ...baseTower, type, level }}
+        upgrades={{}}
+        money={999}
+        onClose={vi.fn()}
+        onUpgrade={vi.fn()}
+        onSell={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(label)).toBeInTheDocument();
+  });
+
   it('calls onClose and onSell with confirmation', async () => {
     const user = userEvent.setup({ delay: null });
     const onClose = vi.fn();

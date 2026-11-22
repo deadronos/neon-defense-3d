@@ -6,10 +6,10 @@ import { SynergyType, type TowerEntity } from '../../types';
 import { useRenderState } from '../gameContexts';
 
 const SYNERGY_COLORS: Record<SynergyType, THREE.Color> = {
-  [SynergyType.SYNCHRONIZED_FIRE]: new THREE.Color('#00f2ff').multiplyScalar(4),
-  [SynergyType.TRIANGULATION]: new THREE.Color('#9d00ff').multiplyScalar(12),
-  [SynergyType.COVER_FIRE_SOURCE]: new THREE.Color('#00ff00').multiplyScalar(4),
-  [SynergyType.COVER_FIRE_RECEIVER]: new THREE.Color('#00ff00').multiplyScalar(4),
+  [SynergyType.SYNCHRONIZED_FIRE]: new THREE.Color('#00f2ff').multiplyScalar(2.5),
+  [SynergyType.TRIANGULATION]: new THREE.Color('#9d00ff').multiplyScalar(3.5),
+  [SynergyType.COVER_FIRE_SOURCE]: new THREE.Color('#00ff00').multiplyScalar(2.5),
+  [SynergyType.COVER_FIRE_RECEIVER]: new THREE.Color('#00ff00').multiplyScalar(2.5),
 };
 
 const sameTopology = (previous: readonly TowerEntity[], towers: readonly TowerEntity[]) =>
