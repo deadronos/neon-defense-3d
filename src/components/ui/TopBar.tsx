@@ -5,6 +5,9 @@ import { MAX_LIVES } from '../../game/engine/uiReducer';
 import type { WaveState } from '../../types';
 
 interface TopBarProps {
+  onTogglePause?: () => void;
+  location?: string;
+  seed?: string | null;
   lives: number;
   money: number;
   wave: number;
@@ -16,6 +19,9 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
+  onTogglePause,
+  location,
+  seed,
   lives,
   money,
   wave,
@@ -34,7 +40,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               Sys.Integrity
             </span>
             <span
-              className={`text-xl sm:text-2xl font-bold font-mono ${lives < 10 ? 'text-red-500 animate-pulse' : 'text-white'}`}
+              className={`text-xl sm:text-2xl font-bold font-mono ${lives < 10 ? 'text-red-500 motion-safe:animate-pulse' : 'text-white'}`}
             >
               {Math.round((lives / MAX_LIVES) * 100)}%
             </span>
@@ -60,7 +66,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <div className="flex items-center gap-2">
               <span className="text-xl sm:text-2xl font-bold font-mono text-cyan-300">{wave}</span>
               {waveState?.phase === 'preparing' && waveState.timer > 0 && (
-                <span className="text-[10px] sm:text-sm font-mono text-cyan-500 animate-pulse">
+                <span className="text-[10px] sm:text-sm font-mono text-cyan-500 motion-safe:animate-pulse">
                   {waveState.timer.toFixed(1)}s
                 </span>
               )}
@@ -70,9 +76,30 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       <div className="flex gap-2 items-center">
+        {location && (
+          <div className="flex flex-col font-mono text-xs text-cyan-200">
+            <span>{location}</span>
+            {seed && (
+              <span className="rounded border border-cyan-500/40 px-1 text-[10px]">
+                Seed {seed}
+              </span>
+            )}
+          </div>
+        )}
         <MusicToggle />
         {/* Speed Controls */}
         <div className="flex rounded-md overflow-hidden border border-fuchsia-500/40 bg-black/40">
+          {onTogglePause && (
+            <button
+              type="button"
+              onClick={onTogglePause}
+              aria-label={gameSpeed === 0 ? 'Resume game' : 'Pause game'}
+              aria-pressed={gameSpeed === 0}
+              className={`border-r border-fuchsia-500/20 px-2 py-1 sm:px-3 sm:py-2 text-fuchsia-200 hover:bg-fuchsia-500/20 ${gameSpeed === 0 ? 'bg-fuchsia-500/40' : ''}`}
+            >
+              <span aria-hidden="true">{gameSpeed === 0 ? '▶' : '⏸'}</span>
+            </button>
+          )}
           {[1, 2, 4].map((speed) => (
             <button
               key={speed}

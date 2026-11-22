@@ -19,13 +19,13 @@ export const IdleScreen: React.FC<IdleScreenProps> = ({
     onStartRoguelite?.(actualSeed);
   };
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10 animate-fade-in">
-      <div className="text-center p-12 bg-black/40 border-y-2 border-cyan-500/50 relative transform transition-all hover:scale-105 duration-500">
+    <div className="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10 motion-safe:animate-in motion-safe:fade-in">
+      <div className="text-center p-12 bg-black/40 border-y-2 border-cyan-500/50 relative transform transition-all motion-safe:hover:scale-105 duration-500">
         {/* Decorative lines */}
         <div className="absolute top-0 left-0 w-4 h-full border-l-2 border-cyan-500/30"></div>
         <div className="absolute top-0 right-0 w-4 h-full border-r-2 border-cyan-500/30"></div>
 
-        <h1 className="text-6xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 via-white to-purple-500 animate-pulse tracking-widest drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
+        <h1 className="text-6xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 via-white to-purple-500 motion-safe:animate-pulse tracking-widest drop-shadow-[0_0_10px_rgba(6,182,212,0.8)]">
           NEON DEFENSE
         </h1>
         <p className="text-cyan-200/70 mb-12 tracking-widest text-sm uppercase">

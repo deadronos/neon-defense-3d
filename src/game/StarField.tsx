@@ -2,6 +2,8 @@ import { useFrame } from '@react-three/fiber';
 import React, { useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
+import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
+
 export const StarField = React.memo(({ count = 2000 }: { count?: number }) => {
   const mesh = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
@@ -36,10 +38,10 @@ export const StarField = React.memo(({ count = 2000 }: { count?: number }) => {
     mesh.current.instanceMatrix.needsUpdate = true;
   }, [particles, dummy]);
 
-  useFrame((state) => {
-    if (!mesh.current) return;
-    // Slow rotation only
-    mesh.current.rotation.y = state.clock.getElapsedTime() * 0.05;
+  const reducedMotion = usePrefersReducedMotion();
+  useFrame((_, delta) => {
+    if (!mesh.current || reducedMotion) return;
+    mesh.current.rotation.y += delta * 0.05;
   });
 
   return (

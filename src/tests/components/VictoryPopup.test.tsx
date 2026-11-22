@@ -40,6 +40,6 @@ describe('VictoryPopup', () => {
     render(<VictoryPopup onOpenTechTree={() => {}} />);
 
     const button = screen.getByRole('button', { name: /open tech tree/i });
-    expect(button).toHaveClass('bg-[#e94560]');
+    expect(button).toHaveClass('bg-fuchsia-600');
   });
 });

@@ -23,6 +23,8 @@ export const GameLoopBridge = () => {
       return;
     }
 
+    if (gameSpeed === 0) return;
+
     const clampedDelta = Math.min(delta, MAX_FRAME_TIME);
     accumulatorRef.current += clampedDelta * gameSpeed;
 

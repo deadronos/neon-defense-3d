@@ -13,7 +13,7 @@ export const SettingsQualitySection: React.FC<SettingsQualitySectionProps> = ({
   qualityLabel,
   setGraphicsQuality,
 }) => (
-  <section className="bg-black/20 border border-[#0f3460] rounded p-5">
+  <section className="bg-black/20 border border-cyan-500/25 rounded p-5">
     <h3 className="text-lg font-bold text-white mb-2">Quality</h3>
     <p className="text-gray-400 text-sm mb-4">
       Current preset: <span className="text-fuchsia-200 font-mono">{qualityLabel}</span>
@@ -24,8 +24,8 @@ export const SettingsQualitySection: React.FC<SettingsQualitySectionProps> = ({
         onClick={() => setGraphicsQuality('high')}
         className={`px-4 py-2 rounded font-mono text-xs uppercase tracking-wider border transition-colors ${
           graphicsQuality === 'high'
-            ? 'bg-[#00f2ff] text-black border-[#00f2ff]'
-            : 'bg-black/30 text-white border-[#0f3460] hover:border-[#00f2ff]'
+            ? 'bg-cyan-300 text-black border-cyan-300'
+            : 'bg-black/30 text-white border-cyan-500/25 hover:border-cyan-300'
         }`}
       >
         High
@@ -35,8 +35,8 @@ export const SettingsQualitySection: React.FC<SettingsQualitySectionProps> = ({
         onClick={() => setGraphicsQuality('low')}
         className={`px-4 py-2 rounded font-mono text-xs uppercase tracking-wider border transition-colors ${
           graphicsQuality === 'low'
-            ? 'bg-[#00f2ff] text-black border-[#00f2ff]'
-            : 'bg-black/30 text-white border-[#0f3460] hover:border-[#00f2ff]'
+            ? 'bg-cyan-300 text-black border-cyan-300'
+            : 'bg-black/30 text-white border-cyan-500/25 hover:border-cyan-300'
         }`}
       >
         Low

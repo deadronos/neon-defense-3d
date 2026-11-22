@@ -12,6 +12,7 @@ interface UpgradeInspectorProps {
   selectedTowerEntity: TowerEntity;
   upgrades: { [key in UpgradeType]?: number };
   money: number;
+  shortcutsEnabled?: boolean;
   onClose: () => void;
   onUpgrade: (id: string) => void;
   onSell: (id: string) => void;
@@ -21,6 +22,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
   selectedTowerEntity,
   upgrades,
   money,
+  shortcutsEnabled,
   onClose,
   onUpgrade,
   onSell,
@@ -43,6 +45,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
           onClose={onClose}
           onUpgrade={onUpgrade}
           onSell={onSell}
+          shortcutsEnabled={shortcutsEnabled}
         />
       </Card>
     </div>

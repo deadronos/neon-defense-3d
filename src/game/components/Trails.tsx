@@ -8,7 +8,7 @@ import { ensureInstanceColor, TEMP_COLOR } from './instancing/instancedUtils';
 import { ParticlePool } from './instancing/ParticlePool';
 
 export const InstancedTrails: React.FC = () => {
-  const { gameState } = useGameUi();
+  const { gameState, gameSpeed } = useGameUi();
   const renderStateRef = useRenderState();
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const count = 10000;
@@ -29,7 +29,7 @@ export const InstancedTrails: React.FC = () => {
   }, [count]);
 
   useFrame((state, delta) => {
-    if (!meshRef.current || gameState.gameStatus !== 'playing') return;
+    if (!meshRef.current || gameState.gameStatus !== 'playing' || gameSpeed === 0) return;
 
     const now = state.clock.elapsedTime;
     const lastSpawnByEnemyId = lastSpawnByEnemyIdRef.current;

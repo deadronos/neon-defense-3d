@@ -21,3 +21,29 @@ test('verify build menu', async ({ page }) => {
   // Take screenshot
   await page.screenshot({ path: 'verification/build_menu.png' });
 });
+
+test('settings pauses gameplay and restores focus and speed on Escape', async ({ page }) => {
+  await page.goto('/');
+  await page.getByText('INITIATE').click({ force: true });
+  const fast = page.getByRole('button', { name: 'Set speed to 4x' });
+  await fast.click();
+
+  const settings = page.getByRole('button', { name: 'Open settings' });
+  await settings.click();
+  const dialog = page.getByRole('dialog', { name: 'Settings' });
+  await expect(dialog).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('button', { name: 'Close settings' })).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(dialog.locator(':focus')).toHaveCount(1);
+
+  await page.keyboard.press('Tab');
+  await expect(dialog.getByRole('button', { name: 'Close settings' })).toBeFocused();
+  await expect(
+    page.getByRole('button', { name: 'Resume game', includeHidden: true }),
+  ).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(settings).toBeFocused();
+  await expect(fast).toHaveAttribute('aria-pressed', 'true');
+});

@@ -5,6 +5,7 @@ import * as THREE from 'three';
 
 import { MAP_WIDTH, MAP_HEIGHT, TILE_SIZE } from '../../constants';
 import { useGameUi } from '../gameContexts';
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 import { RogueliteManager } from '../RogueliteManager';
 import { StarField } from '../StarField';
 
@@ -20,6 +21,7 @@ import { World } from './World';
 
 export const SceneContent = () => {
   const { removeEffect, gameState } = useGameUi();
+  const reducedMotion = usePrefersReducedMotion();
   const isHigh = gameState.graphicsQuality === 'high';
   const chromaticOffset = React.useMemo(() => new THREE.Vector2(0.002, 0.002), []);
 
@@ -57,11 +59,13 @@ export const SceneContent = () => {
         <EffectComposer enableNormalPass={false}>
           <Bloom luminanceThreshold={1} mipmapBlur intensity={1.5} radius={0.6} />
           <Vignette eskil={false} offset={0.1} darkness={1.1} />
-          <ChromaticAberration
-            offset={chromaticOffset}
-            radialModulation={false}
-            modulationOffset={0}
-          />
+          {!reducedMotion && (
+            <ChromaticAberration
+              offset={chromaticOffset}
+              radialModulation={false}
+              modulationOffset={0}
+            />
+          )}
         </EffectComposer>
       ) : null}
     </>

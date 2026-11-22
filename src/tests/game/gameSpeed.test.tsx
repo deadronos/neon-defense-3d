@@ -58,3 +58,23 @@ it('preserves tower cadence and combat outcomes at 1x, 2x and 4x', () => {
     random.mockRestore();
   }
 });
+
+it('freezes the simulation at zero speed and advances it again after resuming', () => {
+  const { result } = renderHook(
+    () => {
+      GameLoopBridge();
+      return useGame();
+    },
+    { wrapper: GameProvider },
+  );
+
+  act(() => result.current.startGame());
+  act(() => frame({ clock: { elapsedTime: 0.1 } }, 0.1));
+  act(() => result.current.setGameSpeed(0));
+  const waveBefore = result.current.waveState;
+  act(() => frame({ clock: { elapsedTime: 1 } }, 0.2));
+  expect(result.current.waveState).toEqual(waveBefore);
+  act(() => result.current.setGameSpeed(2));
+  act(() => frame({ clock: { elapsedTime: 2 } }, 0.2));
+  expect(result.current.waveState?.timer).toBeLessThan(waveBefore?.timer ?? 0);
+});
