@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 
-import { ignoresGameShortcut } from './useGameShortcut';
-
 interface ModalFrameProps {
   label: string;
   restoreFocusTo?: Element | null;
@@ -48,7 +46,14 @@ export function ModalFrame({
         tabIndex={-1}
         className={`overflow-hidden rounded-lg border border-cyan-500/40 bg-zinc-950/95 shadow-[0_0_40px_rgba(34,211,238,0.18)] ${className}`}
         onKeyDown={(event) => {
-          if (event.key === 'Escape' && onClose && !ignoresGameShortcut(event.nativeEvent)) {
+          if (
+            event.key === 'Escape' &&
+            onClose &&
+            !event.defaultPrevented &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey
+          ) {
             event.stopPropagation();
             onClose();
           }

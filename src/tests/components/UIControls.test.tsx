@@ -75,9 +75,9 @@ describe('gameplay controls', () => {
     expect(speed()).toHaveTextContent('2');
     await user.click(screen.getByRole('button', { name: 'Pause game' }));
     await user.click(trigger);
-    await user.click(
-      within(screen.getByRole('dialog')).getByRole('button', { name: 'Close settings' }),
-    );
+    await user.click(within(screen.getByRole('dialog')).getByPlaceholderText(/paste checkpoint/i));
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(speed()).toHaveTextContent('0');
   });
 
