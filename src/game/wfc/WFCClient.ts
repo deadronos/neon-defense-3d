@@ -1,45 +1,53 @@
-import type { MapGeneratedMessage } from './wfc.worker';
+import type { GenerateMapMessage, MapGeneratedMessage } from './wfc.worker';
 
-class WFCClient {
-  private worker: Worker;
-  private pendingResolves: Map<string, (map: number[][]) => void> = new Map();
+export class WFCClient {
+  private worker?: Worker;
+  private nextRequestId = 0;
+  private pendingResolves = new Map<number, (map: number[][]) => void>();
 
-  constructor() {
-    this.worker = new Worker(new URL('./wfc.worker.ts', import.meta.url), {
-      type: 'module',
-    });
-
-    this.worker.onmessage = ({ data }: MessageEvent<MapGeneratedMessage>) => {
-      const { map, seed, success } = data;
-      const resolve = this.pendingResolves.get(seed);
-
-      if (resolve) {
-        if (success) {
-          resolve(map);
-        } else {
-          console.error(`Map generation failed for seed: ${seed}`);
-          resolve([]);
-        }
-
-        this.pendingResolves.delete(seed);
-      }
+  private createWorker(): Worker {
+    const worker = new Worker(new URL('./wfc.worker.ts', import.meta.url), { type: 'module' });
+    worker.onmessage = ({ data }: MessageEvent<MapGeneratedMessage>) => {
+      if (this.worker !== worker) return;
+      const { map, requestId, success } = data;
+      const resolve = this.pendingResolves.get(requestId);
+      this.pendingResolves.delete(requestId);
+      resolve?.(success ? map : []);
     };
+    const handleFailure = () => {
+      if (this.worker === worker) this.terminate();
+    };
+    worker.onerror = handleFailure;
+    worker.onmessageerror = handleFailure;
+    return worker;
   }
 
   public generateMap(seed: string, width: number, height: number): Promise<number[][]> {
     return new Promise((resolve) => {
-      this.pendingResolves.set(seed, resolve);
-      this.worker.postMessage({
-        type: 'GENERATE_MAP',
-        seed,
-        width,
-        height,
-      });
+      const requestId = this.nextRequestId++;
+      try {
+        this.worker ??= this.createWorker();
+        this.pendingResolves.set(requestId, resolve);
+        const request: GenerateMapMessage = {
+          type: 'GENERATE_MAP',
+          requestId,
+          seed,
+          width,
+          height,
+        };
+        this.worker.postMessage(request);
+      } catch {
+        this.pendingResolves.delete(requestId);
+        resolve([]);
+      }
     });
   }
 
   public terminate() {
-    this.worker.terminate();
+    this.worker?.terminate();
+    this.worker = undefined;
+    for (const resolve of this.pendingResolves.values()) resolve([]);
+    this.pendingResolves.clear();
   }
 }
 

@@ -50,8 +50,8 @@ Fix the store/context plumbing and hot-path rendering pipeline before layering o
 
 Tightly coupled around `uiReducer`, `RogueliteManager`, `WFCClient`, and `src/game/persistence/`. Can run in parallel with Batch 4.
 
-- [ ] **#121** — Fix Roguelite Wave 10 transition deadlock, `roguePhase` difficulty scaling, procedural map path validation, and `WFCClient` worker lifecycle/error handling (`RogueliteManager.tsx`, `wave.ts`, `uiReducer.ts`, `wfc.worker.ts`, `WFCClient.ts`)
-- [ ] **#137** — Fix save/load & autosave edge cases: Roguelite `-1 % 3` restore crash, save schema/validation support for Roguelite metadata, and fresh-run Wave 1 autosave overwrite (`useGameActions.ts`, `persistence/validation.ts`, `persistence/serialize.ts`, `persistence/runtime.ts`, `useAutosaveCheckpoint.ts`)
+- [x] **#121** — Fix Roguelite Wave 10 transition deadlock, `roguePhase` difficulty scaling, procedural map path validation, and `WFCClient` worker lifecycle/error handling (`RogueliteManager.tsx`, `wave.ts`, `uiReducer.ts`, `wfc.worker.ts`, `WFCClient.ts`)
+- [x] **#137** — Fix save/load & autosave edge cases: Roguelite `-1 % 3` restore crash, save schema/validation support for Roguelite metadata, and fresh-run Wave 1 autosave overwrite (`useGameActions.ts`, `persistence/validation.ts`, `persistence/serialize.ts`, `persistence/runtime.ts`, `useAutosaveCheckpoint.ts`)
 
 ---
 

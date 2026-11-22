@@ -21,6 +21,7 @@ const MIN_SPAWN_INTERVAL_MS = 300;
 
 export interface StepWaveOptions {
   prepTimeMs?: number;
+  roguePhase?: number;
 }
 
 type EnemyTypeConfig = (typeof ENEMY_TYPES)[keyof typeof ENEMY_TYPES];
@@ -60,14 +61,15 @@ const spawnEnemy = (
   wave: number,
   rng: () => number,
   idCounters: EngineIdCounters,
-  isBoss: boolean = false,
+  isBoss: boolean,
+  phaseMultiplier: number,
 ): { enemy: EngineEnemy; idCounters: EngineIdCounters } => {
   const config = createWaveConfig(wave);
   const typeConfig = isBoss ? ENEMY_TYPES.BOSS : chooseEnemyType(config.types, rng);
   const waveMultiplier = wave;
 
-  const hp = typeConfig.hpBase * (1 + (waveMultiplier - 1) * 0.4);
-  const shield = (typeConfig.shield || 0) * (1 + (waveMultiplier - 1) * 0.5);
+  const hp = typeConfig.hpBase * (1 + (waveMultiplier - 1) * 0.4) * phaseMultiplier;
+  const shield = (typeConfig.shield || 0) * (1 + (waveMultiplier - 1) * 0.5) * phaseMultiplier;
   const abilityCooldown =
     typeConfig.abilities?.includes('dash') !== true ? undefined : 2000 + rng() * 3000;
 
@@ -121,6 +123,7 @@ export const stepWave = (
   options: StepWaveOptions = {},
 ): EngineTickResult => {
   const prepTimeMs = options.prepTimeMs ?? DEFAULT_PREP_TIME_MS;
+  const phaseMultiplier = 1 + 0.35 * Math.max(0, (options.roguePhase ?? 1) - 1);
   const initialWave = state.wave ?? createInitialWaveState(prepTimeMs);
   let waveState = { ...initialWave };
   let idCounters = { ...state.idCounters };
@@ -141,7 +144,9 @@ export const stepWave = (
     };
   }
 
-  if (waveState.phase === 'completed') {
+  const awaitingNextPhase =
+    options.roguePhase !== undefined && waveState.wave > 0 && waveState.wave % 10 === 0;
+  if (waveState.phase === 'completed' && !awaitingNextPhase) {
     waveState = { ...waveState, phase: 'preparing', timerMs: prepTimeMs };
   }
 
@@ -165,7 +170,14 @@ export const stepWave = (
 
       const config = createWaveConfig(waveState.wave);
       const isBoss = remaining <= config.bossCount;
-      const spawnResult = spawnEnemy(state, waveState.wave, context.rng, idCounters, isBoss);
+      const spawnResult = spawnEnemy(
+        state,
+        waveState.wave,
+        context.rng,
+        idCounters,
+        isBoss,
+        phaseMultiplier,
+      );
       idCounters = spawnResult.idCounters;
       spawnList.push(spawnResult.enemy);
       timerMs += spawnIntervalMs;

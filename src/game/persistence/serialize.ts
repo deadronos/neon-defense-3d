@@ -24,6 +24,12 @@ export const serializeCheckpoint = (ui: UiState, engine: EngineState): SaveV1 =>
     settings: { quality: ui.graphicsQuality },
     ui: {
       currentMapIndex: ui.currentMapIndex,
+      gameMode: ui.gameMode,
+      ...(ui.gameMode === 'ROGUELITE' && {
+        roguePhase: ui.roguePhase,
+        customMapSeed: ui.customMapSeed,
+        customMapLayout: ui.customMapLayout,
+      }),
       money: clampMin(coerceInt(ui.money, 150), 0),
       lives: clampMin(coerceInt(ui.lives, 20), 0),
       totalEarned,

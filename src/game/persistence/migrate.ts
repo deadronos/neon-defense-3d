@@ -5,7 +5,7 @@ import { gridKey } from '../../utils/gridKey';
 import { knownTowerTypes, knownUpgradeKeys } from './constants';
 import type { MigrateResult, Quality, SaveV1 } from './types';
 import { clampMin, coerceInt, isRecord } from './utils';
-import { validateSave } from './validation';
+import { hasValidMapMetadata, validateSave } from './validation';
 
 const normalizeMapIndex = (value: number, warnings: string[]): number => {
   const mapsCount = MAP_LAYOUTS.length;
@@ -23,11 +23,6 @@ const normalizeMapIndex = (value: number, warnings: string[]): number => {
   }
 
   return value;
-};
-
-const getBuildableGridForMapIndex = (mapIndex: number) => {
-  const layout = MAP_LAYOUTS[mapIndex % MAP_LAYOUTS.length];
-  return getMapGrid(layout);
 };
 
 const isBuildable = (grid: TileType[][], x: number, z: number): boolean => {
@@ -64,10 +59,20 @@ export const migrateSave = (input: unknown): MigrateResult => {
   const checkpointIn = isRecord(input.checkpoint) ? input.checkpoint : undefined;
   if (!checkpointIn) errors.push('Missing checkpoint section.');
 
+  const metadata = uiIn ?? {};
+  if (!hasValidMapMetadata(metadata)) {
+    return { ok: false, warnings, errors: ['Invalid procedural map metadata.'] };
+  }
+  const { gameMode, roguePhase, customMapSeed, customMapLayout } = metadata;
   const currentMapIndexRaw = coerceInt(uiIn?.currentMapIndex, 0);
-  const currentMapIndex = normalizeMapIndex(currentMapIndexRaw, warnings);
+  const currentMapIndex =
+    gameMode === 'ROGUELITE' && currentMapIndexRaw === -1
+      ? -1
+      : normalizeMapIndex(currentMapIndexRaw, warnings);
 
-  const grid = getBuildableGridForMapIndex(currentMapIndex);
+  const grid = getMapGrid(
+    currentMapIndex === -1 ? (customMapLayout ?? MAP_LAYOUTS[0]) : MAP_LAYOUTS[currentMapIndex],
+  );
 
   const money = clampMin(coerceInt(uiIn?.money, 150), 0);
   const lives = clampMin(coerceInt(uiIn?.lives, 20), 0);
@@ -153,6 +158,10 @@ export const migrateSave = (input: unknown): MigrateResult => {
     settings: quality ? { quality } : undefined,
     ui: {
       currentMapIndex,
+      gameMode,
+      roguePhase,
+      customMapSeed,
+      customMapLayout,
       money,
       lives,
       totalEarned,

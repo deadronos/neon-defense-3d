@@ -37,6 +37,7 @@ export interface UiState {
   // Procedural
   gameMode: 'CLASSIC' | 'ROGUELITE';
   roguePhase: number;
+  roguePhaseCompleted: boolean;
   customMapSeed: string | null;
   customMapLayout: number[][] | null;
 }
@@ -57,7 +58,7 @@ export type UiAction =
   | { type: 'setAnnouncement'; announcement: UiState['announcement'] }
   | { type: 'setGameMode'; mode: 'CLASSIC' | 'ROGUELITE' }
   | { type: 'startRogueliteRun'; seed: string }
-  | { type: 'nextRoguePhase'; seed: string }
+  | { type: 'nextRoguePhase'; seed: string; layout: number[][] | null }
   | { type: 'setCustomMapLayout'; layout: number[][] };
 
 export const createInitialUiState = (): UiState => ({
@@ -79,6 +80,7 @@ export const createInitialUiState = (): UiState => ({
   announcement: null,
   gameMode: 'CLASSIC',
   roguePhase: 1,
+  roguePhaseCompleted: false,
   customMapSeed: null,
   customMapLayout: null,
 });
@@ -106,6 +108,7 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
       };
     case 'WaveCompleted': {
       if (event.wave > 0 && event.wave % 10 === 0 && state.gameStatus === 'playing') {
+        if (state.gameMode === 'ROGUELITE') return { ...state, roguePhaseCompleted: true };
         const earnedRP = Math.floor(state.totalDamageDealt / 200 + state.totalCurrencyEarned / 100);
         return {
           ...state,
@@ -115,11 +118,6 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
       }
       return state;
     }
-    // Handle Roguelite Phase completion
-    // The previous block was for "Victory" every 10 waves in main game
-    // We should refactor this to be mode aware if we want distinct behavior
-    // For now, let's leave legacy behavior and add specific Rogue overrides below if needed,
-    // or handle the "Wrap" logic in the game loop via a new action.
     case 'EnemyKilled':
       return {
         ...state,
@@ -137,6 +135,12 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
     case 'startGame':
       return {
         ...state,
+        gameMode: 'CLASSIC',
+        roguePhase: 1,
+        roguePhaseCompleted: false,
+        customMapSeed: null,
+        customMapLayout: null,
+        sessionNonce: state.sessionNonce + 1,
         gameStatus: 'playing',
         lives: MAX_LIVES,
         money: 150,
@@ -176,6 +180,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       return {
         ...state,
         currentMapIndex: state.currentMapIndex + 1,
+        sessionNonce: state.sessionNonce + 1,
         money: startMoney,
         wave: 1,
         waveStartedNonce: 0,
@@ -226,6 +231,9 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         money: 150, // Keep starting money 150 for fresh run
         wave: 1,
         roguePhase: 1,
+        roguePhaseCompleted: false,
+        customMapLayout: null,
+        sessionNonce: state.sessionNonce + 1,
         waveStartedNonce: 0,
         lastWaveStartedWave: 0,
         currentMapIndex: -1, // -1 signals procedural
@@ -239,13 +247,18 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       return {
         ...state,
         roguePhase: state.roguePhase + 1,
-        wave: 1, // Reset wave count for new phase
-        // Money/Lives logic handled by caller? Or preserved?
-        // UI Reducer manages the state, so we preserve current money/lives.
-        // towers are in EngineState, so clearing them is an Engine Action or side-effect.
+        wave: 1,
+        waveStartedNonce: 0,
+        lastWaveStartedWave: 0,
+        totalDamageDealt: 0,
+        totalCurrencyEarned: 0,
+        selectedEntityId: null,
+        selectedTower: null,
+        announcement: null,
+        roguePhaseCompleted: false,
         customMapSeed: action.seed,
-        // sessionNonce maybe? To reload World?
-        sessionNonce: state.sessionNonce + 1, // Force world mount to refresh grid
+        customMapLayout: action.layout,
+        sessionNonce: state.sessionNonce + 1,
         gameStatus: 'playing',
       };
     case 'setCustomMapLayout':

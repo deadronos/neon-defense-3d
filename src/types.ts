@@ -46,6 +46,8 @@ export interface GameState {
   /** Procedural Generation State */
   gameMode: 'CLASSIC' | 'ROGUELITE';
   roguePhase: number; // 1-indexed difficulty phase
+  roguePhaseCompleted: boolean;
+
   customMapSeed: string | null;
   customMapLayout: number[][] | null;
 

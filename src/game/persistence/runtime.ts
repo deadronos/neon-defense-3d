@@ -1,3 +1,4 @@
+import { MAP_LAYOUTS } from '../../constants';
 import { createInitialEngineState, allocateId, applyEnginePatch } from '../engine/state';
 import type { EngineState } from '../engine/types';
 import type { UiState } from '../engine/uiReducer';
@@ -16,6 +17,12 @@ export const buildRuntimeFromCheckpoint = (
     ...previousUi,
     gameStatus: 'playing',
     currentMapIndex: save.ui.currentMapIndex,
+    gameMode: save.ui.gameMode ?? 'CLASSIC',
+    roguePhase: save.ui.roguePhase ?? 1,
+    roguePhaseCompleted: false,
+    customMapSeed: save.ui.customMapSeed ?? null,
+    customMapLayout:
+      save.ui.customMapLayout ?? (save.ui.currentMapIndex < 0 ? MAP_LAYOUTS[0] : null),
     money: save.ui.money,
     lives: save.ui.lives,
     wave: save.checkpoint.waveToStart,
