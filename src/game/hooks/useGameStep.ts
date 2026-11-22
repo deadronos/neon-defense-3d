@@ -93,7 +93,12 @@ export const useGameStep = ({
           } else if (e.type === 'ProjectileFired') {
             playSFX('shoot');
           } else if (e.type === 'EnemyKilled') {
+            playSFX('kill');
             killsThisTick++;
+          } else if (e.type === 'WaveStarted') {
+            playSFX('wave');
+          } else if (e.type === 'LivesLost') {
+            playSFX('lifeLost');
           }
         }
 

@@ -59,8 +59,8 @@ Tightly coupled around `uiReducer`, `RogueliteManager`, `WFCClient`, and `src/ga
 
 Self-contained under `src/game/audio/` plus minimal event hooks. Can run in parallel with Batch 3.
 
-- [ ] **#135** — Fix `SynthArpScheduler` Web Audio clock scheduling (`setValueAtTime`) and missing note decay envelope (`noteDurationSec`) (`synthArp.ts`)
-- [ ] **#136** — Wire dead/misfired SFX (`impact`, kills, UI `click`, affordability check before `'build'`), add voice limiting + pitch jitter + `DynamicsCompressorNode`, lazy-init `AudioContext`/reverb impulse, and persist audio preferences (`Synth.ts`, `AudioManager.tsx`, `useGameStep.ts`, `useGameActions.ts`) _(related: `#109`)_
+- [x] **#135** — Fix `SynthArpScheduler` Web Audio clock scheduling (`setValueAtTime`) and missing note decay envelope (`noteDurationSec`) (`synthArp.ts`)
+- [x] **#136** — Wire dead/misfired SFX (`impact`, kills, UI `click`, affordability check before `'build'`), add voice limiting + pitch jitter + `DynamicsCompressorNode`, lazy-init `AudioContext`/reverb impulse, and persist audio preferences (`Synth.ts`, `AudioManager.tsx`, `useGameStep.ts`, `useGameActions.ts`) _(related: `#109`)_
 
 ---
 

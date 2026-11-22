@@ -7,12 +7,16 @@ interface FakeOscillator {
   stop: ReturnType<typeof vi.fn>;
   connect: ReturnType<typeof vi.fn>;
   disconnect: ReturnType<typeof vi.fn>;
-  frequency: { value: number };
+  frequency: { value: number; setValueAtTime: ReturnType<typeof vi.fn> };
   type: string;
 }
 
 interface FakeEnv {
-  gain: { value: number };
+  gain: {
+    value: number;
+    setValueAtTime: ReturnType<typeof vi.fn>;
+    linearRampToValueAtTime: ReturnType<typeof vi.fn>;
+  };
   connect: ReturnType<typeof vi.fn>;
   disconnect: ReturnType<typeof vi.fn>;
 }
@@ -37,11 +41,11 @@ const installFakeAudio = (): {
     stop: vi.fn(),
     connect: vi.fn(),
     disconnect: vi.fn(),
-    frequency: { value: 0 },
+    frequency: { value: 0, setValueAtTime: vi.fn() },
     type: 'triangle',
   };
   const env: FakeEnv = {
-    gain: { value: 0 },
+    gain: { value: 0, setValueAtTime: vi.fn(), linearRampToValueAtTime: vi.fn() },
     connect: vi.fn(),
     disconnect: vi.fn(),
   };
@@ -77,21 +81,34 @@ describe('SynthArpScheduler', () => {
     sched.stop();
   });
 
-  it('schedules notes as currentTime advances', () => {
-    const { osc, ctx, setCurrentTime } = installFakeAudio();
-    const destination = { name: 'dest' } as unknown as AudioNode;
-    const sched = new SynthArpScheduler(ctx, destination, makeOptions());
+  it('schedules frequency and a full gain envelope on the audio clock', () => {
+    const { osc, env, ctx, setCurrentTime } = installFakeAudio();
+    const destination = {} as AudioNode;
+    const options = { ...makeOptions(), noteDurationSec: 0.11 };
+    const sched = new SynthArpScheduler(ctx, destination, options);
     sched.start();
-    // First note is scheduled immediately (notes[idx=0] at currentTime 0).
-    expect(osc.frequency.value).toBe(220);
-    // Advance currentTime past the first interval and run pending timers.
-    setCurrentTime(0.2);
-    vi.advanceTimersByTime(30);
-    // Second note should now be the next frequency.
-    expect(osc.frequency.value).toBe(277.18);
-    setCurrentTime(0.4);
-    vi.advanceTimersByTime(30);
-    expect(osc.frequency.value).toBe(329.63);
+    expect(osc.frequency.setValueAtTime).toHaveBeenCalledWith(220, 0);
+    expect(env.gain.setValueAtTime).toHaveBeenCalledWith(0, 0);
+    expect(env.gain.linearRampToValueAtTime).toHaveBeenNthCalledWith(1, options.peakGain, 0.005);
+    expect(env.gain.linearRampToValueAtTime).toHaveBeenNthCalledWith(2, 0, options.noteDurationSec);
+    setCurrentTime(0.15);
+    vi.advanceTimersByTime(25);
+    expect(osc.frequency.setValueAtTime).toHaveBeenLastCalledWith(277.18, 0.18);
+    expect(env.gain.linearRampToValueAtTime).toHaveBeenLastCalledWith(
+      0,
+      0.18 + options.noteDurationSec,
+    );
+    sched.stop();
+  });
+
+  it('skips stale notes after the scheduler was throttled', () => {
+    const { osc, ctx, setCurrentTime } = installFakeAudio();
+    const sched = new SynthArpScheduler(ctx, {} as AudioNode, makeOptions());
+    sched.start();
+    setCurrentTime(60);
+    vi.advanceTimersByTime(25);
+    expect(osc.frequency.setValueAtTime).toHaveBeenCalledTimes(2);
+    expect(osc.frequency.setValueAtTime).toHaveBeenLastCalledWith(expect.any(Number), 60);
     sched.stop();
   });
 

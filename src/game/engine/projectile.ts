@@ -187,6 +187,7 @@ export const stepProjectiles = (
         );
         nextEffectCounter = explosion.newCounter;
         addedEffects.push(explosion.effect);
+        events.deferred.push({ type: 'EffectSpawned', effectId: explosion.effect.id });
 
         findTargetsInSplash(
           impactPos,

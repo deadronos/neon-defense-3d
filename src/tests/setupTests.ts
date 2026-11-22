@@ -139,8 +139,21 @@ if (typeof env.AudioContext !== 'function') {
           disconnect: () => {},
         };
       }
+      get currentTime() {
+        return 0;
+      }
+      createDynamicsCompressor() {
+        return { connect: () => {}, threshold: { value: 0 }, ratio: { value: 0 } };
+      }
       createBufferSource() {
-        return { connect: () => {}, start: () => {}, stop: () => {}, buffer: null };
+        return {
+          connect: () => {},
+          disconnect: () => {},
+          start: () => {},
+          stop: () => {},
+          buffer: null,
+          playbackRate: { value: 1 },
+        };
       }
       createBuffer(_channels: number, length: number, _sampleRate: number) {
         return { getChannelData: () => new Float32Array(length) };
@@ -158,8 +171,3 @@ if (typeof env.AudioContext !== 'function') {
     configurable: true,
   });
 }
-
-// Mock useAudio in tests automatically?
-// No, unit tests might want to test it or ignore it.
-// The failure happens because `src/game/audio/Synth.ts` instantiates `new AudioContext()` at module scope.
-// By mocking AudioContext global above, it should fix the crash.

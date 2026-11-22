@@ -23,6 +23,7 @@ describe('Synth convolver fallback', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const s = new Synth();
+    s.resume();
     expect(s.convolver).toBeNull();
     expect(warnSpy).toHaveBeenCalled();
 
@@ -49,11 +50,11 @@ describe('Synth convolver fallback', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     // Make s.ctx.createBiquadFilter and createDelay throw when startMusic runs
-    // @ts-ignore
+    s.resume();
+    if (!s.ctx) throw new Error('Expected initialized audio context');
     s.ctx.createBiquadFilter = function () {
       throw new Error('no filter');
     };
-    // @ts-ignore
     s.ctx.createDelay = function () {
       throw new Error('no delay');
     };

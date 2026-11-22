@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 
-import { MAP_LAYOUTS, TILE_SIZE, generatePath } from '../../constants';
+import { MAP_LAYOUTS, TILE_SIZE, TOWER_CONFIGS, generatePath } from '../../constants';
 import type { GraphicsQuality, TowerType, UpgradeType } from '../../types';
 import { TileType } from '../../types';
 import { gridKey } from '../../utils/gridKey';
@@ -58,7 +58,7 @@ export const useGameActions = ({
       const { ui } = getRuntime();
       if (ui.gameStatus !== 'playing') return;
       if (ui.currentMapIndex < 0 && !ui.customMapLayout) return;
-      if (!isValidPlacement(x, z)) {
+      if (!isValidPlacement(x, z) || ui.money < TOWER_CONFIGS[type].cost) {
         playSFX('error');
         return;
       }
@@ -102,9 +102,10 @@ export const useGameActions = ({
   const skipWave = useCallback(() => dispatch({ type: 'skipWave' }), [dispatch]);
 
   const startGame = useCallback(() => {
+    playSFX('click');
     dispatch({ type: 'uiAction', action: { type: 'startGame' } });
     dispatch({ type: 'resetEngine' });
-  }, [dispatch]);
+  }, [dispatch, playSFX]);
 
   const resetGame = useCallback(() => {
     dispatch({ type: 'uiAction', action: { type: 'resetGame' } });
@@ -174,9 +175,10 @@ export const useGameActions = ({
 
   const setSelectedTower = useCallback(
     (tower: TowerType | null) => {
+      if (tower !== null) playSFX('click');
       dispatch({ type: 'uiAction', action: { type: 'setSelectedTower', tower } });
     },
-    [dispatch],
+    [dispatch, playSFX],
   );
 
   const setSelectedEntityId = useCallback(
