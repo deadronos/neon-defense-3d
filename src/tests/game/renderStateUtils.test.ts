@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { TILE_SIZE, MAP_LAYOUTS } from '../../constants';
 import type { EngineState } from '../../game/engine/types';
 import { createInitialRenderState, syncRenderState } from '../../game/renderStateUtils';
+import { SynergyType } from '../../types';
 import type { EnemyConfig } from '../../types';
 
 const pathWaypoints = MAP_LAYOUTS[0]
@@ -33,6 +34,7 @@ describe('renderStateUtils.syncRenderState', () => {
           level: 1,
           gridPosition: [1, 2],
           lastFired: 0,
+          activeSynergies: [{ type: SynergyType.TRIANGULATION, partnerId: 't2' }],
         },
       ],
       projectiles: [
@@ -75,6 +77,7 @@ describe('renderStateUtils.syncRenderState', () => {
     // Towers & occupancy
     expect(renderState.towers.length).toBe(1);
     const t = renderState.towers[0];
+    expect(t.activeSynergies).toEqual(engineState.towers[0].activeSynergies);
     expect(renderState.gridOccupancy.get('1,2')).toBe(t);
 
     // Projectiles

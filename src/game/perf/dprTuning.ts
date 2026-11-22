@@ -1,7 +1,7 @@
 export interface DprTuning {
   /** Target FPS the scaler tries to maintain. */
   targetFps: number;
-  /** Allowed deviation from the target before reacting. */
+  /** FPS below target allowed before reducing DPR. Recovery uses a smaller margin. */
   fpsTolerance: number;
   /** Lower clamp for DPR. */
   minDpr: number;
@@ -11,14 +11,17 @@ export interface DprTuning {
   step: number;
 }
 
-/** Pure: returns the next DPR given the current value, the measured FPS,
- *  and the tuning. Returns `currentDpr` if no change is needed. */
+/**
+ * Reduces DPR below target minus tolerance. Recovers at target minus the
+ * smaller of 2 FPS and half the tolerance. Holds DPR between those thresholds.
+ */
 export const computeNextDpr = (currentDpr: number, fps: number, tuning: DprTuning): number => {
   if (!Number.isFinite(fps)) return currentDpr;
   if (fps < tuning.targetFps - tuning.fpsTolerance) {
     return Math.max(tuning.minDpr, currentDpr - tuning.step);
   }
-  if (fps > tuning.targetFps + tuning.fpsTolerance) {
+  const recoveryMargin = Math.min(2, tuning.fpsTolerance / 2);
+  if (fps >= tuning.targetFps - recoveryMargin) {
     return Math.min(tuning.maxDpr, currentDpr + tuning.step);
   }
   return currentDpr;

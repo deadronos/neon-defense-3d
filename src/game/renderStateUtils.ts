@@ -209,6 +209,7 @@ export const syncRenderState = (
       lastFired: engTower.lastFired,
       targetId: engTower.targetId ?? null,
       level: engTower.level,
+      activeSynergies: engTower.activeSynergies,
     };
     nextTowers.push(tower);
 

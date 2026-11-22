@@ -28,7 +28,7 @@ describe('TopBar', () => {
       />,
     );
 
-    expect(screen.getByText('9%')).toHaveClass('animate-pulse');
+    expect(screen.getByText('45%')).toHaveClass('animate-pulse');
   });
 
   it('renders lives, money, wave and opens settings', async () => {
@@ -38,7 +38,7 @@ describe('TopBar', () => {
     render(
       <TopBar
         lives={20}
-        money={123}
+        money={123.5}
         wave={3}
         waveState={null}
         onOpenSettings={onOpenSettings}
@@ -48,7 +48,7 @@ describe('TopBar', () => {
       />,
     );
 
-    expect(screen.getByText('20%')).toBeInTheDocument();
+    expect(screen.getByText('100%')).toBeInTheDocument();
     expect(screen.getByText('$123')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
 

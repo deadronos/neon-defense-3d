@@ -10,30 +10,21 @@ const MAX_FRAME_TIME = 0.25;
  * Component that hooks into the render loop to handle game logic updates.
  */
 export const GameLoopBridge = () => {
-  const { gameState, step } = useGameUi();
+  const { gameState, gameSpeed, step } = useGameUi();
   const renderStateRef = useRenderState();
   const accumulatorRef = useRef(0);
   const simTimeRef = useRef(0);
-  const lastStatusRef = useRef(gameState.gameStatus);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     const status = gameState.gameStatus;
     if (status !== 'playing') {
       accumulatorRef.current = 0;
-      simTimeRef.current = state.clock.elapsedTime;
       renderStateRef.current.renderAlpha = 0;
-      lastStatusRef.current = status;
       return;
     }
 
-    if (lastStatusRef.current !== 'playing') {
-      accumulatorRef.current = 0;
-      simTimeRef.current = state.clock.elapsedTime;
-    }
-    lastStatusRef.current = status;
-
     const clampedDelta = Math.min(delta, MAX_FRAME_TIME);
-    accumulatorRef.current += clampedDelta;
+    accumulatorRef.current += clampedDelta * gameSpeed;
 
     while (accumulatorRef.current >= FIXED_STEP) {
       simTimeRef.current += FIXED_STEP;

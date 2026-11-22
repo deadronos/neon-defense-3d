@@ -39,6 +39,7 @@ export const useGameStores = () => {
 
   return {
     runtime,
+    getRuntime: () => runtimeStore.getState().runtime,
     dispatch: (action: RuntimeAction) => {
       if (action.type === 'uiAction') {
         uiStore.getState().dispatch(action);

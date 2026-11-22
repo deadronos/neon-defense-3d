@@ -13,7 +13,7 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({ wave, onReset })
           CRITICAL FAILURE
         </h1>
         <p className="text-xl mb-8 font-mono text-red-200">
-          WAVES CLEARED: <span className="text-3xl font-bold">{wave}</span>
+          WAVES CLEARED: <span className="text-3xl font-bold">{Math.max(0, wave - 1)}</span>
         </p>
         <button
           onClick={onReset}

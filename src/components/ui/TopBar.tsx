@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { useAudio } from '../../game/audio/useAudio';
+import { MAX_LIVES } from '../../game/engine/uiReducer';
 import type { WaveState } from '../../types';
 
 interface TopBarProps {
@@ -35,7 +36,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span
               className={`text-xl sm:text-2xl font-bold font-mono ${lives < 10 ? 'text-red-500 animate-pulse' : 'text-white'}`}
             >
-              {lives}%
+              {Math.round((lives / MAX_LIVES) * 100)}%
             </span>
           </div>
         </div>
@@ -46,7 +47,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               Resources
             </span>
             <span className="text-xl sm:text-2xl font-bold font-mono text-yellow-300">
-              ${money}
+              ${Math.floor(money)}
             </span>
           </div>
         </div>

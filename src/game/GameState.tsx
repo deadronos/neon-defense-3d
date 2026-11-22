@@ -20,7 +20,8 @@ import { useGameStores } from './hooks/useGameStores';
 // eslint-disable-next-line max-lines-per-function
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { playSFX } = useAudio();
-  const { runtime, dispatch, renderStateRef, gameSpeed, setGameSpeed } = useGameStores();
+  const { runtime, getRuntime, dispatch, renderStateRef, gameSpeed, setGameSpeed } =
+    useGameStores();
 
   const runtimeRef = useRef(runtime);
   runtimeRef.current = runtime;
@@ -73,12 +74,11 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
   });
 
   const { step } = useGameStep({
-    runtimeRef,
+    getRuntime,
     renderStateRef,
     dispatch,
     enginePathWaypoints,
     enemyTypeMap,
-    gameSpeed,
     playSFX,
   });
 

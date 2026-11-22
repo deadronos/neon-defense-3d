@@ -4,22 +4,43 @@ import React from 'react';
 import { describe, expect, it, vi, afterEach } from 'vitest';
 
 import { UpgradeInspector } from '../../components/ui/UpgradeInspector';
-import { calculateTowerRefundValue, getTowerStats } from '../../game/utils';
+import { createInitialRuntimeState, runtimeReducer } from '../../game/stores/runtimeReducer';
+import { calculateTowerRefundValue } from '../../game/utils';
 import { TowerType } from '../../types';
 
-describe('UpgradeInspector', () => {
-  const baseTower = {
-    id: 'tower-1',
-    type: TowerType.Basic,
-    gridPos: [0, 0] as [number, number],
-    position: [0, 0.5, 0] as const,
-    lastFired: 0,
-    targetId: null,
-    level: 1,
-  };
+const baseTower = {
+  id: 'tower-1',
+  type: TowerType.Basic,
+  gridPos: [0, 0] as [number, number],
+  position: [0, 0.5, 0] as const,
+  lastFired: 0,
+  targetId: null,
+  level: 1,
+};
 
+describe('UpgradeInspector', () => {
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it.each([
+    [TowerType.Sniper, 1, '+0.02/s'],
+    [TowerType.Missile, 1, '+0.03/s'],
+    [TowerType.Basic, 5, '+0.1/s'],
+    [TowerType.Rapid, 8, 'MAX'],
+  ])('shows the rate upgrade for %s at level %i', (type, level, label) => {
+    render(
+      <UpgradeInspector
+        selectedTowerEntity={{ ...baseTower, type, level }}
+        upgrades={{}}
+        money={999}
+        onClose={vi.fn()}
+        onUpgrade={vi.fn()}
+        onSell={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(label)).toBeInTheDocument();
   });
 
   it('calls onClose and onSell with confirmation', async () => {
@@ -130,47 +151,6 @@ describe('UpgradeInspector', () => {
     expect(screen.getByText(/Sell Unit/)).toBeInTheDocument();
   });
 
-  it('disables Upgrade when unaffordable and enables it when affordable', async () => {
-    const user = userEvent.setup({ delay: null });
-    const onClose = vi.fn();
-    const onUpgrade = vi.fn();
-    const onSell = vi.fn();
-
-    const nextStats = getTowerStats(TowerType.Basic, baseTower.level + 1, {});
-
-    const { rerender } = render(
-      <UpgradeInspector
-        selectedTowerEntity={baseTower}
-        upgrades={{}}
-        money={0}
-        onClose={onClose}
-        onUpgrade={onUpgrade}
-        onSell={onSell}
-      />,
-    );
-
-    const upgradeBtn = screen.getByRole('button', { name: /upgrade/i });
-    expect(upgradeBtn).toBeDisabled();
-    expect(screen.getByText(`$${nextStats.upgradeCost}`)).toBeInTheDocument();
-
-    rerender(
-      <UpgradeInspector
-        selectedTowerEntity={baseTower}
-        upgrades={{}}
-        money={nextStats.upgradeCost}
-        onClose={onClose}
-        onUpgrade={onUpgrade}
-        onSell={onSell}
-      />,
-    );
-
-    const upgradeBtnEnabled = screen.getByRole('button', { name: /upgrade/i });
-    expect(upgradeBtnEnabled).not.toBeDisabled();
-
-    await user.click(upgradeBtnEnabled);
-    expect(onUpgrade).toHaveBeenCalledWith('tower-1');
-  });
-
   it('shows a pro-rated sell refund based on tower investment', () => {
     const upgradedTower = { ...baseTower, level: 2 };
     const refund = calculateTowerRefundValue(TowerType.Basic, upgradedTower.level);
@@ -190,4 +170,55 @@ describe('UpgradeInspector', () => {
       `Sell Unit (+$${refund})`,
     );
   });
+});
+
+it.each([1, 2, 3])('matches the runtime upgrade charge at level %i', async (level) => {
+  const user = userEvent.setup({ delay: null });
+  const onClose = vi.fn();
+  const onUpgrade = vi.fn();
+  const onSell = vi.fn();
+
+  const tower = { ...baseTower, level };
+  const initial = createInitialRuntimeState();
+  const before = {
+    engine: {
+      ...initial.engine,
+      towers: [{ ...tower, gridPosition: tower.gridPos, targetId: undefined }],
+    },
+    ui: { ...initial.ui, money: 1000 },
+  };
+  const after = runtimeReducer(before, { type: 'upgradeTower', id: tower.id });
+  expect(after.engine.towers[0].level).toBe(level + 1);
+  const cost = before.ui.money - after.ui.money;
+
+  const { rerender } = render(
+    <UpgradeInspector
+      selectedTowerEntity={tower}
+      upgrades={{}}
+      money={cost - 1}
+      onClose={onClose}
+      onUpgrade={onUpgrade}
+      onSell={onSell}
+    />,
+  );
+
+  const upgradeBtn = screen.getByRole('button', { name: /upgrade/i });
+  expect(upgradeBtn).toBeDisabled();
+  expect(screen.getByText(`$${cost}`)).toBeInTheDocument();
+
+  rerender(
+    <UpgradeInspector
+      selectedTowerEntity={tower}
+      upgrades={{}}
+      money={cost}
+      onClose={onClose}
+      onUpgrade={onUpgrade}
+      onSell={onSell}
+    />,
+  );
+
+  expect(upgradeBtn).not.toBeDisabled();
+
+  await user.click(upgradeBtn);
+  expect(onUpgrade).toHaveBeenCalledWith('tower-1');
 });
