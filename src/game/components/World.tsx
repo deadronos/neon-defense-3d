@@ -26,18 +26,12 @@ const TILE_COLORS: Record<TileType, string> = {
 
 // eslint-disable-next-line max-lines-per-function
 export const World = React.memo(() => {
-  const { mapGrid, currentMapIndex } = useWorld();
+  const { mapGrid } = useWorld();
 
   const grassMeshRef = useRef<THREE.InstancedMesh>(null);
   const pathMeshRef = useRef<THREE.InstancedMesh>(null);
   const spawnMeshRef = useRef<THREE.InstancedMesh>(null);
   const baseMeshRef = useRef<THREE.InstancedMesh>(null);
-
-  const gridMaterialRef = useRef<THREE.ShaderMaterial>(null);
-  const grassMaterialRef = useRef<THREE.ShaderMaterial>(null);
-  const pathMaterialRef = useRef<THREE.ShaderMaterial>(null);
-  const spawnMaterialRef = useRef<THREE.ShaderMaterial>(null);
-  const baseMaterialRef = useRef<THREE.ShaderMaterial>(null);
 
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -56,21 +50,11 @@ export const World = React.memo(() => {
   // Update time uniform for animation
   useFrame((state) => {
     const time = state.clock.getElapsedTime();
-    if (gridMaterialRef.current) {
-      gridMaterialRef.current.uniforms.uTime.value = time;
-    }
-    if (grassMaterialRef.current) {
-      grassMaterialRef.current.uniforms.uTime.value = time;
-    }
-    if (pathMaterialRef.current) {
-      pathMaterialRef.current.uniforms.uTime.value = time;
-    }
-    if (spawnMaterialRef.current) {
-      spawnMaterialRef.current.uniforms.uTime.value = time;
-    }
-    if (baseMaterialRef.current) {
-      baseMaterialRef.current.uniforms.uTime.value = time;
-    }
+    gridMaterial.uniforms.uTime.value = time;
+    grassMaterial.uniforms.uTime.value = time;
+    pathMaterial.uniforms.uTime.value = time;
+    spawnMaterial.uniforms.uTime.value = time;
+    baseMaterial.uniforms.uTime.value = time;
   });
 
   // Cleanup materials on unmount
@@ -146,7 +130,6 @@ export const World = React.memo(() => {
 
   return (
     <group
-      key={`map-${currentMapIndex}`}
       position={[
         (-MAP_WIDTH * TILE_SIZE) / 2 + TILE_SIZE / 2,
         0,
@@ -155,51 +138,39 @@ export const World = React.memo(() => {
     >
       <instancedMesh
         ref={grassMeshRef}
-        args={[TILE_GEOMETRY, grassMaterial, tilesByType.grass.length]}
-        material={grassMaterial}
+        args={[TILE_GEOMETRY, grassMaterial, MAP_WIDTH * MAP_HEIGHT]}
         frustumCulled={false}
         onPointerMove={handlePointerMove(tilesByType.grass)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.grass)}
-      >
-        <primitive object={grassMaterial} attach="material" ref={grassMaterialRef} />
-      </instancedMesh>
+      />
 
       <instancedMesh
         ref={pathMeshRef}
-        args={[TILE_GEOMETRY, pathMaterial, tilesByType.path.length]}
-        material={pathMaterial}
+        args={[TILE_GEOMETRY, pathMaterial, MAP_WIDTH * MAP_HEIGHT]}
         frustumCulled={false}
         onPointerMove={handlePointerMove(tilesByType.path)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.path)}
-      >
-        <primitive object={pathMaterial} attach="material" ref={pathMaterialRef} />
-      </instancedMesh>
+      />
 
       <instancedMesh
         ref={spawnMeshRef}
-        args={[TILE_GEOMETRY, spawnMaterial, tilesByType.spawn.length]}
-        material={spawnMaterial}
+        args={[TILE_GEOMETRY, spawnMaterial, MAP_WIDTH * MAP_HEIGHT]}
         frustumCulled={false}
         onPointerMove={handlePointerMove(tilesByType.spawn)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.spawn)}
-      >
-        <primitive object={spawnMaterial} attach="material" ref={spawnMaterialRef} />
-      </instancedMesh>
+      />
 
       <instancedMesh
         ref={baseMeshRef}
-        args={[TILE_GEOMETRY, baseMaterial, tilesByType.base.length]}
-        material={baseMaterial}
+        args={[TILE_GEOMETRY, baseMaterial, MAP_WIDTH * MAP_HEIGHT]}
         frustumCulled={false}
         onPointerMove={handlePointerMove(tilesByType.base)}
         onPointerOut={handlePointerOut}
         onPointerDown={handlePointerDown(tilesByType.base)}
-      >
-        <primitive object={baseMaterial} attach="material" ref={baseMaterialRef} />
-      </instancedMesh>
+      />
 
       <mesh
         ref={hoverMeshRef}
@@ -211,9 +182,7 @@ export const World = React.memo(() => {
         <meshBasicMaterial color={hoverValidColor} transparent opacity={0.35} toneMapped={false} />
       </mesh>
 
-      <lineSegments position={[0, 0.02, 0]} geometry={gridGeometry} material={gridMaterial}>
-        <primitive object={gridMaterial} attach="material" ref={gridMaterialRef} />
-      </lineSegments>
+      <lineSegments position={[0, 0.02, 0]} geometry={gridGeometry} material={gridMaterial} />
     </group>
   );
 });

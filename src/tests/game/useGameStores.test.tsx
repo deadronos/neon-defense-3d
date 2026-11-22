@@ -24,7 +24,7 @@ describe('useGameStores', () => {
       });
     });
 
-    expect(result.current.runtime.ui.graphicsQuality).toBe('high');
-    expect(result.current.runtime.engine.towers).toHaveLength(0);
+    expect(result.current.ui.graphicsQuality).toBe('high');
+    expect(result.current.getRuntime().engine.towers).toHaveLength(0);
   });
 });

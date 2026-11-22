@@ -1,13 +1,13 @@
 import React from 'react';
 
-import { useGame } from '../game/gameContexts';
+import { useGameUi } from '../game/gameContexts';
 
 interface VictoryPopupProps {
   onOpenTechTree: () => void;
 }
 
 export const VictoryPopup: React.FC<VictoryPopupProps> = ({ onOpenTechTree }) => {
-  const { gameState } = useGame();
+  const { gameState } = useGameUi();
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50 animate-in fade-in duration-500">

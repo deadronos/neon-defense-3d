@@ -12,7 +12,6 @@ export const GameCanvas = () => {
     <CanvasErrorBoundary>
       <div className="w-full h-full bg-[#03030b]">
         <Canvas
-          shadows
           camera={{ position: [0, 25, 20], fov: 45 }}
           gl={{
             toneMapping: THREE.ReinhardToneMapping,

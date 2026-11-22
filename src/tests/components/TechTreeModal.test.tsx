@@ -6,9 +6,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { TechTreeModal } from '../../components/TechTreeModal';
 import { UpgradeType } from '../../types';
 
-// Mock useGame hook
+// Mock useGameUi hook
 vi.mock('../../game/gameContexts', () => ({
-  useGame: () => ({
+  useGameUi: () => ({
     gameState: {
       researchPoints: 5,
       upgrades: {

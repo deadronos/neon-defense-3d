@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { useGame } from '../game/gameContexts';
+import { useGameUi } from '../game/gameContexts';
 
 import { TechTreeModal } from './TechTreeModal';
 import { BuildMenu } from './ui/BuildMenu';
@@ -33,7 +33,7 @@ export const UI = () => {
     gameSpeed,
     setGameSpeed,
     startRogueliteRun,
-  } = useGame();
+  } = useGameUi();
 
   const [showTechTree, setShowTechTree] = useState(false);
   const [showSettings, setShowSettings] = useState(false);

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-import { useGame } from '../../game/gameContexts';
+import { useGameUi } from '../../game/gameContexts';
 
 export const KillStreakAnnouncer: React.FC = () => {
-  const { gameState, clearAnnouncement } = useGame();
+  const { gameState, clearAnnouncement } = useGameUi();
   const [visible, setVisible] = useState(false);
   const [current, setCurrent] = useState(gameState.announcement);
 

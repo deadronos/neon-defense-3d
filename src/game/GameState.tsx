@@ -4,42 +4,35 @@ import type { ReactNode } from 'react';
 import type { GameState } from '../types';
 
 import { useAudio } from './audio/useAudio';
-import {
-  buildGameContextValue,
-  buildGameUiValue,
-  buildRenderStateValue,
-  buildWorldValue,
-} from './contextValueBuilders';
+import { buildGameUiValue, buildRenderStateValue, buildWorldValue } from './contextValueBuilders';
 import { GameContext, GameUiContext, RenderStateContext, WorldContext } from './gameContexts';
 import { useAutosaveCheckpoint } from './hooks/useAutosaveCheckpoint';
-import { useDerivedEntities } from './hooks/useDerivedEntities';
+import { useGameMap } from './hooks/useDerivedEntities';
 import { useGameActions } from './hooks/useGameActions';
 import { useGameStep } from './hooks/useGameStep';
 import { useGameStores } from './hooks/useGameStores';
+import { toTowerEntity } from './transforms';
 
 // eslint-disable-next-line max-lines-per-function
 export const GameProvider = ({ children }: { children: ReactNode }) => {
   const { playSFX } = useAudio();
-  const { runtime, getRuntime, dispatch, renderStateRef, gameSpeed, setGameSpeed } =
-    useGameStores();
-
-  const runtimeRef = useRef(runtime);
-  runtimeRef.current = runtime;
+  const {
+    ui,
+    hudTowers,
+    waveState,
+    runtimeStore,
+    getRuntime,
+    dispatch,
+    renderStateRef,
+    gameSpeed,
+    setGameSpeed,
+  } = useGameStores();
 
   const lastAutosavedNonceRef = useRef<number>(-1);
-  useAutosaveCheckpoint(runtime, runtimeRef, lastAutosavedNonceRef);
+  useAutosaveCheckpoint(ui, getRuntime, lastAutosavedNonceRef);
 
-  const {
-    enemyTypeMap,
-    mapGrid,
-    pathWaypoints,
-    enginePathWaypoints,
-    enemies,
-    towers,
-    projectiles,
-    effects,
-    waveState,
-  } = useDerivedEntities(runtime);
+  const { enemyTypeMap, mapGrid, pathWaypoints, enginePathWaypoints } = useGameMap(ui);
+  const towers = useMemo(() => hudTowers.map(toTowerEntity), [hudTowers]);
 
   const {
     isValidPlacement,
@@ -64,7 +57,7 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     nextRoguePhase,
     setCustomMapLayout,
   } = useGameActions({
-    runtimeRef,
+    getRuntime,
     dispatch,
     renderStateRef,
     mapGrid,
@@ -84,103 +77,26 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
 
   const gameState = useMemo<GameState>(
     () => ({
-      ...runtime.ui,
-      isPlaying: runtime.ui.gameStatus === 'playing',
+      ...ui,
+      isPlaying: ui.gameStatus === 'playing',
     }),
-    [runtime.ui],
-  );
-
-  const gameContextValue = useMemo(
-    () =>
-      buildGameContextValue({
-        gameState,
-        enemies,
-        towers,
-        projectiles,
-        effects,
-        waveState,
-        step,
-        removeEffect,
-        placeTower,
-        startGame,
-        resetGame,
-        selectedTower: runtime.ui.selectedTower,
-        setSelectedTower,
-        selectedEntityId: runtime.ui.selectedEntityId,
-        setSelectedEntityId,
-        upgradeTower,
-        sellTower,
-        isValidPlacement,
-        mapGrid,
-        pathWaypoints,
-        startNextSector,
-        purchaseUpgrade,
-        setGraphicsQuality,
-        resetCheckpoint,
-        factoryReset,
-        applyCheckpointSave,
-        exportCheckpointJson,
-        skipWave,
-        gameSpeed,
-        setGameSpeed,
-        renderStateRef,
-        clearAnnouncement,
-        startRogueliteRun,
-        nextRoguePhase,
-        setCustomMapLayout,
-      }),
-    [
-      gameState,
-      enemies,
-      towers,
-      projectiles,
-      effects,
-      waveState,
-      step,
-      removeEffect,
-      placeTower,
-      startGame,
-      resetGame,
-      runtime.ui.selectedTower,
-      setSelectedTower,
-      runtime.ui.selectedEntityId,
-      setSelectedEntityId,
-      upgradeTower,
-      sellTower,
-      isValidPlacement,
-      mapGrid,
-      pathWaypoints,
-      startNextSector,
-      purchaseUpgrade,
-      setGraphicsQuality,
-      resetCheckpoint,
-      factoryReset,
-      applyCheckpointSave,
-      exportCheckpointJson,
-      skipWave,
-      gameSpeed,
-      setGameSpeed,
-      renderStateRef,
-      clearAnnouncement,
-      startRogueliteRun,
-      nextRoguePhase,
-      setCustomMapLayout,
-    ],
+    [ui],
   );
 
   const gameUiValue = useMemo(
     () =>
       buildGameUiValue({
         gameState,
+        towers,
         waveState,
         step,
         removeEffect,
         placeTower,
         startGame,
         resetGame,
-        selectedTower: runtime.ui.selectedTower,
+        selectedTower: ui.selectedTower,
         setSelectedTower,
-        selectedEntityId: runtime.ui.selectedEntityId,
+        selectedEntityId: ui.selectedEntityId,
         setSelectedEntityId,
         upgradeTower,
         sellTower,
@@ -201,15 +117,16 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
       }),
     [
       gameState,
+      towers,
       waveState,
       step,
       removeEffect,
       placeTower,
       startGame,
       resetGame,
-      runtime.ui.selectedTower,
+      ui.selectedTower,
       setSelectedTower,
-      runtime.ui.selectedEntityId,
+      ui.selectedEntityId,
       setSelectedEntityId,
       upgradeTower,
       sellTower,
@@ -236,23 +153,44 @@ export const GameProvider = ({ children }: { children: ReactNode }) => {
     () =>
       buildWorldValue({
         mapGrid,
-        currentMapIndex: runtime.ui.currentMapIndex,
+        currentMapIndex: ui.currentMapIndex,
         placeTower,
         isValidPlacement,
-        selectedTower: runtime.ui.selectedTower,
-        gameStatus: runtime.ui.gameStatus,
+        selectedTower: ui.selectedTower,
+        gameStatus: ui.gameStatus,
         setSelectedEntityId,
         renderStateRef,
       }),
     [
       mapGrid,
-      runtime.ui.currentMapIndex,
+      ui.currentMapIndex,
       placeTower,
       isValidPlacement,
-      runtime.ui.selectedTower,
-      runtime.ui.gameStatus,
+      ui.selectedTower,
+      ui.gameStatus,
       setSelectedEntityId,
       renderStateRef,
+    ],
+  );
+
+  const gameContextValue = useMemo(
+    () => ({
+      runtimeStore,
+      enemyTypeMap,
+      pathWaypoints,
+      mapGrid,
+      isValidPlacement,
+      renderStateRef,
+      ui: gameUiValue,
+    }),
+    [
+      runtimeStore,
+      enemyTypeMap,
+      pathWaypoints,
+      mapGrid,
+      isValidPlacement,
+      renderStateRef,
+      gameUiValue,
     ],
   );
 

@@ -14,6 +14,7 @@ import type {
   EngineEnemy,
   EngineProjectile,
   EngineMutableVector3,
+  EngineVector3,
 } from './types';
 import { stepWave } from './wave';
 
@@ -38,6 +39,7 @@ export interface EngineCache {
   // Reusable spatial grid + scratch vectors
   spatialGrid?: SpatialGrid;
   scratchEnemyPos: EngineMutableVector3;
+  projectileTargetPositions?: Map<string, EngineVector3>;
   /** Reusable Vector3 tuples for the per-tower target position. */
   targetPositionPool: EngineMutableVector3[];
 }

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 
 import { useAudio } from '../../game/audio/useAudio';
-import { useGame } from '../../game/gameContexts';
+import { useGameUi } from '../../game/gameContexts';
 
 import { SettingsAudioSection } from './settings/SettingsAudioSection';
 import { SettingsExportImportSection } from './settings/SettingsExportImportSection';
@@ -22,7 +22,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ open, onClose }) =
     factoryReset,
     applyCheckpointSave,
     exportCheckpointJson,
-  } = useGame();
+  } = useGameUi();
 
   const { masterVolume, sfxVolume, musicVolume, setMasterVolume, setSFXVolume, setMusicVolume } =
     useAudio();

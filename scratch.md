@@ -37,10 +37,10 @@ High-severity, user-visible bugs with tight scope and immediate impact. Land reg
 
 Fix the store/context plumbing and hot-path rendering pipeline before layering on new UI controls or 3D visual features.
 
-- [ ] **#132** — Eliminate 60 Hz React re-renders and 3× redundant Zustand reducer execution (`useGameStores.ts`, `battleStore.ts`, `uiStore.ts`, `GameState.tsx`, `useDerivedEntities.ts`, `useGameStep.ts`, `App.tsx`) _(related: `#105`)_
-- [ ] **#129** — Fix particle frustum pop-out (`Effects.tsx`, `Trails.tsx`), Roguelite tile buffer overflow (`World.tsx`), and trail `depthWrite` / pause artifacts
-- [ ] **#134** — Optimize GPU instance uploads (`mesh.count` / dirty flags in `Trails`/`Effects`), hoist `activeMeshes` & memoize `setMeshRef` in `useInstancedUpdater.ts`, fix `targetPositionPool` leak in `tower.ts` & tuple churn in `projectile.ts`
-- [ ] **#130** — Remove unused Three.js shadow and lighting pipeline (`GameCanvas.tsx`, `Scene.tsx`) — or intentionally wire lit materials + shadows
+- [x] **#132** — Eliminate 60 Hz React re-renders and 3× redundant Zustand reducer execution (`useGameStores.ts`, `battleStore.ts`, `uiStore.ts`, `GameState.tsx`, `useDerivedEntities.ts`, `useGameStep.ts`, `App.tsx`) _(related: `#105`)_
+- [x] **#129** — Fix particle frustum pop-out (`Effects.tsx`, `Trails.tsx`), Roguelite tile buffer overflow (`World.tsx`), and trail `depthWrite` / pause artifacts
+- [x] **#134** — Optimize GPU instance uploads (`mesh.count` / dirty flags in `Trails`/`Effects`), hoist `activeMeshes` & memoize `setMeshRef` in `useInstancedUpdater.ts`, fix `targetPositionPool` leak in `tower.ts` & tuple churn in `projectile.ts`
+- [x] **#130** — Remove unused Three.js shadow and lighting pipeline (`GameCanvas.tsx`, `Scene.tsx`) — or intentionally wire lit materials + shadows
 
 **Dependency note:** Do `#132` before Batch 5 (UI/Pause/Shortcuts) so new UI features subscribe cleanly without re-introducing 60 Hz re-renders.
 

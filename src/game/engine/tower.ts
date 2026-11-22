@@ -119,7 +119,9 @@ export const stepTowers = (
 
     let targetId: string | undefined;
     let minDistanceSquared = Infinity;
-    let targetPosition: EngineVector3 | undefined;
+    let targetX = 0;
+    let targetY = 0;
+    let targetZ = 0;
 
     if (spatialGrid) {
       forEachNearbyEnemy(
@@ -137,12 +139,9 @@ export const stepTowers = (
           if (d2 <= rangeSquared && d2 < minDistanceSquared) {
             minDistanceSquared = d2;
             targetId = enemy.id;
-            targetPosition = allocTargetPosition(
-              targetPositionPool,
-              position[0],
-              position[1],
-              position[2],
-            );
+            targetX = position[0];
+            targetY = position[1];
+            targetZ = position[2];
           }
         },
       );
@@ -153,12 +152,9 @@ export const stepTowers = (
         if (d2 <= rangeSquared && d2 < minDistanceSquared) {
           minDistanceSquared = d2;
           targetId = enemy.id;
-          targetPosition = allocTargetPosition(
-            targetPositionPool,
-            scratchEnemyPos[0],
-            scratchEnemyPos[1],
-            scratchEnemyPos[2],
-          );
+          targetX = scratchEnemyPos[0];
+          targetY = scratchEnemyPos[1];
+          targetZ = scratchEnemyPos[2];
         }
       }
     }
@@ -186,7 +182,7 @@ export const stepTowers = (
       color,
       freezeDuration: stats.freezeDuration,
       splashRadius: stats.splashRadius,
-      lastTargetPosition: targetPosition,
+      lastTargetPosition: allocTargetPosition(targetPositionPool, targetX, targetY, targetZ),
     });
 
     events.immediate.push({ type: 'ProjectileFired', projectileId, towerId: tower.id });

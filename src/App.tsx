@@ -4,7 +4,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { UI } from './components/UI';
 import { AudioProvider } from './game/audio/AudioManager';
 import { GameCanvas } from './game/GameCanvas';
-import { useGame } from './game/gameContexts';
+import { useGameUi } from './game/gameContexts';
 import { GameProvider } from './game/GameState';
 
 /**
@@ -12,7 +12,7 @@ import { GameProvider } from './game/GameState';
  * Renders the 3D game canvas and the UI overlay within a full-screen container.
  */
 const AppContent = () => {
-  const { gameState } = useGame();
+  const { gameState } = useGameUi();
   return (
     <div className="relative w-full h-screen overflow-hidden select-none">
       <GameCanvas key={gameState.sessionNonce} />

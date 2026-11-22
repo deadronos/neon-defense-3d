@@ -22,6 +22,37 @@ const path: [number, number][] = [
 ];
 
 describe('engine stepProjectiles', () => {
+  it('shares the last known target position for live projectiles and reuses it while the target is stationary', () => {
+    const projectile = {
+      id: 'p1',
+      origin: [10, 1, 0] as const,
+      targetId: 'e1',
+      speed: 1,
+      progress: 0,
+      damage: 1,
+    };
+    const enemy = { id: 'e1', type: 'Drone', pathIndex: 0, progress: 0, hp: 10, speed: 1 };
+    const state = setupProjectileTest([projectile, { ...projectile, id: 'p2' }], [enemy]);
+    const context = { deltaMs: 16, nowMs: 16, rng: () => 0.5 };
+    const first = stepProjectiles(state, path, context).patch.projectiles ?? [];
+    expect(first).toHaveLength(2);
+    const position = first[0].lastTargetPosition;
+    expect(first[1].lastTargetPosition).toBe(position);
+
+    const second = stepProjectiles({ ...state, projectiles: first }, path, context).patch
+      .projectiles;
+    expect(second?.[0].lastTargetPosition).toBe(position);
+
+    const movedEnemy = { ...state.enemies[0], progress: 0.5 };
+    const moved = stepProjectiles(
+      { ...state, projectiles: first, enemies: [movedEnemy] },
+      path,
+      context,
+    ).patch.projectiles;
+    expect(moved?.[0].lastTargetPosition).not.toEqual(position);
+    expect(position).toEqual([0, 1, 0]);
+  });
+
   it('resolves hits, kills enemies, spawns effects, and defers rewards', () => {
     const state = setupProjectileTest(
       [

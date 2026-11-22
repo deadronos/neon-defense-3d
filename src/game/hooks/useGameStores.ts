@@ -1,18 +1,15 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import type { StoreApi } from 'zustand';
 import { useStore } from 'zustand';
+import { useShallow } from 'zustand/react/shallow';
 
-import { createBattleStore } from '../stores/battleStore';
-import type { BattleStoreState } from '../stores/battleStore';
 import { createGameSpeedStore } from '../stores/gameSpeedStore';
 import type { GameSpeedStoreState } from '../stores/gameSpeedStore';
 import { createRenderStateStore } from '../stores/renderStateStore';
 import type { RenderStateStoreState } from '../stores/renderStateStore';
-import type { RuntimeAction } from '../stores/runtimeReducer';
 import { createRuntimeStore } from '../stores/runtimeStore';
 import type { RuntimeStoreState } from '../stores/runtimeStore';
-import { createUiStore } from '../stores/uiStore';
-import type { UiStoreState } from '../stores/uiStore';
+import { toWaveState } from '../transforms';
 
 const ensureStoreRef = <T>(factory: () => StoreApi<T>, ref: { current: StoreApi<T> | null }) => {
   ref.current ??= factory();
@@ -21,36 +18,45 @@ const ensureStoreRef = <T>(factory: () => StoreApi<T>, ref: { current: StoreApi<
 
 export const useGameStores = () => {
   const runtimeStoreRef = useRef<StoreApi<RuntimeStoreState> | null>(null);
-  const battleStoreRef = useRef<StoreApi<BattleStoreState> | null>(null);
-  const uiStoreRef = useRef<StoreApi<UiStoreState> | null>(null);
   const renderStateStoreRef = useRef<StoreApi<RenderStateStoreState> | null>(null);
   const gameSpeedStoreRef = useRef<StoreApi<GameSpeedStoreState> | null>(null);
 
   const runtimeStore = ensureStoreRef(createRuntimeStore, runtimeStoreRef);
-  const battleStore = ensureStoreRef(createBattleStore, battleStoreRef);
-  const uiStore = ensureStoreRef(createUiStore, uiStoreRef);
   const renderStateStore = ensureStoreRef(createRenderStateStore, renderStateStoreRef);
   const gameSpeedStore = ensureStoreRef(createGameSpeedStore, gameSpeedStoreRef);
 
-  const runtime = useStore(runtimeStore, (state) => state.runtime);
+  const ui = useStore(runtimeStore, (state) => state.runtime.ui);
+  const hudTowers = useStore(runtimeStore, (state) => state.hudTowers);
+  const waveState = useStore(
+    runtimeStore,
+    useShallow((state: RuntimeStoreState) => {
+      const wave = toWaveState(state.runtime.engine.wave);
+      if (!wave) return null;
+      // The HUD displays tenths of a second during preparation only.
+      wave.timer =
+        wave.phase === 'preparing' && wave.timer > 0
+          ? Math.max(0.001, Number(wave.timer.toFixed(1)))
+          : 0;
+      return wave;
+    }),
+  );
   const renderStateRef = useStore(renderStateStore, (state) => state.renderStateRef);
   const gameSpeed = useStore(gameSpeedStore, (state) => state.gameSpeed);
   const setGameSpeed = useStore(gameSpeedStore, (state) => state.setGameSpeed);
 
-  return {
-    runtime,
-    getRuntime: () => runtimeStore.getState().runtime,
-    dispatch: (action: RuntimeAction) => {
-      if (action.type === 'uiAction') {
-        uiStore.getState().dispatch(action);
-        runtimeStore.getState().dispatch(action);
-        return;
-      }
+  const getRuntime = useCallback(() => runtimeStore.getState().runtime, [runtimeStore]);
+  const dispatch = useCallback<RuntimeStoreState['dispatch']>(
+    (action) => runtimeStore.getState().dispatch(action),
+    [runtimeStore],
+  );
 
-      battleStore.getState().dispatch(action);
-      uiStore.getState().dispatch(action);
-      runtimeStore.getState().dispatch(action);
-    },
+  return {
+    ui,
+    hudTowers,
+    waveState,
+    getRuntime,
+    dispatch,
+    runtimeStore,
     renderStateRef,
     gameSpeed,
     setGameSpeed,

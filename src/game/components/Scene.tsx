@@ -1,4 +1,4 @@
-import { OrbitControls, SoftShadows } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing';
 import React from 'react';
 import * as THREE from 'three';
@@ -30,11 +30,6 @@ export const SceneContent = () => {
     <>
       <StarField count={isHigh ? 3000 : 1200} />
 
-      {/* Dark Ambient & Rim Lighting */}
-      <ambientLight intensity={0.1} />
-      <directionalLight position={[-10, 20, -10]} intensity={0.5} color="#4444ff" />
-      <directionalLight position={[10, 5, 10]} intensity={0.5} color="#ff00ff" />
-
       <GameLoopBridge />
       <RogueliteManager />
 
@@ -56,8 +51,6 @@ export const SceneContent = () => {
         minDistance={10}
         maxDistance={50}
       />
-
-      {isHigh ? <SoftShadows size={10} samples={8} /> : null}
 
       {/* Post Processing */}
       {isHigh ? (

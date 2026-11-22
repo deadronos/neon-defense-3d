@@ -32,7 +32,7 @@ const resetCheckpoint = () => state.resetCheckpointMock();
 const factoryReset = () => state.factoryResetMock();
 
 vi.mock('../../game/gameContexts', () => ({
-  useGame: () => ({
+  useGameUi: () => ({
     gameState: {
       graphicsQuality: 'high',
       waveStartedNonce: 0,

@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { useRenderState } from '../gameContexts';
 
 import { spawnExplosion } from './effects/spawners';
-import { ensureInstanceColor, TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
+import { ensureInstanceColor, TEMP_COLOR } from './instancing/instancedUtils';
 import { ParticlePool } from './instancing/ParticlePool';
 
 export const InstancedExplosions: React.FC<{
@@ -22,13 +22,10 @@ export const InstancedExplosions: React.FC<{
   React.useLayoutEffect(() => {
     if (!meshRef.current) return;
     ensureInstanceColor(meshRef.current, count);
-    for (let i = 0; i < count; i++) {
-      meshRef.current.setMatrixAt(i, ZERO_MATRIX);
-    }
-    meshRef.current.instanceMatrix.needsUpdate = true;
+    meshRef.current.count = 0;
   }, [count]);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (!meshRef.current) return;
 
     const effects = renderStateRef.current.effects;
@@ -57,7 +54,6 @@ export const InstancedExplosions: React.FC<{
 
       if (pool.life[i] <= 0) {
         pool.deactivateParticle(i);
-        meshRef.current.setMatrixAt(i, ZERO_MATRIX);
         continue;
       }
 
@@ -71,9 +67,9 @@ export const InstancedExplosions: React.FC<{
       dummy.scale.set(s, s, s);
       dummy.updateMatrix();
 
-      meshRef.current.setMatrixAt(i, dummy.matrix);
+      meshRef.current.setMatrixAt(listPos, dummy.matrix);
       TEMP_COLOR.setRGB(pool.color[i * 3], pool.color[i * 3 + 1], pool.color[i * 3 + 2]);
-      meshRef.current.setColorAt(i, TEMP_COLOR);
+      meshRef.current.setColorAt(listPos, TEMP_COLOR);
 
       const effectId = pool.associatedEffectId[i];
       if (effectId) activeEffectIds.add(effectId);
@@ -81,9 +77,17 @@ export const InstancedExplosions: React.FC<{
       listPos++;
     }
 
-    meshRef.current.instanceMatrix.needsUpdate = true;
-    if (meshRef.current.instanceColor) {
-      meshRef.current.instanceColor.needsUpdate = true;
+    meshRef.current.count = pool.activeListSize;
+    if (pool.activeListSize > 0) {
+      const { instanceMatrix, instanceColor } = meshRef.current;
+      instanceMatrix.clearUpdateRanges();
+      instanceMatrix.addUpdateRange(0, pool.activeListSize * instanceMatrix.itemSize);
+      instanceMatrix.needsUpdate = true;
+      if (instanceColor) {
+        instanceColor.clearUpdateRanges();
+        instanceColor.addUpdateRange(0, pool.activeListSize * instanceColor.itemSize);
+        instanceColor.needsUpdate = true;
+      }
     }
 
     for (const e of effects) {
@@ -95,7 +99,7 @@ export const InstancedExplosions: React.FC<{
   });
 
   return (
-    <instancedMesh ref={meshRef} args={[undefined, undefined, count]}>
+    <instancedMesh ref={meshRef} frustumCulled={false} args={[undefined, undefined, count]}>
       <boxGeometry args={[0.5, 0.5, 0.5]} />
       <meshBasicMaterial toneMapped={false} vertexColors />
     </instancedMesh>
