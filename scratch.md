@@ -88,8 +88,8 @@ Core gameplay & visual upgrades layered on top of the stabilized engine and rend
 
 Cleanup and cross-cutting test infrastructure. Small hygiene deletions from `#138` can be cherry-picked earlier if convenient.
 
-- [ ] **#138** — Delete `src/game/wfc/rogue_flag.txt`, clean unused `wfc/rules.ts` / `UpgradeType.TOWER_DAMAGE` / `Synth.safeClearInterval` / `renderStateUtils.ts` scratch comments, remove stale `index.html` CDN `importmap`, type `useInstancedUpdater` with `RenderState`, and configure Vite bundle chunk splitting
-- [ ] **#139** — Complete cross-seam integration regression tests and speed up Vitest `jsdom` setup (`pool: 'vmThreads'` or `node` env for pure engine/audio/perf tests)
+- [x] **#138** — Delete `src/game/wfc/rogue_flag.txt`, clean unused `wfc/rules.ts` / `UpgradeType.TOWER_DAMAGE` / `Synth.safeClearInterval` / `renderStateUtils.ts` scratch comments, remove stale `index.html` CDN `importmap`, type `useInstancedUpdater` with `RenderState`, and configure Vite bundle chunk splitting
+- [x] **#139** — Complete cross-seam integration regression tests and speed up Vitest `jsdom` setup (`pool: 'vmThreads'` or `node` env for pure engine/audio/perf tests)
 
 ---
 

@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { afterEach, expect, it, vi } from 'vitest';
 
 import { MAP_HEIGHT, MAP_WIDTH, generatePath } from '../../../constants';

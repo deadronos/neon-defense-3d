@@ -77,7 +77,6 @@ export const UpgradeType = {
   GLOBAL_RANGE: 'GLOBAL_RANGE',
   GLOBAL_GREED: 'GLOBAL_GREED',
   // Per-tower or specific upgrades
-  TOWER_DAMAGE: 'TOWER_DAMAGE',
   // Can add specific tower upgrades later if needed, generic for now
 } as const;
 

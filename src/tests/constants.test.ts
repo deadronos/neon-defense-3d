@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 /**
  * Test suite for verifying game constants and configuration.
  * Ensures map dimensions, pathfinding generation, and entity configurations are valid.
