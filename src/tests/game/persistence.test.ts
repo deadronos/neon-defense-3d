@@ -41,6 +41,31 @@ describe('persistence (Tier-B checkpoint)', () => {
     vi.restoreAllMocks();
   });
 
+  it.each(['strongest', undefined] as const)(
+    'round-trips tower targeting mode %s',
+    (targetingMode) => {
+      const ui = createInitialUiState();
+      const engine = applyEnginePatch(createInitialEngineState(), {
+        towers: [
+          {
+            id: 't1',
+            type: TowerType.Basic,
+            level: 1,
+            gridPosition: [0, 0],
+            lastFired: 0,
+            targetingMode,
+          },
+        ],
+      });
+      const migrated = migrateSave(JSON.parse(JSON.stringify(serializeCheckpoint(ui, engine))));
+      expect(migrated.ok).toBe(true);
+      if (!migrated.save) throw new Error('Expected a checkpoint');
+      expect(buildRuntimeFromCheckpoint(migrated.save, ui).engine.towers[0]?.targetingMode).toBe(
+        targetingMode ?? 'first',
+      );
+    },
+  );
+
   it('migrateSave rejects non-object payloads', () => {
     const result = migrateSave('nope');
     expect(result.ok).toBe(false);

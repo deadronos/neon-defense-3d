@@ -2,6 +2,11 @@ import { TOWER_CONFIGS } from '../constants';
 import type { ActiveSynergy, TowerType } from '../types';
 import { SynergyType, UpgradeType } from '../types';
 
+export const MAX_RESEARCH_LEVEL = 10;
+export const getResearchCost = (level: number) => 1 + (level * (level + 1)) / 2;
+const getTowerUpgradeCost = (baseCost: number, level: number) =>
+  Math.floor(baseCost * 0.55 * Math.pow(1.45, level - 1));
+
 const SELL_REFUND_RATE = 0.7;
 
 /**
@@ -13,7 +18,7 @@ export const calculateTowerTotalInvestment = (type: TowerType, level: number) =>
 
   let totalInvestment = base.cost;
   for (let l = 1; l < level; l += 1) {
-    totalInvestment += Math.floor(base.cost * Math.pow(1.5, l));
+    totalInvestment += getTowerUpgradeCost(base.cost, l);
   }
 
   return totalInvestment;
@@ -43,6 +48,9 @@ export const getTowerStats = (
       case SynergyType.SYNCHRONIZED_FIRE:
         fireRateMult += 0.15;
         break;
+      case SynergyType.SHATTER:
+        dmgMult += 0.2;
+        break;
       case SynergyType.TRIANGULATION:
         rangeMult += 0.2;
         dmgMult += 0.1;
@@ -58,16 +66,18 @@ export const getTowerStats = (
 
   // Cooldown is uniform 1/FireRate.
   // Base cooldown is reduced by level. Then we divide by fireRateMult.
-  const levelCooldown = Math.max(0.1, base.cooldown * (1 - (level - 1) * 0.05));
+  const levelCooldown = Math.max(base.cooldown * 0.5, base.cooldown * (1 - (level - 1) * 0.05));
   const finalCooldown = levelCooldown / fireRateMult;
 
   return {
     damage: Math.floor(base.damage * Math.pow(1.5, level - 1) * dmgMult),
     range: base.range * (1 + (level - 1) * 0.1) * rangeMult,
     cooldown: finalCooldown,
-    upgradeCost: Math.floor(base.cost * Math.pow(1.5, level)),
+    upgradeCost: getTowerUpgradeCost(base.cost, level),
     cost: base.cost, // Base placement cost
-    freezeDuration: base.freezeDuration, // Pass through for gameplay usage
-    splashRadius: base.splashRadius, // Pass through for gameplay usage
+    freezeDuration:
+      base.freezeDuration === undefined ? undefined : base.freezeDuration * (1 + (level - 1) * 0.2),
+    splashRadius:
+      base.splashRadius === undefined ? undefined : base.splashRadius * (1 + (level - 1) * 0.15),
   };
 };

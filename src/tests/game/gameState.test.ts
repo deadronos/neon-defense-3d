@@ -104,14 +104,14 @@ describe('GameProvider (engine-backed)', () => {
     });
 
     expect(result.current.towers[0].level).toBe(2);
-    expect(result.current.gameState.money).toBe(25);
+    expect(result.current.gameState.money).toBe(73);
 
     act(() => {
       result.current.sellTower(towerId);
     });
 
     expect(result.current.towers).toHaveLength(0);
-    expect(result.current.gameState.money).toBe(112);
+    expect(result.current.gameState.money).toBe(126);
   });
 
   it('refunds pro-rated tower investment when advancing a roguelite phase', () => {
@@ -133,7 +133,7 @@ describe('GameProvider (engine-backed)', () => {
       result.current.upgradeTower(towerId);
     });
 
-    expect(result.current.gameState.money).toBe(25);
+    expect(result.current.gameState.money).toBe(73);
 
     act(() => {
       result.current.nextRoguePhase('seed-2');
@@ -141,7 +141,7 @@ describe('GameProvider (engine-backed)', () => {
 
     expect(result.current.gameState.roguePhase).toBe(2);
     expect(result.current.towers).toHaveLength(0);
-    expect(result.current.gameState.money).toBe(112);
+    expect(result.current.gameState.money).toBe(126);
   });
 
   it('does not place a tower if unaffordable (e.g. Sniper at game start)', () => {
@@ -200,7 +200,7 @@ describe('GameProvider (engine-backed)', () => {
     });
 
     act(() => {
-      // Rapid costs 120, leaving 30 which is < upgradeCost (180)
+      // Rapid costs 120, leaving 30 which is < upgradeCost (66)
       result.current.placeTower(0, 0, TowerType.Rapid);
     });
 

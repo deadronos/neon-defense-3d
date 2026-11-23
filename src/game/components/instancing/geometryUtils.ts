@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
+import { TowerType } from '../../../types';
+
 export { mergeGeometries };
 
 export const createComplexTowerBase = (): THREE.BufferGeometry => {
@@ -58,10 +60,10 @@ export const createComplexTowerBase = (): THREE.BufferGeometry => {
     }
 
     // CRITICAL: Ensure all geometries are non-indexed for safe merging
-    const nonIndexedParts = parts.map((g) => g.toNonIndexed());
+    const nonIndexedParts = parts.map((g) => (g.index ? g.toNonIndexed() : g));
 
     // Dispose originals
-    for (const g of parts) g.dispose();
+    for (const g of parts) if (g.index) g.dispose();
     pylonGeo.dispose();
 
     // 3. Merge
@@ -79,5 +81,24 @@ export const createComplexTowerBase = (): THREE.BufferGeometry => {
   } catch (err) {
     console.error('Failed to generate complex tower geometry:', err);
     return new THREE.BoxGeometry(1, 0.2, 1);
+  }
+};
+
+export const createTurretGeometry = (type: TowerType): THREE.BufferGeometry => {
+  switch (type) {
+    case TowerType.Basic:
+      return new THREE.CylinderGeometry(0.19, 0.33, 1.25, 8)
+        .rotateX(Math.PI / 2)
+        .translate(0, 0, 0.28);
+    case TowerType.Rapid:
+      return new THREE.TorusKnotGeometry(0.36, 0.11, 32, 6, 2, 3).scale(1, 1, 1.6);
+    case TowerType.Sniper:
+      return new THREE.BoxGeometry(0.23, 0.22, 1.95).translate(0, 0, 0.42);
+    case TowerType.Cryo:
+      return new THREE.OctahedronGeometry(0.64, 0).scale(0.8, 1, 1.4);
+    case TowerType.Missile:
+      return new THREE.CylinderGeometry(0.35, 0.51, 1, 6)
+        .rotateX(Math.PI / 2)
+        .translate(0, 0, 0.12);
   }
 };

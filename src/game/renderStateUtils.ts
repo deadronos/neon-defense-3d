@@ -133,6 +133,8 @@ export const syncRenderState = (
       const baseConfig = enemyTypeMap.get(engEnemy.type);
       renderEnemy = {
         id: engEnemy.id,
+        type: engEnemy.type,
+        maxHp: engEnemy.maxHp ?? engEnemy.hp,
         config: {
           speed: engEnemy.speed ?? baseConfig?.speed ?? 0,
           hp: engEnemy.hp,
@@ -208,6 +210,7 @@ export const syncRenderState = (
       position: [engTower.gridPosition[0] * tileSize, 0.5, engTower.gridPosition[1] * tileSize],
       lastFired: engTower.lastFired,
       targetId: engTower.targetId ?? null,
+      targetingMode: engTower.targetingMode ?? 'first',
       level: engTower.level,
       activeSynergies: engTower.activeSynergies,
     };

@@ -7,6 +7,7 @@ import { useRenderState } from '../gameContexts';
 
 const SYNERGY_COLORS: Record<SynergyType, THREE.Color> = {
   [SynergyType.SYNCHRONIZED_FIRE]: new THREE.Color('#00f2ff').multiplyScalar(2.5),
+  [SynergyType.SHATTER]: new THREE.Color('#ff9d42').multiplyScalar(3.5),
   [SynergyType.TRIANGULATION]: new THREE.Color('#9d00ff').multiplyScalar(3.5),
   [SynergyType.COVER_FIRE_SOURCE]: new THREE.Color('#00ff00').multiplyScalar(2.5),
   [SynergyType.COVER_FIRE_RECEIVER]: new THREE.Color('#00ff00').multiplyScalar(2.5),

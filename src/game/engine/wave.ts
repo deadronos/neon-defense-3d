@@ -82,6 +82,7 @@ const spawnEnemy = (
     pathIndex: 0,
     progress: 0,
     hp,
+    maxHp: hp,
     shield,
     maxShield: shield,
     speed: typeConfig.speed,
@@ -106,7 +107,7 @@ const startNextWave = (
   const nextWaveState: EngineWaveState = {
     wave: nextWave,
     phase: 'spawning',
-    enemiesRemainingToSpawn: config.count,
+    enemiesRemainingToSpawn: config.count + config.bossCount,
     enemiesAlive: 0,
     timerMs: config.intervalMs,
     spawnIntervalMs: config.intervalMs,
@@ -165,11 +166,12 @@ export const stepWave = (
     const spawnIntervalMs = waveState.spawnIntervalMs;
     const spawnList: EngineEnemy[] = [];
 
+    const config = createWaveConfig(waveState.wave);
     while (remaining > 0 && timerMs <= 0) {
       if (pathWaypoints.length === 0) break;
 
-      const config = createWaveConfig(waveState.wave);
-      const isBoss = remaining <= config.bossCount;
+      const escortStride = Math.floor((config.count + config.bossCount) / (config.bossCount + 1));
+      const isBoss = remaining % escortStride === 0 && remaining / escortStride <= config.bossCount;
       const spawnResult = spawnEnemy(
         state,
         waveState.wave,
@@ -180,7 +182,7 @@ export const stepWave = (
       );
       idCounters = spawnResult.idCounters;
       spawnList.push(spawnResult.enemy);
-      timerMs += spawnIntervalMs;
+      timerMs += isBoss ? spawnIntervalMs * 1.5 : spawnIntervalMs;
       remaining -= 1;
     }
 

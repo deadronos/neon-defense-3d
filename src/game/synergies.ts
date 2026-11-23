@@ -17,7 +17,12 @@ export const SYNERGIES: Record<SynergyType, SynergyDef> = {
   [SynergyType.TRIANGULATION]: {
     id: SynergyType.TRIANGULATION,
     name: 'Triangulation',
-    description: '+20% Range, +10% Critical Chance', // Updated description
+    description: '+20% Range, +10% Damage',
+  },
+  [SynergyType.SHATTER]: {
+    id: SynergyType.SHATTER,
+    name: 'Shatter',
+    description: '+20% Damage',
   },
   [SynergyType.COVER_FIRE_SOURCE]: {
     id: SynergyType.COVER_FIRE_SOURCE,
@@ -30,6 +35,16 @@ export const SYNERGIES: Record<SynergyType, SynergyDef> = {
     description: '+5% Range',
   },
 };
+
+const isShatterPair = (a: string, b: string) =>
+  (a === TowerType.Cryo && b === TowerType.Missile) ||
+  (a === TowerType.Missile && b === TowerType.Cryo);
+
+export const canLinkTowers = (a: TowerType, b: TowerType) =>
+  a === TowerType.Basic ||
+  b === TowerType.Basic ||
+  (a === b && (a === TowerType.Rapid || a === TowerType.Sniper)) ||
+  isShatterPair(a, b);
 
 /**
  * Calculates active synergies for all towers.
@@ -77,6 +92,10 @@ export const calculateSynergies = (
       // 2. Triangulation (Sniper + Sniper)
       if (tower.type === TowerType.Sniper && neighbor.type === TowerType.Sniper) {
         active.push({ type: SynergyType.TRIANGULATION, partnerId: nid });
+      }
+
+      if (isShatterPair(tower.type, neighbor.type)) {
+        active.push({ type: SynergyType.SHATTER, partnerId: nid });
       }
 
       // 3. Cover Fire (Basic + Any)

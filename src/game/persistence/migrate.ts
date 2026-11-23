@@ -1,5 +1,5 @@
 import { MAP_LAYOUTS, getMapGrid } from '../../constants';
-import { TileType } from '../../types';
+import { TargetingMode, TileType } from '../../types';
 import { gridKey } from '../../utils/gridKey';
 
 import { knownTowerTypes, knownUpgradeKeys } from './constants';
@@ -146,7 +146,10 @@ export const migrateSave = (input: unknown): MigrateResult => {
       }
 
       occupied.add(key);
-      towersOut.push({ type, level, x, z });
+      const targetingMode = Object.values(TargetingMode).find(
+        (mode) => mode === towerRaw.targetingMode,
+      );
+      towersOut.push({ type, level, x, z, ...(targetingMode && { targetingMode }) });
     }
   }
 

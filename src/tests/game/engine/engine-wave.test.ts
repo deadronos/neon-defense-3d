@@ -27,10 +27,13 @@ describe('engine wave prep and start', () => {
     expect(result.patch.wave?.enemiesRemainingToSpawn).toBe(6);
   });
 
-  it('keeps boss waves at the base enemy count and reserves bosses for the tail of the wave', () => {
+  it.each([
+    [5, 12, 1],
+    [10, 20, 2],
+  ])('adds bosses among the normal escorts on wave %i', (wave, normalCount, bosses) => {
     const state = applyEnginePatch(createInitialEngineState(), {
       wave: {
-        wave: 4,
+        wave: wave - 1,
         phase: 'preparing',
         enemiesRemainingToSpawn: 0,
         enemiesAlive: 0,
@@ -41,9 +44,14 @@ describe('engine wave prep and start', () => {
 
     const result = stepWave(state, path, makeContext(0));
 
-    expect(result.events.immediate).toEqual([{ type: 'WaveStarted', wave: 5 }]);
-    expect(result.patch.wave?.enemiesRemainingToSpawn).toBe(12);
-    expect(result.patch.wave?.spawnIntervalMs).toBe(1500);
+    expect(result.events.immediate).toEqual([{ type: 'WaveStarted', wave }]);
+    expect(result.patch.wave?.enemiesRemainingToSpawn).toBe(normalCount + bosses);
+    const spawn = stepWave(applyEnginePatch(state, result.patch), path, makeContext(100_000));
+    const enemies = spawn.patch.enemies ?? [];
+    expect(enemies.filter((enemy) => enemy.type === 'Titan')).toHaveLength(bosses);
+    expect(enemies.filter((enemy) => enemy.type !== 'Titan')).toHaveLength(normalCount);
+    expect(enemies[0]?.type).not.toBe('Titan');
+    expect(enemies.at(-1)?.type).not.toBe('Titan');
   });
 });
 

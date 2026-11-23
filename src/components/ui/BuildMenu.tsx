@@ -24,9 +24,9 @@ const towerIcons = {
 const synergyHints = {
   [TowerType.Basic]: 'Cover Fire: gain damage beside any tower.',
   [TowerType.Rapid]: 'Synchronized Fire: gain fire rate beside another Rapid tower.',
-  [TowerType.Sniper]: 'Triangulation: gain range beside another Sniper tower.',
-  [TowerType.Cryo]: 'Cover Fire: gain range beside a Pulse Cannon.',
-  [TowerType.Missile]: 'Cover Fire: gain range beside a Pulse Cannon.',
+  [TowerType.Sniper]: 'Triangulation: +20% range and +10% damage beside another Sniper tower.',
+  [TowerType.Cryo]: 'Shatter: +20% damage beside a Missile Launcher.',
+  [TowerType.Missile]: 'Shatter: +20% damage beside a Cryo Projector.',
 };
 
 interface BuildMenuProps {

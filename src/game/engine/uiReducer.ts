@@ -1,5 +1,6 @@
 import { UpgradeType } from '../../types';
 import type { GraphicsQuality, TowerType } from '../../types';
+import { getResearchCost, MAX_RESEARCH_LEVEL } from '../utils';
 
 import type { EngineEvent } from './events';
 
@@ -109,7 +110,9 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
     case 'WaveCompleted': {
       if (event.wave > 0 && event.wave % 10 === 0 && state.gameStatus === 'playing') {
         if (state.gameMode === 'ROGUELITE') return { ...state, roguePhaseCompleted: true };
-        const earnedRP = Math.floor(state.totalDamageDealt / 200 + state.totalCurrencyEarned / 100);
+        const earnedRP =
+          3 +
+          Math.min(5, Math.floor(state.totalDamageDealt / 5000 + state.totalCurrencyEarned / 2500));
         return {
           ...state,
           gameStatus: 'victory',
@@ -129,6 +132,9 @@ const reduceEngineEvent = (state: UiState, event: EngineEvent): UiState => {
   }
 };
 
+const startingMoney = (state: UiState) =>
+  Math.floor(150 * (1 + (state.upgrades[UpgradeType.GLOBAL_GREED] ?? 0) * 0.05));
+
 // eslint-disable-next-line complexity
 export const uiReducer = (state: UiState, action: UiAction): UiState => {
   switch (action.type) {
@@ -143,7 +149,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         sessionNonce: state.sessionNonce + 1,
         gameStatus: 'playing',
         lives: MAX_LIVES,
-        money: 150,
+        money: startingMoney(state),
         wave: 1,
         waveStartedNonce: 0,
         lastWaveStartedWave: 0,
@@ -175,13 +181,12 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         sessionNonce: state.sessionNonce + 1,
       };
     case 'startNextSector': {
-      const greedLevel = state.upgrades[UpgradeType.GLOBAL_GREED] ?? 0;
-      const startMoney = Math.floor(150 * (1 + greedLevel * 0.05));
       return {
         ...state,
         currentMapIndex: state.currentMapIndex + 1,
         sessionNonce: state.sessionNonce + 1,
-        money: startMoney,
+        money: startingMoney(state),
+        lives: MAX_LIVES,
         wave: 1,
         waveStartedNonce: 0,
         lastWaveStartedWave: 0,
@@ -193,11 +198,12 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
       };
     }
     case 'purchaseUpgrade': {
-      if (state.researchPoints < action.cost) return state;
       const currentLevel = state.upgrades[action.upgrade] ?? 0;
+      const cost = getResearchCost(currentLevel);
+      if (currentLevel >= MAX_RESEARCH_LEVEL || state.researchPoints < cost) return state;
       return {
         ...state,
-        researchPoints: state.researchPoints - action.cost,
+        researchPoints: state.researchPoints - cost,
         upgrades: {
           ...state.upgrades,
           [action.upgrade]: currentLevel + 1,
@@ -228,7 +234,7 @@ export const uiReducer = (state: UiState, action: UiAction): UiState => {
         gameMode: 'ROGUELITE',
         gameStatus: 'playing',
         lives: MAX_LIVES,
-        money: 150, // Keep starting money 150 for fresh run
+        money: startingMoney(state),
         wave: 1,
         roguePhase: 1,
         roguePhaseCompleted: false,

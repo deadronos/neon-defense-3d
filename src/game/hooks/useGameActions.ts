@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { MAP_LAYOUTS, TILE_SIZE, TOWER_CONFIGS, generatePath } from '../../constants';
-import type { GraphicsQuality, TowerType, UpgradeType } from '../../types';
+import type { GraphicsQuality, TargetingMode, TowerType, UpgradeType } from '../../types';
 import { TileType } from '../../types';
 import { gridKey } from '../../utils/gridKey';
 import { createInitialEngineState } from '../engine/state';
@@ -67,6 +67,11 @@ export const useGameActions = ({
       dispatch({ type: 'uiAction', action: { type: 'setSelectedTower', tower: null } });
     },
     [dispatch, isValidPlacement, playSFX, getRuntime],
+  );
+
+  const setTowerTargetingMode = useCallback(
+    (id: string, mode: TargetingMode) => dispatch({ type: 'setTowerTargetingMode', id, mode }),
+    [dispatch],
   );
 
   const upgradeTower = useCallback(
@@ -247,6 +252,7 @@ export const useGameActions = ({
     isValidPlacement,
     placeTower,
     upgradeTower,
+    setTowerTargetingMode,
     sellTower,
     skipWave,
     startGame,

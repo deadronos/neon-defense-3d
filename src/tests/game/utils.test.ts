@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import { TOWER_CONFIGS } from '../../constants';
+import { calculateSynergies } from '../../game/synergies';
 import {
   calculateTowerRefundValue,
   calculateTowerTotalInvestment,
@@ -15,7 +16,7 @@ describe('getTowerStats', () => {
     expect(stats.damage).toBe(base.damage);
     expect(stats.range).toBe(base.range);
     expect(stats.cooldown).toBe(base.cooldown);
-    expect(stats.upgradeCost).toBe(Math.floor(base.cost * 1.5));
+    expect(stats.upgradeCost).toBe(Math.floor(base.cost * 0.55));
   });
 
   it('scales stats with level', () => {
@@ -88,17 +89,17 @@ describe('getTowerStats', () => {
   });
 
   it('enforces cooldown lower bound before applying fireRate multiplier', () => {
-    // level high enough to trigger levelCooldown < 0.1 clamp
+    // level high enough to trigger the relative cooldown floor
     const highLevel = 20;
     const statsNoSynergy = getTowerStats(TowerType.Basic, highLevel);
-    expect(statsNoSynergy.cooldown).toBeCloseTo(0.1);
+    expect(statsNoSynergy.cooldown).toBeCloseTo(0.4);
 
     const synergies = [{ type: SynergyType.SYNCHRONIZED_FIRE, partnerId: 'ally-1' }];
     const statsWithSynergy = getTowerStats(TowerType.Basic, highLevel, {
       activeSynergies: synergies,
     });
-    // clamp happens to 0.1 then divided by 1.15
-    expect(statsWithSynergy.cooldown).toBeCloseTo(0.1 / 1.15);
+    // clamp happens to 0.4 then divided by 1.15
+    expect(statsWithSynergy.cooldown).toBeCloseTo(0.4 / 1.15);
   });
 
   it('calculates cumulative tower investment and pro-rated refund value', () => {
@@ -107,7 +108,26 @@ describe('getTowerStats', () => {
     const totalLevel2 = calculateTowerTotalInvestment(TowerType.Basic, 2);
 
     expect(totalLevel1).toBe(base.cost);
-    expect(totalLevel2).toBe(base.cost + Math.floor(base.cost * 1.5));
+    expect(totalLevel2).toBe(base.cost + Math.floor(base.cost * 0.55));
     expect(calculateTowerRefundValue(TowerType.Basic, 2)).toBe(Math.floor(totalLevel2 * 0.7));
   });
+});
+
+it('rewards Cryo and Missile adjacency and scales both effects with tower level', () => {
+  const synergies = calculateSynergies([
+    { id: 'cryo', type: TowerType.Cryo, gridPosition: [0, 0] },
+    { id: 'missile', type: TowerType.Missile, gridPosition: [0, 1] },
+  ]);
+  for (const [id, type] of [
+    ['cryo', TowerType.Cryo],
+    ['missile', TowerType.Missile],
+  ] as const) {
+    const activeSynergies = synergies.get(id);
+    expect(activeSynergies?.[0]?.type).toBe(SynergyType.SHATTER);
+    expect(getTowerStats(type, 1, { activeSynergies }).damage).toBeGreaterThan(
+      getTowerStats(type, 1).damage,
+    );
+  }
+  expect(getTowerStats(TowerType.Cryo, 2).freezeDuration).toBe(2.4);
+  expect(getTowerStats(TowerType.Missile, 2).splashRadius).toBeCloseTo(3.45);
 });

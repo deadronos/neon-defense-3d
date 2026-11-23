@@ -118,12 +118,14 @@ export const stepTowers = (
     const rangeSquared = stats.range * stats.range;
 
     let targetId: string | undefined;
-    let minDistanceSquared = Infinity;
+    let bestScore = -Infinity;
+    let bestTie = -Infinity;
     let targetX = 0;
     let targetY = 0;
     let targetZ = 0;
 
     if (spatialGrid) {
+      const mode = tower.targetingMode ?? 'first';
       forEachNearbyEnemy(
         spatialGrid,
         towerPos,
@@ -132,34 +134,39 @@ export const stepTowers = (
         MAP_WIDTH,
         MAP_HEIGHT,
         (enemy) => {
-          const cachedPos = enemyPositions?.get(enemy.id);
           const position =
-            cachedPos ?? writeEnemyWorldPosition(scratchEnemyPos, enemy, pathWaypoints, tileSize);
-          const d2 = distanceSquared(towerPos, position);
-          if (d2 <= rangeSquared && d2 < minDistanceSquared) {
-            minDistanceSquared = d2;
-            targetId = enemy.id;
-            targetX = position[0];
-            targetY = position[1];
-            targetZ = position[2];
-          }
+            enemyPositions?.get(enemy.id) ??
+            writeEnemyWorldPosition(scratchEnemyPos, enemy, pathWaypoints, tileSize);
+          const distance = distanceSquared(towerPos, position);
+          if (distance > rangeSquared) return;
+          const progress = enemy.pathIndex + enemy.progress;
+          const score =
+            mode === 'closest'
+              ? -distance
+              : mode === 'strongest'
+                ? enemy.hp + (enemy.shield ?? 0)
+                : mode === 'last'
+                  ? -progress
+                  : progress;
+          const tie = mode === 'strongest' ? progress : -distance;
+          if (score < bestScore || (score === bestScore && tie <= bestTie)) return;
+          bestScore = score;
+          bestTie = tie;
+          targetId = enemy.id;
+          targetX = position[0];
+          targetY = position[1];
+          targetZ = position[2];
         },
       );
-    } else {
-      for (const enemy of state.enemies) {
-        writeEnemyWorldPosition(scratchEnemyPos, enemy, pathWaypoints, tileSize);
-        const d2 = distanceSquared(towerPos, scratchEnemyPos);
-        if (d2 <= rangeSquared && d2 < minDistanceSquared) {
-          minDistanceSquared = d2;
-          targetId = enemy.id;
-          targetX = scratchEnemyPos[0];
-          targetY = scratchEnemyPos[1];
-          targetZ = scratchEnemyPos[2];
-        }
-      }
     }
 
-    if (!targetId) continue;
+    if (!targetId) {
+      if (tower.targetId !== undefined) {
+        nextTowers ??= state.towers.slice();
+        nextTowers[index] = { ...tower, targetId: undefined };
+      }
+      continue;
+    }
 
     nextProjectileCounter += 1;
     const projectileId = `projectile-${nextProjectileCounter}`;

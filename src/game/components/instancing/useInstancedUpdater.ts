@@ -3,6 +3,7 @@ import { useCallback, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 
 import { useRenderState } from '../../gameContexts';
+import type { RenderState } from '../../renderStateUtils';
 
 import { ensureInstanceColor } from './instancedUtils';
 
@@ -17,18 +18,16 @@ export interface InstancedUpdaterOptions<T> {
     context: {
       time: number;
       alpha: number;
-      // renderState may be a complex interdependent type from engine; allow any here
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      renderState: any;
+      cameraQuaternion: THREE.Quaternion;
+      renderState: RenderState;
     },
   ) => void;
   meshKeys: string[];
+  compactKeys?: readonly string[];
 }
 
 export const useInstancedUpdater = <T>(
-  // selector accepts engine render state; allow `any` here to avoid circular/import issues
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  entitiesSelector: (state: any) => T[],
+  entitiesSelector: (state: RenderState) => T[],
   options: InstancedUpdaterOptions<T>,
 ) => {
   const { count, updateInstance, meshKeys } = options;
@@ -47,7 +46,17 @@ export const useInstancedUpdater = <T>(
     return callbacks.current[key];
   }, []);
 
-  useFrame(({ clock }) => {
+  const context = useMemo(
+    () => ({
+      time: 0,
+      alpha: 0,
+      cameraQuaternion: new THREE.Quaternion(),
+      renderState: renderStateRef.current,
+    }),
+    [renderStateRef],
+  );
+
+  useFrame(({ clock, camera }) => {
     const renderState = renderStateRef.current;
     const entities = entitiesSelector(renderState);
     const time = clock.getElapsedTime();
@@ -56,10 +65,13 @@ export const useInstancedUpdater = <T>(
     const renderCount = Math.min(entities.length, count);
 
     const activeMeshes = meshRefs.current;
-    const context = { time, alpha, renderState };
+    context.time = time;
+    context.alpha = alpha;
+    context.renderState = renderState;
+    context.cameraQuaternion.copy(camera.quaternion);
     for (const key of meshKeys) {
       const mesh = activeMeshes[key];
-      if (mesh) mesh.count = renderCount;
+      if (mesh) mesh.count = options.compactKeys?.includes(key) ? 0 : renderCount;
     }
 
     if (renderCount === 0) return;

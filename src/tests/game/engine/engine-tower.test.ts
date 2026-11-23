@@ -145,7 +145,13 @@ describe('engine stepTowers', () => {
     expect(result.events.immediate).toEqual([]);
   });
 
-  it('targets the nearest enemy when multiple are in range', () => {
+  it.each([
+    [undefined, 'enemy-far'],
+    ['first', 'enemy-far'],
+    ['last', 'enemy-close'],
+    ['closest', 'enemy-close'],
+    ['strongest', 'enemy-close'],
+  ] as const)('targets according to %s priority', (targetingMode, expectedTarget) => {
     const state = setupTowerTest(
       [
         {
@@ -153,12 +159,14 @@ describe('engine stepTowers', () => {
           type: TowerType.Basic,
           level: 1,
           gridPosition: [0, 0] as [number, number],
+          targetingMode,
           lastFired: 0,
         },
       ],
       [
         {
           id: 'enemy-close',
+          shield: 100,
           type: 'Drone',
           pathIndex: 0,
           progress: 0,
@@ -185,8 +193,8 @@ describe('engine stepTowers', () => {
       { tileSize: 2 },
     );
 
-    expect(result.patch.projectiles?.[0]?.targetId).toBe('enemy-close');
-    expect(result.patch.towers?.[0]?.targetId).toBe('enemy-close');
+    expect(result.patch.projectiles?.[0]?.targetId).toBe(expectedTarget);
+    expect(result.patch.towers?.[0]?.targetId).toBe(expectedTarget);
   });
 
   it('adds freeze or splash metadata based on tower config', () => {

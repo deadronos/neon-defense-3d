@@ -28,6 +28,7 @@ export const UI = () => {
     selectedEntityId,
     towers,
     upgradeTower,
+    setTowerTargetingMode,
     sellTower,
     setSelectedEntityId,
     waveState,
@@ -166,6 +167,7 @@ export const UI = () => {
             money={gameState.money}
             onClose={() => setSelectedEntityId(null)}
             onUpgrade={upgradeTower}
+            onTargetingMode={setTowerTargetingMode}
             onSell={sellTower}
             shortcutsEnabled={!showSettings}
           />
