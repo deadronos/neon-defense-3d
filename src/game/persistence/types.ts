@@ -1,4 +1,4 @@
-import type { GraphicsQuality } from '../../types';
+import type { GraphicsQuality, TargetingMode } from '../../types';
 
 export type Quality = GraphicsQuality;
 
@@ -25,7 +25,13 @@ export interface SaveV1 {
   };
   checkpoint: {
     waveToStart: number;
-    towers: Array<{ type: string; level: number; x: number; z: number }>;
+    towers: Array<{
+      type: string;
+      targetingMode?: TargetingMode;
+      level: number;
+      x: number;
+      z: number;
+    }>;
   };
 }
 

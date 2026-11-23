@@ -1,5 +1,5 @@
 import { TOWER_CONFIGS } from '../../constants';
-import type { TowerType, Vector2 } from '../../types';
+import type { TargetingMode, TowerType, Vector2 } from '../../types';
 import { applyEngineRuntimeAction } from '../engine/runtime';
 import type { EngineRuntimeAction, EngineRuntimeState } from '../engine/runtime';
 import { allocateId, applyEnginePatch, createInitialEngineState } from '../engine/state';
@@ -21,6 +21,7 @@ export type RuntimeAction =
   | { type: 'setRuntimeState'; engine: EngineState; ui: UiState }
   | { type: 'factoryReset' }
   | { type: 'placeTower'; x: number; z: number; towerType: TowerType }
+  | { type: 'setTowerTargetingMode'; id: string; mode: TargetingMode }
   | { type: 'upgradeTower'; id: string }
   | { type: 'sellTower'; id: string };
 
@@ -28,6 +29,19 @@ export type BattleAction = Exclude<RuntimeAction, { type: 'uiAction' }>;
 
 export const battleReducer = (state: RuntimeState, action: BattleAction): RuntimeState =>
   runtimeReducer(state, action);
+
+const setTowerTargetingMode = (
+  state: RuntimeState,
+  id: string,
+  mode: TargetingMode,
+): RuntimeState => {
+  const tower = state.engine.towers.find((item) => item.id === id);
+  if (!tower || (tower.targetingMode ?? 'first') === mode) return state;
+  const towers = state.engine.towers.map((item) =>
+    item === tower ? { ...item, targetingMode: mode, targetId: undefined } : item,
+  );
+  return { ...state, engine: applyEnginePatch(state.engine, { towers }) };
+};
 
 export const runtimeReducer = (state: RuntimeState, action: RuntimeAction): RuntimeState => {
   switch (action.type) {
@@ -67,6 +81,8 @@ export const runtimeReducer = (state: RuntimeState, action: RuntimeAction): Runt
         ui: uiReducer(state.ui, { type: 'spendMoney', amount: config.cost }),
       };
     }
+    case 'setTowerTargetingMode':
+      return setTowerTargetingMode(state, action.id, action.mode);
     case 'upgradeTower': {
       const tower = state.engine.towers.find((t) => t.id === action.id);
       if (!tower) return state;

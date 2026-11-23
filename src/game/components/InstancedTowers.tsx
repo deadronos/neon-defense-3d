@@ -3,17 +3,25 @@ import React, { useEffect, useState, useRef } from 'react';
 import * as THREE from 'three';
 
 import { TOWER_CONFIGS } from '../../constants';
+import { TowerType } from '../../types';
 import type { TowerEntity } from '../../types';
+import { lerp } from '../../utils/math';
 import { useGameUi, useRenderState } from '../gameContexts';
 import { getTowerStats } from '../utils';
 
-import { createComplexTowerBase } from './instancing/geometryUtils';
+import { createComplexTowerBase, createTurretGeometry } from './instancing/geometryUtils';
 import { TEMP_COLOR, ZERO_MATRIX } from './instancing/instancedUtils';
 import { useInstancedUpdater } from './instancing/useInstancedUpdater';
 
+const TURRET_TYPES = Object.values(TowerType);
+const TOWER_MESH_KEYS = ['base', ...TURRET_TYPES, 'ring', 'range'];
+
 export const InstancedTowers: React.FC = () => {
   const { setSelectedEntityId, selectedEntityId, gameState } = useGameUi();
-  const [baseGeometry, setBaseGeometry] = useState<THREE.BufferGeometry | null>(null);
+  const [geometry, setGeometry] = useState<{
+    base: THREE.BufferGeometry;
+    turrets: THREE.BufferGeometry[];
+  } | null>(null);
 
   const colorCache = useRef<Map<string, THREE.Color>>(new Map());
 
@@ -25,17 +33,20 @@ export const InstancedTowers: React.FC = () => {
   };
 
   useEffect(() => {
-    const geo = createComplexTowerBase();
-    setBaseGeometry(geo);
+    const base = createComplexTowerBase();
+    const turrets = TURRET_TYPES.map(createTurretGeometry);
+    setGeometry({ base, turrets });
     return () => {
-      geo.dispose();
+      base.dispose();
+      for (const turret of turrets) turret.dispose();
     };
   }, []);
 
   const { setMeshRef } = useInstancedUpdater<TowerEntity>((state) => state.towers, {
     count: 100,
-    meshKeys: ['base', 'turret', 'ring', 'range'],
-    updateInstance: (i, tower, dummy, meshes, { time }) => {
+    meshKeys: TOWER_MESH_KEYS,
+    compactKeys: TURRET_TYPES,
+    updateInstance: (i, tower, dummy, meshes, { time, alpha, renderState }) => {
       const baseColor = TOWER_CONFIGS[tower.type].color;
       const colorObj = getCachedColor(baseColor);
 
@@ -56,17 +67,30 @@ export const InstancedTowers: React.FC = () => {
       }
 
       // Turret
-      if (meshes.turret != null) {
+      const turret = meshes[tower.type];
+      if (turret) {
+        const turretIndex = turret.count++;
         dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
         dummy.position.y += 0.8;
         const scale = 0.5 + tower.level * 0.1;
         dummy.scale.set(scale, scale, scale);
-        dummy.rotation.set(0, time, 0);
+        const target = renderState.enemiesById.get(tower.targetId ?? '');
+        const previous = target
+          ? (renderState.previousEnemyPositions.get(target.id) ?? target.position)
+          : undefined;
+        const angle =
+          target && previous
+            ? Math.atan2(
+                lerp(previous[0], target.position[0], alpha) - tower.position[0],
+                lerp(previous[2], target.position[2], alpha) - tower.position[2],
+              )
+            : time * 0.35;
+        dummy.rotation.set(0, angle, 0);
         dummy.updateMatrix();
-        meshes.turret.setMatrixAt(i, dummy.matrix);
+        turret.setMatrixAt(turretIndex, dummy.matrix);
 
         TEMP_COLOR.copy(colorObj).multiplyScalar(2.5);
-        meshes.turret.setColorAt(i, TEMP_COLOR);
+        turret.setColorAt(turretIndex, TEMP_COLOR);
       }
 
       // Ring
@@ -74,8 +98,7 @@ export const InstancedTowers: React.FC = () => {
         dummy.position.set(tower.position[0], tower.position[1], tower.position[2]);
         dummy.position.y += 0.8;
 
-        dummy.rotation.x = Math.sin(time + i) * 0.2;
-        dummy.rotation.y = time;
+        dummy.rotation.set(Math.sin(time + i) * 0.2, time, 0);
         const ringScale = 1.0 + Math.sin(time * 2 + i) * 0.1;
         dummy.scale.set(ringScale, ringScale, ringScale);
 
@@ -117,34 +140,35 @@ export const InstancedTowers: React.FC = () => {
     if (e.instanceId === undefined) return;
     const towers = renderStateRef.current.towers;
     const tower = towers[e.instanceId];
-    // runtime guard: index access may be out-of-bounds at runtime
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (tower === undefined) return;
     setSelectedEntityId(tower.id);
   };
 
-  if (!baseGeometry) return null;
+  if (!geometry) return null;
 
   return (
     <group>
       <instancedMesh
         ref={setMeshRef('base')}
-        args={[baseGeometry, undefined, 100]}
+        args={[geometry.base, undefined, 100]}
         onPointerDown={handlePointerDown}
         frustumCulled={false}
       >
         <meshBasicMaterial vertexColors toneMapped={false} />
       </instancedMesh>
 
-      <instancedMesh
-        ref={setMeshRef('turret')}
-        args={[undefined, undefined, 100]}
-        raycast={() => null}
-        frustumCulled={false}
-      >
-        <octahedronGeometry args={[0.5, 0]} />
-        <meshBasicMaterial vertexColors toneMapped={false} />
-      </instancedMesh>
+      {TURRET_TYPES.map((type, index) => (
+        <instancedMesh
+          key={type}
+          ref={setMeshRef(type)}
+          args={[geometry.turrets[index], undefined, 100]}
+          raycast={() => null}
+          frustumCulled={false}
+        >
+          <meshBasicMaterial vertexColors toneMapped={false} />
+        </instancedMesh>
+      ))}
 
       <instancedMesh
         ref={setMeshRef('ring')}

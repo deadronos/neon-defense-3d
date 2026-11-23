@@ -6,7 +6,9 @@ import { useInstancedUpdater } from '../../game/components/instancing/useInstanc
 import { createInitialRenderState } from '../../game/renderStateUtils';
 
 const fixture = vi.hoisted(() => ({
-  frame: undefined as ((state: { clock: { getElapsedTime: () => number } }) => void) | undefined,
+  frame: undefined as
+    | ((state: { clock: { getElapsedTime: () => number }; camera: THREE.Camera }) => void)
+    | undefined,
 }));
 
 vi.mock('@react-three/fiber', () => ({
@@ -38,7 +40,7 @@ it('keeps mesh refs stable and skips buffer uploads once instance count reaches 
     rerender();
     expect(result.current.setMeshRef('main')).toBe(setMesh);
 
-    const state = { clock: { getElapsedTime: () => 1 } };
+    const state = { clock: { getElapsedTime: () => 1 }, camera: new THREE.PerspectiveCamera() };
     fixture.frame?.(state);
     expect(mesh.count).toBe(1);
     expect(mesh.instanceMatrix.version).toBeGreaterThan(0);

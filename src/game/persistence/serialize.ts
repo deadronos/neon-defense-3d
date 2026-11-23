@@ -8,6 +8,7 @@ export const serializeCheckpoint = (ui: UiState, engine: EngineState): SaveV1 =>
   const towers = engine.towers.map((t) => ({
     type: t.type,
     level: t.level,
+    targetingMode: t.targetingMode,
     x: t.gridPosition[0],
     z: t.gridPosition[1],
   }));

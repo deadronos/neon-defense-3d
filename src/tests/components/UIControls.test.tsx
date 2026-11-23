@@ -109,7 +109,11 @@ describe('gameplay controls', () => {
     await user.click(inspect);
     await user.click(inspect);
     expect(screen.getByRole('button', { name: /upgrade/i })).toBeEnabled();
-    await user.keyboard('u');
+    const priority = screen.getByRole('combobox', { name: 'Targeting priority' });
+    await user.selectOptions(priority, 'last');
+    expect(priority).toHaveValue('last');
+    await user.tab();
+    await user.keyboard('uu');
     expect(screen.getByRole('button', { name: /upgrade/i })).toBeDisabled();
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('button', { name: /upgrade/i })).toBeNull();

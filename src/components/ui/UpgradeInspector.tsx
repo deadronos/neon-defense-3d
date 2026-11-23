@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { TargetingMode } from '../../types';
 import type { TowerEntity, UpgradeType } from '../../types';
 import { Card } from '../ui/card';
 
@@ -14,6 +15,7 @@ interface UpgradeInspectorProps {
   money: number;
   shortcutsEnabled?: boolean;
   onClose: () => void;
+  onTargetingMode?: (id: string, mode: TargetingMode) => void;
   onUpgrade: (id: string) => void;
   onSell: (id: string) => void;
 }
@@ -25,6 +27,7 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
   shortcutsEnabled,
   onClose,
   onUpgrade,
+  onTargetingMode,
   onSell,
 }) => {
   return (
@@ -34,6 +37,27 @@ export const UpgradeInspector: React.FC<UpgradeInspectorProps> = ({
         <div className="flex flex-col gap-2 flex-grow min-w-0">
           <InspectorHeader selectedTowerEntity={selectedTowerEntity} />
           <InspectorStats selectedTowerEntity={selectedTowerEntity} upgrades={upgrades} />
+          {onTargetingMode && (
+            <label className="flex gap-2 items-center text-sm text-cyan-200">
+              Targeting priority
+              <select
+                className="bg-black border border-cyan-500/40 rounded px-2 py-1"
+                value={selectedTowerEntity.targetingMode ?? TargetingMode.First}
+                onChange={(event) =>
+                  onTargetingMode(
+                    selectedTowerEntity.id,
+                    event.currentTarget.value as TargetingMode,
+                  )
+                }
+              >
+                {Object.entries(TargetingMode).map(([label, mode]) => (
+                  <option key={mode} value={mode}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <InspectorSynergies selectedTowerEntity={selectedTowerEntity} />
         </div>
 

@@ -78,9 +78,9 @@ Builds cleanly on Batch 1's corrected HUD readouts and Batch 2's decoupled UI su
 
 Core gameplay & visual upgrades layered on top of the stabilized engine and renderer.
 
-- [ ] **#122** — Add per-tower targeting priority modes (`First`, `Strongest`, `Closest`, `Last`) with inspector UI & persistence (`tower.ts`, `InspectorActions.tsx`, `persistence/`)
-- [ ] **#123** — Rebalance tower upgrade ROI vs spam, Cryo/Missile scaling & synergies, Triangulation crit/description alignment, `GLOBAL_GREED` consistency, Tech Tree RP curve/caps, and boss wave composition (`constants.ts`, `utils.ts`, `synergies.ts`, `uiReducer.ts`, `wave.ts`, `TechTreeModal.tsx`) _(related: `#107`)_
-- [ ] **#131** — Add instanced 3D enemy HP bars, turret target tracking, placement range/synergy hover preview, and distinct tower/enemy silhouettes (`Enemies.tsx`, `InstancedTowers.tsx`, `useTileHover.ts`) _(related: `#106`)_
+- [x] **#122** — Add per-tower targeting priority modes (`First`, `Strongest`, `Closest`, `Last`) with inspector UI & persistence (`tower.ts`, `InspectorActions.tsx`, `persistence/`)
+- [x] **#123** — Rebalance tower upgrade ROI vs spam, Cryo/Missile scaling & synergies, Triangulation crit/description alignment, `GLOBAL_GREED` consistency, Tech Tree RP curve/caps, and boss wave composition (`constants.ts`, `utils.ts`, `synergies.ts`, `uiReducer.ts`, `wave.ts`, `TechTreeModal.tsx`) _(related: `#107`)_
+- [x] **#131** — Add instanced 3D enemy HP bars, turret target tracking, placement range/synergy hover preview, and distinct tower/enemy silhouettes (`Enemies.tsx`, `InstancedTowers.tsx`, `useTileHover.ts`) _(related: `#106`)_
 
 ---
 

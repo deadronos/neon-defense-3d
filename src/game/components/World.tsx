@@ -38,6 +38,8 @@ export const World = React.memo(() => {
   // Use the extracted hook for hover and interaction logic
   const {
     hoverMeshRef,
+    previewRef,
+    rangeRef,
     invalidMarkerRef,
     handlePointerMove,
     handlePointerOut,
@@ -196,6 +198,18 @@ export const World = React.memo(() => {
         </group>
       </mesh>
 
+      <group ref={previewRef} visible={false}>
+        <mesh ref={rangeRef} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
+          <ringGeometry args={[0.985, 1, 64]} />
+          <meshBasicMaterial color="#8efcff" opacity={0.65} transparent depthWrite={false} />
+        </mesh>
+        {['east', 'west', 'south', 'north'].map((direction) => (
+          <mesh key={direction} raycast={() => null}>
+            <boxGeometry args={[0.08, 0.025, TILE_SIZE]} />
+            <meshBasicMaterial color="#ffbd66" opacity={0.8} transparent depthWrite={false} />
+          </mesh>
+        ))}
+      </group>
       <lineSegments position={[0, 0.02, 0]} geometry={gridGeometry} material={gridMaterial} />
     </group>
   );

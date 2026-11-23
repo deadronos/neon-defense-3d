@@ -33,12 +33,16 @@ describe('engine uiReducer', () => {
       upgrade: UpgradeType.GLOBAL_DAMAGE,
       cost: 2,
     });
-    expect(next.researchPoints).toBe(3);
+    expect(next.researchPoints).toBe(4);
     expect(next.upgrades[UpgradeType.GLOBAL_DAMAGE]).toBe(1);
   });
 
   it('purchaseUpgrade is a no-op when insufficient RP', () => {
-    const initial = { ...createInitialUiState(), researchPoints: 1 };
+    const initial = {
+      ...createInitialUiState(),
+      researchPoints: 1,
+      upgrades: { [UpgradeType.GLOBAL_DAMAGE]: 1 },
+    };
     const next = uiReducer(initial, {
       type: 'purchaseUpgrade',
       upgrade: UpgradeType.GLOBAL_DAMAGE,
@@ -46,6 +50,19 @@ describe('engine uiReducer', () => {
     });
     // reducer intentionally returns the same state object when no changes are made
     expect(next).toBe(initial);
+  });
+
+  it.each([
+    { type: 'startGame' },
+    { type: 'startRogueliteRun', seed: 'seed' },
+    { type: 'startNextSector' },
+  ] as const)('applies greed and restores lives on $type', (action) => {
+    const next = uiReducer(
+      { ...createInitialUiState(), lives: 1, upgrades: { [UpgradeType.GLOBAL_GREED]: 3 } },
+      action,
+    );
+    expect(next.money).toBe(172);
+    expect(next.lives).toBe(20);
   });
 
   it('startNextSector advances map index and applies GLOBAL_GREED start money', () => {
@@ -110,7 +127,7 @@ describe('engine uiReducer', () => {
     });
 
     expect(next.gameStatus).toBe('victory');
-    expect(next.researchPoints).toBe(4); // floor(400/200 + 200/100)
+    expect(next.researchPoints).toBe(3);
   });
 
   it('applyEngineEvents reduces events: money/lives/damage/wave/reward and non-victory WaveCompleted', () => {
@@ -145,4 +162,15 @@ describe('engine uiReducer', () => {
     expect(next.lives).toBe(0);
     expect(next.gameStatus).toBe('gameover');
   });
+});
+
+it('enforces the research cap in the reducer', () => {
+  const initial = {
+    ...createInitialUiState(),
+    researchPoints: 100,
+    upgrades: { [UpgradeType.GLOBAL_DAMAGE]: 10 },
+  };
+  expect(
+    uiReducer(initial, { type: 'purchaseUpgrade', upgrade: UpgradeType.GLOBAL_DAMAGE, cost: 0 }),
+  ).toBe(initial);
 });

@@ -80,6 +80,7 @@ export const buildRuntimeFromCheckpoint = (
           level: clampMin(coerceInt(t.level, 1), 1),
           gridPosition: [t.x, t.z],
           lastFired: 0,
+          targetingMode: t.targetingMode ?? 'first',
         },
       ],
     });

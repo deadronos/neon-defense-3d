@@ -74,6 +74,8 @@ export const toEnemyEntity = (
 
   return {
     id: enemy.id,
+    type: enemy.type,
+    maxHp: enemy.maxHp ?? enemy.hp,
     config,
     pathIndex: enemy.pathIndex,
     progress: enemy.progress,
@@ -133,6 +135,7 @@ export const toTowerEntity = (tower: EngineState['towers'][number]): TowerEntity
   position: [tower.gridPosition[0] * TILE_SIZE, 0.5, tower.gridPosition[1] * TILE_SIZE],
   lastFired: tower.lastFired,
   targetId: tower.targetId ?? null,
+  targetingMode: tower.targetingMode ?? 'first',
   level: tower.level,
   activeSynergies: tower.activeSynergies,
 });

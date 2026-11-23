@@ -1,4 +1,4 @@
-import type { ActiveSynergy } from '../../types';
+import type { ActiveSynergy, TargetingMode } from '../../types';
 
 import type { EngineEvent } from './events';
 
@@ -12,6 +12,7 @@ export interface EngineEnemy {
   pathIndex: number;
   progress: number;
   hp: number;
+  maxHp?: number;
   shield?: number;
   maxShield?: number;
   speed?: number;
@@ -30,6 +31,7 @@ export interface EngineTower {
   gridPosition: EngineVector2;
   lastFired: number;
   targetId?: string;
+  targetingMode?: TargetingMode;
   activeSynergies?: ActiveSynergy[];
 }
 

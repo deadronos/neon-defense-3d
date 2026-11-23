@@ -107,6 +107,7 @@ export interface EnemyConfig {
  * Represents an active enemy entity in the game world.
  */
 export interface EnemyEntity {
+  type?: string;
   /** Unique identifier for the enemy instance. */
   id: string;
   /** Configuration settings for this enemy type. */
@@ -119,6 +120,7 @@ export interface EnemyEntity {
   position: Position3;
   /** Current hit points remaining. */
   hp: number;
+  maxHp?: number;
   /** Current shield points remaining. */
   shield: number;
   /** Maximum shield points. */
@@ -191,7 +193,17 @@ export interface TowerConfig {
 /**
  * Represents an active tower entity placed on the grid.
  */
+export const TargetingMode = {
+  First: 'first',
+  Strongest: 'strongest',
+  Closest: 'closest',
+  Last: 'last',
+} as const;
+
+export type TargetingMode = (typeof TargetingMode)[keyof typeof TargetingMode];
+
 export interface TowerEntity {
+  targetingMode?: TargetingMode;
   /** Unique identifier for the tower. */
   id: string;
   /** Type of the tower. */
@@ -265,6 +277,7 @@ export interface WaveState {
 export const SynergyType = {
   SYNCHRONIZED_FIRE: 'SYNCHRONIZED_FIRE',
   TRIANGULATION: 'TRIANGULATION',
+  SHATTER: 'SHATTER',
   COVER_FIRE_SOURCE: 'COVER_FIRE_SOURCE',
   COVER_FIRE_RECEIVER: 'COVER_FIRE_RECEIVER',
 } as const;

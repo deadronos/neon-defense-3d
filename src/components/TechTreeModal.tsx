@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { useGameUi } from '../game/gameContexts';
+import { getResearchCost, MAX_RESEARCH_LEVEL } from '../game/utils';
 import { UpgradeType } from '../types';
 
 import { ModalFrame } from './ui/ModalFrame';
@@ -17,7 +18,6 @@ const UPGRADES = [
     type: UpgradeType.GLOBAL_DAMAGE,
     name: 'Weapon Overdrive',
     desc: '+5% Damage to all towers',
-    baseCost: 1,
     icon: '⚔️',
     color: '#ff0055',
   },
@@ -25,7 +25,6 @@ const UPGRADES = [
     type: UpgradeType.GLOBAL_RANGE,
     name: 'Sensor Array',
     desc: '+5% Range to all towers',
-    baseCost: 1,
     icon: '📡',
     color: '#f9f871',
   },
@@ -33,13 +32,10 @@ const UPGRADES = [
     type: UpgradeType.GLOBAL_GREED,
     name: 'Matter Recycler',
     desc: '+5% Starting Money & Kill Rewards',
-    baseCost: 1,
     icon: '💰',
     color: '#00f2ff',
   },
 ] as const;
-
-const getCost = (level: number, baseCost: number) => baseCost + level;
 
 export const TechTreeModal: React.FC<TechTreeModalProps> = ({
   onClose,
@@ -98,8 +94,9 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({
       <div className="flex-1 p-8 grid grid-cols-1 md:grid-cols-3 gap-6 overflow-y-auto">
         {UPGRADES.map((u) => {
           const level = gameState.upgrades[u.type] ?? 0;
-          const cost = getCost(level, u.baseCost);
-          const canAfford = gameState.researchPoints >= cost;
+          const cost = getResearchCost(level);
+          const maxed = level >= MAX_RESEARCH_LEVEL;
+          const canAfford = !maxed && gameState.researchPoints >= cost;
 
           return (
             <div
@@ -124,7 +121,7 @@ export const TechTreeModal: React.FC<TechTreeModalProps> = ({
                     : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                 }`}
               >
-                Research ({cost} RP)
+                {maxed ? 'Max level' : `Research (${cost} RP)`}
               </button>
             </div>
           );

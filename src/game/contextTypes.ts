@@ -7,6 +7,7 @@ import type {
   GraphicsQuality,
   ProjectileEntity,
   TowerEntity,
+  TargetingMode,
   TowerType,
   TileType,
   UpgradeType,
@@ -33,6 +34,7 @@ export interface GameContextProps {
   setSelectedTower: (t: TowerType | null) => void;
   selectedEntityId: string | null;
   setSelectedEntityId: (id: string | null) => void;
+  setTowerTargetingMode?: (id: string, mode: TargetingMode) => void;
   upgradeTower: (id: string) => void;
   sellTower: (id: string) => void;
   isValidPlacement: (x: number, z: number) => boolean;
@@ -72,6 +74,7 @@ export interface RenderStateContextProps {
 }
 
 export interface WorldContextProps {
+  upgrades?: GameState['upgrades'];
   mapGrid: TileType[][];
   currentMapIndex: number;
   placeTower: (x: number, z: number, type: TowerType) => void;

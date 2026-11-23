@@ -27,7 +27,7 @@ describe('UpgradeInspector', () => {
     [TowerType.Sniper, 1, '+0.02/s'],
     [TowerType.Missile, 1, '+0.03/s'],
     [TowerType.Basic, 5, '+0.1/s'],
-    [TowerType.Rapid, 8, 'MAX'],
+    [TowerType.Rapid, 11, 'MAX'],
   ])('shows the rate upgrade for %s at level %i', (type, level, label) => {
     render(
       <UpgradeInspector
@@ -41,6 +41,25 @@ describe('UpgradeInspector', () => {
     );
 
     expect(screen.getByText(label)).toBeInTheDocument();
+  });
+
+  it('defaults to First and forwards the selected priority', async () => {
+    const onTargetingMode = vi.fn();
+    render(
+      <UpgradeInspector
+        selectedTowerEntity={baseTower}
+        upgrades={{}}
+        money={100}
+        onClose={vi.fn()}
+        onUpgrade={vi.fn()}
+        onSell={vi.fn()}
+        onTargetingMode={onTargetingMode}
+      />,
+    );
+    const selector = screen.getByRole('combobox', { name: 'Targeting priority' });
+    expect(selector).toHaveValue('first');
+    await userEvent.selectOptions(selector, 'strongest');
+    expect(onTargetingMode).toHaveBeenCalledWith(baseTower.id, 'strongest');
   });
 
   it('calls onClose and onSell with confirmation', async () => {
