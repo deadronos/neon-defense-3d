@@ -15,6 +15,50 @@ import { UpgradeInspector } from './ui/UpgradeInspector';
 import { useGameShortcut } from './ui/useGameShortcut';
 import { VictoryPopup } from './VictoryPopup';
 
+interface MenuOverlayProps {
+  victory: boolean;
+  showTechTree: boolean;
+  restoreFocusTo: Element | null;
+  onStart: () => void;
+  onStartRoguelite: (seed: string) => void;
+  onOpenTechTree: () => void;
+  onCloseTechTree: () => void;
+  onStartNextSector: () => void;
+}
+
+const MenuOverlay = ({
+  victory,
+  showTechTree,
+  restoreFocusTo,
+  onStart,
+  onStartRoguelite,
+  onOpenTechTree,
+  onCloseTechTree,
+  onStartNextSector,
+}: MenuOverlayProps) => (
+  <>
+    <div inert={showTechTree}>
+      {victory ? (
+        <VictoryPopup onOpenTechTree={onOpenTechTree} />
+      ) : (
+        <IdleScreen
+          onStart={onStart}
+          onOpenTechTree={onOpenTechTree}
+          onStartRoguelite={onStartRoguelite}
+        />
+      )}
+    </div>
+    {showTechTree && (
+      <TechTreeModal
+        onClose={onCloseTechTree}
+        restoreFocusTo={restoreFocusTo}
+        actionLabel={victory ? 'WARP TO NEXT SECTOR' : undefined}
+        onAction={victory ? onStartNextSector : undefined}
+      />
+    )}
+  </>
+);
+
 /**
  * The main user interface overlay component.
  */
@@ -104,27 +148,16 @@ export const UI = () => {
   const victory = gameState.gameStatus === 'victory';
   if (victory || gameState.gameStatus === 'idle') {
     return (
-      <>
-        <div inert={showTechTree}>
-          {victory ? (
-            <VictoryPopup onOpenTechTree={openTechTree} />
-          ) : (
-            <IdleScreen
-              onStart={startGame}
-              onOpenTechTree={openTechTree}
-              onStartRoguelite={startRogueliteRun}
-            />
-          )}
-        </div>
-        {showTechTree && (
-          <TechTreeModal
-            onClose={closeTechTree}
-            restoreFocusTo={previousModalFocus.current}
-            actionLabel={victory ? 'WARP TO NEXT SECTOR' : undefined}
-            onAction={victory ? startNextSector : undefined}
-          />
-        )}
-      </>
+      <MenuOverlay
+        victory={victory}
+        showTechTree={showTechTree}
+        restoreFocusTo={previousModalFocus.current}
+        onStart={startGame}
+        onStartRoguelite={startRogueliteRun}
+        onOpenTechTree={openTechTree}
+        onCloseTechTree={closeTechTree}
+        onStartNextSector={startNextSector}
+      />
     );
   }
 

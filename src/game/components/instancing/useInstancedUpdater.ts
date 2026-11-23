@@ -82,7 +82,7 @@ export const useInstancedUpdater = <T>(
 
     for (const key of meshKeys) {
       const mesh = activeMeshes[key];
-      if (mesh) {
+      if (mesh && mesh.count > 0) {
         mesh.instanceMatrix.needsUpdate = true;
         if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
       }
