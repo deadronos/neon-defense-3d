@@ -4,9 +4,15 @@ import React from 'react';
 import { describe, expect, it, vi, afterEach } from 'vitest';
 
 import { UpgradeInspector } from '../../components/ui/UpgradeInspector';
+import { useGame } from '../../game/gameContexts';
+import { GameProvider } from '../../game/GameState';
 import { createInitialRuntimeState, runtimeReducer } from '../../game/stores/runtimeReducer';
 import { calculateTowerRefundValue } from '../../game/utils';
 import { TowerType } from '../../types';
+
+vi.mock('../../game/audio/useAudio', () => ({
+  useAudio: () => ({ playSFX: vi.fn() }),
+}));
 
 const baseTower = {
   id: 'tower-1',
@@ -191,7 +197,7 @@ describe('UpgradeInspector', () => {
   });
 });
 
-it.each([1, 2, 3])('matches the runtime upgrade charge at level %i', async (level) => {
+it.each([1, 2, 3, 4, 5])('matches the runtime upgrade charge at level %i', async (level) => {
   const user = userEvent.setup({ delay: null });
   const onClose = vi.fn();
   const onUpgrade = vi.fn();
@@ -240,4 +246,58 @@ it.each([1, 2, 3])('matches the runtime upgrade charge at level %i', async (leve
 
   await user.click(upgradeBtn);
   expect(onUpgrade).toHaveBeenCalledWith('tower-1');
+});
+
+function ProviderInspector() {
+  const game = useGame();
+  const tower = game.towers.at(0);
+  return (
+    <>
+      <button
+        onClick={() => {
+          game.startGame();
+          game.placeTower(0, 0, TowerType.Basic);
+        }}
+      >
+        Place test tower
+      </button>
+      <output aria-label="Balance">{game.gameState.money}</output>
+      {tower && (
+        <>
+          <output aria-label="Tower level">{tower.level}</output>
+          <UpgradeInspector
+            selectedTowerEntity={tower}
+            upgrades={game.gameState.upgrades}
+            money={game.gameState.money}
+            onClose={() => {}}
+            onUpgrade={game.upgradeTower}
+            onTargetingMode={game.setTowerTargetingMode}
+            onSell={game.sellTower}
+          />
+        </>
+      )}
+    </>
+  );
+}
+
+it('persists targeting priority and deducts the displayed upgrade cost through GameProvider', async () => {
+  const user = userEvent.setup();
+  render(<ProviderInspector />, { wrapper: GameProvider });
+  await user.click(screen.getByRole('button', { name: 'Place test tower' }));
+
+  const targeting = screen.getByRole('combobox', { name: 'Targeting priority' });
+  expect(targeting).toHaveValue('first');
+  await user.selectOptions(targeting, 'strongest');
+  expect(targeting).toHaveValue('strongest');
+
+  const balance = screen.getByRole('status', { name: 'Balance' });
+  const before = Number(balance.textContent);
+  const upgrade = screen.getByRole('button', { name: /upgrade/i });
+  const displayedCost = Number(upgrade.textContent.match(/\$(\d+)/)?.[1]);
+  expect(displayedCost).toBeGreaterThan(0);
+  await user.click(upgrade);
+
+  expect(screen.getByRole('status', { name: 'Tower level' })).toHaveTextContent('2');
+  expect(Number(balance.textContent)).toBe(before - displayedCost);
+  expect(targeting).toHaveValue('strongest');
 });

@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect, vi } from 'vitest';
 
 import { SfxBufferCache, type SfxBufferFactory } from '../../../game/audio/internal/synthBuffers';

@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 
 import { MAP_LAYOUTS, TILE_SIZE } from '../../constants';

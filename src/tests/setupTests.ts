@@ -46,6 +46,7 @@ if (typeof env.ResizeObserver !== 'function') {
 
 // Provide a robust localStorage shim for tests.
 const hasUsableLocalStorage = (() => {
+  if (typeof window === 'undefined') return false;
   const localStorageCandidate = (globalThis as { localStorage?: unknown }).localStorage;
   if (typeof localStorageCandidate !== 'object' || localStorageCandidate === null) return false;
   const storageCandidate = localStorageCandidate as Partial<Storage>;

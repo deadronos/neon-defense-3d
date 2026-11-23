@@ -389,11 +389,6 @@ export class Synth {
     }
   }
 
-  private safeClearInterval(id: number | null) {
-    if (id === null) return;
-    clearInterval(id);
-  }
-
   stopMusic() {
     for (const n of this.bgmNodes) this.safeStop(n);
     this.bgmNodes = [];
