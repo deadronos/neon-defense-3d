@@ -20,6 +20,7 @@ export const useTileHover = () => {
   } = useWorld();
 
   const hoverMeshRef = useRef<THREE.Mesh>(null);
+  const invalidMarkerRef = useRef<THREE.Group>(null);
   const hoverValidColor = useMemo(() => new THREE.Color('#00ff00'), []);
   const hoverInvalidColor = useMemo(() => new THREE.Color('#ff0000'), []);
 
@@ -35,6 +36,7 @@ export const useTileHover = () => {
       hoverMeshRef.current.visible = true;
       hoverMeshRef.current.position.set(tile.x * TILE_SIZE, 0.01, tile.z * TILE_SIZE);
       const material = hoverMeshRef.current.material as THREE.MeshBasicMaterial;
+      if (invalidMarkerRef.current) invalidMarkerRef.current.visible = !valid;
       material.color.copy(valid ? hoverValidColor : hoverInvalidColor);
     },
     [hoverInvalidColor, hoverValidColor],
@@ -46,8 +48,8 @@ export const useTileHover = () => {
       if (instanceId === undefined) return;
       const tile = tiles.at(instanceId);
       if (tile === undefined) return;
-      if (selectedTower && tile.type === TileType.Grass && gameStatus === 'playing') {
-        const valid = isValidPlacement(tile.x, tile.z);
+      if (selectedTower && gameStatus === 'playing') {
+        const valid = tile.type === TileType.Grass && isValidPlacement(tile.x, tile.z);
         showHover(tile, valid);
         return;
       }
@@ -87,6 +89,7 @@ export const useTileHover = () => {
 
   return {
     hoverMeshRef,
+    invalidMarkerRef,
     handlePointerMove,
     handlePointerOut,
     handlePointerDown,

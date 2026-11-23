@@ -134,4 +134,5 @@ export const toTowerEntity = (tower: EngineState['towers'][number]): TowerEntity
   lastFired: tower.lastFired,
   targetId: tower.targetId ?? null,
   level: tower.level,
+  activeSynergies: tower.activeSynergies,
 });

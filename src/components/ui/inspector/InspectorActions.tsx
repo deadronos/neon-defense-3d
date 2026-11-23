@@ -4,11 +4,13 @@ import { getTowerStats, calculateTowerRefundValue } from '../../../game/utils';
 import type { TowerEntity, UpgradeType } from '../../../types';
 import { Badge } from '../../ui/badge';
 import { Button } from '../../ui/button';
+import { useGameShortcut } from '../useGameShortcut';
 
 interface InspectorActionsProps {
   selectedTowerEntity: TowerEntity;
   upgrades: { [key in UpgradeType]?: number };
   money: number;
+  shortcutsEnabled?: boolean;
   onClose: () => void;
   onUpgrade: (id: string) => void;
   onSell: (id: string) => void;
@@ -18,6 +20,7 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
   selectedTowerEntity,
   upgrades,
   money,
+  shortcutsEnabled,
   onClose,
   onUpgrade,
   onSell,
@@ -46,6 +49,21 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
   const canAfford = money >= currentStats.upgradeCost;
   const refund = calculateTowerRefundValue(selectedTowerEntity.type, selectedTowerEntity.level);
 
+  const upgrade = () => {
+    if (canAfford) onUpgrade(selectedTowerEntity.id);
+  };
+  const sell = () => {
+    if (isConfirmingSell) onSell(selectedTowerEntity.id);
+    setIsConfirmingSell(!isConfirmingSell);
+  };
+
+  useGameShortcut((event) => {
+    if (event.key.toLowerCase() === 'u') upgrade();
+    else if (event.key === 'Backspace' || event.key === 'Delete') sell();
+    else return;
+    event.preventDefault();
+  }, shortcutsEnabled ?? false);
+
   return (
     <div className="flex flex-col gap-3 min-w-50 border-t sm:border-t-0 sm:border-l border-zinc-800 pt-4 sm:pt-0 sm:pl-6 justify-center">
       <div className="flex justify-end mb-auto">
@@ -60,7 +78,7 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
       </div>
 
       <Button
-        onClick={() => onUpgrade(selectedTowerEntity.id)}
+        onClick={upgrade}
         disabled={!canAfford}
         className="h-14 relative flex flex-col items-center justify-center border-cyan-500/50 hover:bg-cyan-900/30 bg-cyan-900/10 text-cyan-50"
         variant="outline"
@@ -75,20 +93,13 @@ export const InspectorActions: React.FC<InspectorActionsProps> = ({
       </Button>
 
       <Button
-        onClick={() => {
-          if (isConfirmingSell) {
-            onSell(selectedTowerEntity.id);
-            setIsConfirmingSell(false);
-          } else {
-            setIsConfirmingSell(true);
-          }
-        }}
+        onClick={sell}
         variant={isConfirmingSell ? 'destructive' : 'ghost'}
         className={`
           mt-1 h-9 text-xs uppercase tracking-wider border transition-all
           ${
             isConfirmingSell
-              ? 'animate-pulse font-bold'
+              ? 'motion-safe:animate-pulse font-bold'
               : 'text-red-400 hover:text-red-300 border-red-900/30 hover:border-red-500/50 bg-transparent hover:bg-red-950/30'
           }
         `}

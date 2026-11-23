@@ -17,7 +17,7 @@ export const SettingsAudioSection: React.FC<SettingsAudioSectionProps> = ({
   setSFXVolume,
   setMusicVolume,
 }) => (
-  <section className="bg-black/20 border border-[#0f3460] rounded p-5">
+  <section className="bg-black/20 border border-cyan-500/25 rounded p-5">
     <h3 className="text-lg font-bold text-white mb-2">Audio</h3>
     <div className="space-y-4 max-w-md">
       <div className="flex items-center gap-4">

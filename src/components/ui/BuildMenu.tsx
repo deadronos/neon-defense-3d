@@ -1,3 +1,4 @@
+import { Crosshair, Flame, Rocket, Snowflake, Zap } from 'lucide-react';
 import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,22 @@ import { TOWER_CONFIGS } from '../../constants';
 import { getTowerStats } from '../../game/utils';
 import { TowerType } from '../../types';
 import type { UpgradeType } from '../../types';
+
+const towerIcons = {
+  [TowerType.Basic]: Zap,
+  [TowerType.Rapid]: Flame,
+  [TowerType.Sniper]: Crosshair,
+  [TowerType.Cryo]: Snowflake,
+  [TowerType.Missile]: Rocket,
+};
+
+const synergyHints = {
+  [TowerType.Basic]: 'Cover Fire: gain damage beside any tower.',
+  [TowerType.Rapid]: 'Synchronized Fire: gain fire rate beside another Rapid tower.',
+  [TowerType.Sniper]: 'Triangulation: gain range beside another Sniper tower.',
+  [TowerType.Cryo]: 'Cover Fire: gain range beside a Pulse Cannon.',
+  [TowerType.Missile]: 'Cover Fire: gain range beside a Pulse Cannon.',
+};
 
 interface BuildMenuProps {
   selectedTower: TowerType | null;
@@ -26,22 +43,23 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
   upgrades,
 }) => {
   return (
-    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-5xl px-4 pointer-events-auto z-20">
-      <Card className="bg-black/80 backdrop-blur-md border-zinc-800 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
-        <ScrollArea className="w-full whitespace-nowrap rounded-md border-none">
-          <div className="flex w-max space-x-4 p-4">
-            {Object.values(TowerType).map((type) => {
-              const config = TOWER_CONFIGS[type];
-              const isSelected = selectedTower === type;
-              const canAfford = money >= config.cost;
-              const actionLabel = `${isSelected ? 'Deselect' : 'Select'} ${config.name}`;
+    <TooltipProvider>
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-5xl px-4 pointer-events-auto z-20">
+        <Card className="bg-black/80 backdrop-blur-md border-zinc-800 shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          <ScrollArea className="w-full whitespace-nowrap rounded-md border-none">
+            <div className="flex w-max space-x-4 p-4">
+              {Object.values(TowerType).map((type, index) => {
+                const Icon = towerIcons[type];
+                const config = TOWER_CONFIGS[type];
+                const isSelected = selectedTower === type;
+                const canAfford = money >= config.cost;
+                const actionLabel = `${isSelected ? 'Deselect' : 'Select'} ${config.name}`;
 
-              // Display base stats, assume level 1 and active upgrades
-              const stats = getTowerStats(type, 1, { upgrades });
+                // Display base stats, assume level 1 and active upgrades
+                const stats = getTowerStats(type, 1, { upgrades });
 
-              return (
-                <TooltipProvider key={type}>
-                  <Tooltip>
+                return (
+                  <Tooltip key={type}>
                     <TooltipTrigger asChild>
                       <Button
                         variant="outline"
@@ -63,17 +81,17 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
                           }
                         }}
                       >
+                        <kbd
+                          aria-hidden="true"
+                          className="absolute top-1 right-2 font-mono text-[10px] text-zinc-400"
+                        >
+                          {index + 1}
+                        </kbd>
                         <div
                           className="w-10 h-10 mb-2 rounded-lg flex items-center justify-center border border-white/10 transition-transform group-hover:scale-110"
                           style={{ backgroundColor: `${config.color}22` }}
                         >
-                          <div
-                            className="w-4 h-4 rounded-full shadow-[0_0_10px_currentColor]"
-                            style={{
-                              backgroundColor: config.color,
-                              boxShadow: `0 0 10px ${config.color}`,
-                            }}
-                          />
+                          <Icon aria-hidden="true" size={19} style={{ color: config.color }} />
                         </div>
                         <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-300 mb-1">
                           {config.name}
@@ -116,17 +134,28 @@ export const BuildMenu: React.FC<BuildMenuProps> = ({
                           <span className="col-span-2">
                             RNG: <span className="text-zinc-200">{stats.range.toFixed(1)}M</span>
                           </span>
+                          {stats.freezeDuration !== undefined && (
+                            <span className="col-span-2 text-zinc-200">
+                              Slow duration: {stats.freezeDuration}s
+                            </span>
+                          )}
+                          {stats.splashRadius !== undefined && (
+                            <span className="col-span-2 text-zinc-200">
+                              Splash radius: {stats.splashRadius}m
+                            </span>
+                          )}
                         </div>
+                        <p className="mt-2 text-xs text-cyan-300">{synergyHints[type]}</p>
                       </div>
                     </TooltipContent>
                   </Tooltip>
-                </TooltipProvider>
-              );
-            })}
-          </div>
-          <ScrollBar orientation="horizontal" className="bg-zinc-800/50" />
-        </ScrollArea>
-      </Card>
-    </div>
+                );
+              })}
+            </div>
+            <ScrollBar orientation="horizontal" className="bg-zinc-800/50" />
+          </ScrollArea>
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 };

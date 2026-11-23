@@ -68,9 +68,9 @@ Self-contained under `src/game/audio/` plus minimal event hooks. Can run in para
 
 Builds cleanly on Batch 1's corrected HUD readouts and Batch 2's decoupled UI subscriptions.
 
-- [ ] **#125** — Add Pause (`0x`), auto-pause when Settings is open, and global keyboard shortcuts (`Esc`, `1`–`5`, `Space`, `U`, `Backspace`) (`TopBar.tsx`, `UI.tsx`, `SettingsModal.tsx`, `InspectorActions.tsx`)
-- [ ] **#126** — Fix `index.css` light-mode `:root` token clash, unify HUD/modal visual language, consolidate `BuildMenu` `TooltipProvider`, load/align announcer typography, surface Cryo/Missile/Synergy tooltip details & Sector/Phase/Seed in `TopBar`
-- [ ] **#127** — Modal focus trapping & dismissal, `prefers-reduced-motion` support, and colorblind-friendly tower/hover cues
+- [x] **#125** — Add Pause (`0x`), auto-pause when Settings is open, and global keyboard shortcuts (`Esc`, `1`–`5`, `Space`, `U`, `Backspace`) (`TopBar.tsx`, `UI.tsx`, `SettingsModal.tsx`, `InspectorActions.tsx`)
+- [x] **#126** — Fix `index.css` light-mode `:root` token clash, unify HUD/modal visual language, consolidate `BuildMenu` `TooltipProvider`, load/align announcer typography, surface Cryo/Missile/Synergy tooltip details & Sector/Phase/Seed in `TopBar`
+- [x] **#127** — Modal focus trapping & dismissal, `prefers-reduced-motion` support, and colorblind-friendly tower/hover cues
 
 ---
 

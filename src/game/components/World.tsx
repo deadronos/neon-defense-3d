@@ -36,8 +36,14 @@ export const World = React.memo(() => {
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
   // Use the extracted hook for hover and interaction logic
-  const { hoverMeshRef, handlePointerMove, handlePointerOut, handlePointerDown, hoverValidColor } =
-    useTileHover();
+  const {
+    hoverMeshRef,
+    invalidMarkerRef,
+    handlePointerMove,
+    handlePointerOut,
+    handlePointerDown,
+    hoverValidColor,
+  } = useTileHover();
 
   // Create shader materials
   const gridMaterial = useMemo(() => createGridMaterial(), []);
@@ -180,6 +186,14 @@ export const World = React.memo(() => {
       >
         <planeGeometry args={[TILE_SIZE * 0.95, TILE_SIZE * 0.95]} />
         <meshBasicMaterial color={hoverValidColor} transparent opacity={0.35} toneMapped={false} />
+        <group ref={invalidMarkerRef} visible={false} position={[0, 0, 0.02]}>
+          {[-Math.PI / 4, Math.PI / 4].map((angle) => (
+            <mesh key={angle} rotation={[0, 0, angle]}>
+              <planeGeometry args={[TILE_SIZE * 0.72, TILE_SIZE * 0.08]} />
+              <meshBasicMaterial color="#fff1f2" toneMapped={false} />
+            </mesh>
+          ))}
+        </group>
       </mesh>
 
       <lineSegments position={[0, 0.02, 0]} geometry={gridGeometry} material={gridMaterial} />

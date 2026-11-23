@@ -31,7 +31,7 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
   onImportApply,
   onImportFilePicked,
 }) => (
-  <section className="bg-black/20 border border-[#0f3460] rounded p-5">
+  <section className="bg-black/20 border border-cyan-500/25 rounded p-5">
     <h3 className="text-lg font-bold text-white mb-2">Export / Import</h3>
     <p className="text-gray-400 text-sm mb-4">
       {hasCheckpoint
@@ -43,26 +43,26 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
       {/* Export */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-sm font-bold text-[#00f2ff]">Export</h4>
+          <h4 className="text-sm font-bold text-cyan-300">Export</h4>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={refreshExport}
-              className="bg-black/40 border border-[#0f3460] hover:border-[#00f2ff] text-white px-3 py-1.5 rounded font-mono text-xs"
+              className="bg-black/40 border border-cyan-500/25 hover:border-cyan-300 text-white px-3 py-1.5 rounded font-mono text-xs"
             >
               Refresh
             </button>
             <button
               type="button"
               onClick={() => void onCopyExport()}
-              className="bg-black/40 border border-[#0f3460] hover:border-[#00f2ff] text-white px-3 py-1.5 rounded font-mono text-xs"
+              className="bg-black/40 border border-cyan-500/25 hover:border-cyan-300 text-white px-3 py-1.5 rounded font-mono text-xs"
             >
               Copy
             </button>
             <button
               type="button"
               onClick={onDownloadExport}
-              className="bg-black/40 border border-[#0f3460] hover:border-[#00f2ff] text-white px-3 py-1.5 rounded font-mono text-xs"
+              className="bg-black/40 border border-cyan-500/25 hover:border-cyan-300 text-white px-3 py-1.5 rounded font-mono text-xs"
             >
               Download
             </button>
@@ -72,16 +72,16 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
           aria-label="Exported checkpoint JSON"
           readOnly
           value={exportJson}
-          className="w-full h-56 bg-black/30 border border-[#0f3460] rounded p-3 text-xs text-gray-200 font-mono"
+          className="w-full h-56 bg-black/30 border border-cyan-500/25 rounded p-3 text-xs text-gray-200 font-mono"
         />
       </div>
 
       {/* Import */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <h4 className="text-sm font-bold text-[#00f2ff]">Import</h4>
+          <h4 className="text-sm font-bold text-cyan-300">Import</h4>
           <div className="flex gap-2">
-            <label className="bg-black/40 border border-[#0f3460] hover:border-[#00f2ff] text-white px-3 py-1.5 rounded font-mono text-xs cursor-pointer">
+            <label className="bg-black/40 border border-cyan-500/25 hover:border-cyan-300 text-white px-3 py-1.5 rounded font-mono text-xs cursor-pointer">
               Upload
               <input
                 type="file"
@@ -93,7 +93,7 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
             <button
               type="button"
               onClick={() => previewImport(importText)}
-              className="bg-black/40 border border-[#0f3460] hover:border-[#00f2ff] text-white px-3 py-1.5 rounded font-mono text-xs"
+              className="bg-black/40 border border-cyan-500/25 hover:border-cyan-300 text-white px-3 py-1.5 rounded font-mono text-xs"
             >
               Validate
             </button>
@@ -103,8 +103,8 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
               disabled={importPreview.status !== 'ready'}
               className={`px-3 py-1.5 rounded font-mono text-xs border transition-colors ${
                 importPreview.status === 'ready'
-                  ? 'bg-[#e94560] hover:bg-[#ff5777] text-white border-[#e94560]'
-                  : 'bg-black/20 text-gray-500 border-[#0f3460] cursor-not-allowed'
+                  ? 'bg-fuchsia-600 hover:bg-fuchsia-500 text-white border-fuchsia-600'
+                  : 'bg-black/20 text-gray-500 border-cyan-500/25 cursor-not-allowed'
               }`}
             >
               Apply
@@ -117,7 +117,7 @@ export const SettingsExportImportSection: React.FC<SettingsExportImportSectionPr
           value={importText}
           onChange={(e) => setImportText(e.target.value)}
           placeholder="Paste checkpoint JSON here…"
-          className="w-full h-56 bg-black/30 border border-[#0f3460] rounded p-3 text-xs text-gray-200 font-mono"
+          className="w-full h-56 bg-black/30 border border-cyan-500/25 rounded p-3 text-xs text-gray-200 font-mono"
         />
 
         <div className="mt-3 space-y-2">

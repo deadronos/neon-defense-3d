@@ -28,7 +28,7 @@ describe('TopBar', () => {
       />,
     );
 
-    expect(screen.getByText('45%')).toHaveClass('animate-pulse');
+    expect(screen.getByText('45%')).toHaveClass('motion-safe:animate-pulse');
   });
 
   it('renders lives, money, wave and opens settings', async () => {
